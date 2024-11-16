@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trade Calendar</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .month-nav {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .month-stats {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr) 200px;
+            gap: 10px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .calendar-header {
+            font-weight: bold;
+            text-align: center;
+            padding: 10px;
+            background: #f8f9fa;
+        }
+        .calendar-day {
+            min-height: 100px;
+            padding: 10px;
+            border: 1px solid #dee2e6;
+            background: #f8f9fa;
+        }
+        .calendar-day.trading-day {
+            background: #e8f5e9;
+        }
+        .calendar-day.negative {
+            background: #ffebee;
+        }
+        .week-summary {
+            padding: 10px;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+        }
+        .trade-info {
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        .profit {
+            color: #2e7d32;
+        }
+        .loss {
+            color: #c62828;
+        }
+        .file-input {
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 8px 16px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        /* 添加交易详情弹窗的样式 */
+        .trade-modal {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 1000;
+            }
+
+            .trade-modal-content {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background-color: white;
+                padding: 20px;
+                border-radius: 8px;
+                width: 90%;
+                max-width: 1000px;
+                max-height: 80vh;
+                overflow-y: auto;
+            }
+
+            .modal-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+            }
+
+            .modal-header h2 {
+                margin: 0;
+                color: #333;
+            }
+
+            .trades-table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            .trades-table th, .trades-table td {
+                padding: 10px;
+                text-align: left;
+                border-bottom: 1px solid #ddd;
+            }
+
+            .trades-table th {
+                background-color: #f5f5f5;
+                font-weight: bold;
+            }
+
+            .trades-table tr:hover {
+                background-color: #f9f9f9;
+            }
+
+            .profit {
+                color: #4CAF50;
+            }
+
+            .loss {
+                color: #F44336;
+            }
+
+            .button-group {
+                margin-top: 20px;
+                display: flex;
+                justify-content: flex-end;
+                gap: 10px;
+            }
+
+            .button-group button {
+                padding: 8px 16px;
+                border-radius: 4px;
+                border: none;
+                cursor: pointer;
+            }
+
+            .cancel-button {
+                background-color: #f0f0f0;
+                color: #333;
+            }
+
+            .details-button {
+                background-color: #5D5FEF;
+                color: white;
+            }
+        </style>
+</head>
+<body>
+<div class="container">
+    <div class="file-controls">
+        <input type="file" id="csvFile" accept=".csv" class="file-input">
+        <button onclick="clearData()">Clear Data</button>
+    </div>
+    <div class="header">
+        <div class="month-nav">
+            <button onclick="navigateMonth(-1)">←</button>
+            <h2 id="currentMonth"></h2>
+            <button onclick="navigateMonth(1)">→</button>
+        </div>
+        <div class="month-stats">
+            <span>Monthly stats:</span>
+            <span id="monthlyPnL"></span>
+            <span id="tradingDays"></span>
+        </div>
+    </div>
+    <div class="calendar" id="calendar"></div>
+</div>
+<!-- 添加交易详情弹窗 -->
+<div id="tradeModal" class="trade-modal">
+    <div class="trade-modal-content">
+        <div class="modal-header">
+            <h2 id="modalDate"></h2>
+            <h2 id="modalNetPnL"></h2>
+        </div>
+        <div class="trade-stats">
+            <div>
+                <span>Total Trades: </span><span id="modalTotalTrades"></span>
+                <span>Winners: </span><span id="modalWinners"></span>
+                <span>Winrate: </span><span id="modalWinrate"></span>
+            </div>
+            <div>
+                <span>Losers: </span><span id="modalLosers"></span>
+                <span>Volume: </span><span id="modalVolume"></span>
+                <span>Profit Factor: </span><span id="modalProfitFactor"></span>
+            </div>
+        </div>
+        <table class="trades-table">
+            <thead>
+                <tr>
+                    <th>Open Time</th>
+                    <th>Ticker</th>
+                    <th>Side</th>
+                    <th>Instrument</th>
+                    <th>Net P&L</th>
+                    <th>Net ROI</th>
+                    <th>Realized R-Multiple</th>
+                    <th>Playbook</th>
+                </tr>
+            </thead>
+            <tbody id="tradesTableBody">
+            </tbody>
+        </table>
+        <div class="button-group">
+            <button class="cancel-button" onclick="closeTradeModal()">Cancel</button>
+            <button class="details-button" onclick="viewTradeDetails()">View Details</button>
+        </div>
+    </div>
+</div>
+<script>
+    let trades = [];
+    let currentDate = new Date();
+    const TOTAL_ACCOUNT_VALUE = 100000;
+
+    // 页面加载时立即从 localStorage 加载数据
+    document.addEventListener('DOMContentLoaded', () => {
+        loadTradesFromStorage();
+        renderCalendar();
+    });
+
+    function loadTradesFromStorage() {
+        const storedTrades = localStorage.getItem('trades');
+        if (storedTrades) {
+            trades = JSON.parse(storedTrades);
+        }
+    }
+
+    function clearData() {
+        if (confirm('Are you sure you want to clear all trade data?')) {
+            localStorage.removeItem('trades');
+            trades = [];
+            renderCalendar();
+        }
+    }
+
+
+    document.getElementById('csvFile').addEventListener('change', handleFileSelect);
+
+    function handleFileSelect(event) {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            const text = e.target.result;
+            const newTrades = parseCSV(text);
+            mergeTrades(newTrades);
+            loadTradesFromStorage();
+            renderCalendar();
+        };
+        
+        reader.readAsText(file);
+    }
+
+    function parseCSV(text) {
+        const lines = text.split('\n');
+        const headers = lines[0].split(',');
+        const result = [];
+
+        for (let i = 1; i < lines.length; i++) {
+            if (!lines[i].trim()) continue;
+            
+            const values = lines[i].split(',');
+            const trade = {};
+            headers.forEach((header, index) => {
+                trade[header.trim().replace(/"/g, '')] = values[index]?.trim().replace(/"/g, '') || '';
+            });
+            
+            // 转换纽约时间到北京时间
+            // if (trade.DateTime) {
+            //     const beijingDateTime = convertNYtoBeijing(trade.DateTime);
+            //     trade.TradeDate = beijingDateTime.toISOString().split('T')[0];
+            // }
+            
+            result.push(trade);
+        }
+
+        return result;
+    }
+
+    function mergeTrades(newTrades) {
+        const tradeMap = new Map();
+        
+        // 先加载现有交易
+        trades.forEach(trade => {
+            tradeMap.set(trade.TransactionID, trade);
+        });
+
+        // 合并新交易
+        newTrades.forEach(trade => {
+            tradeMap.set(trade.TransactionID, trade);
+        });
+
+        trades = Array.from(tradeMap.values());
+        localStorage.setItem('trades', JSON.stringify(trades));
+    }
+
+    function getDailyStats(date) {
+        console.log(date)
+        const dateStr = date.toISOString().split('T')[0];
+        console.log(dateStr)
+        
+        // 只统计已关闭的交易
+        const dayTrades = trades.filter(trade => 
+            trade.TradeDate === dateStr && 
+            trade['Open/CloseIndicator'] === 'C'
+        );
+        
+        if (dayTrades.length === 0) return null;
+
+        // 按股票合并交易数量
+        const symbolTrades = new Map();
+        dayTrades.forEach(trade => {
+            if (!symbolTrades.has(trade.Symbol)) {
+                symbolTrades.set(trade.Symbol, {
+                    quantity: 0,
+                    pnl: 0
+                });
+            }
+            const stats = symbolTrades.get(trade.Symbol);
+            stats.quantity += Math.abs(parseFloat(trade.Quantity) || 0);
+            stats.pnl += parseFloat(trade.FifoPnlRealized) || 0;
+        });
+
+        const totalPnL = Array.from(symbolTrades.values()).reduce((sum, stat) => sum + stat.pnl, 0);
+        const totalTrades = symbolTrades.size;
+        const pnlPercentage = (totalPnL / TOTAL_ACCOUNT_VALUE) * 100;
+
+        const winningTrades = dayTrades.filter(trade => parseFloat(trade.FifoPnlRealized) > 0).length;
+        const winRate = (winningTrades / dayTrades.length) * 100;
+
+        return {
+            pnl: totalPnL,
+            trades: totalTrades,
+            winRate: winRate,
+            pnlPercentage: pnlPercentage,
+            symbols: Array.from(symbolTrades.entries())
+        };
+    }
+
+        function getWeeklyStats(startDate, endDate) {
+            let totalPnL = 0;
+            let tradingDays = 0;
+
+            for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+                const stats = getDailyStats(d);
+                if (stats) {
+                    totalPnL += stats.pnl;
+                    tradingDays++;
+                }
+            }
+
+            return {
+                pnL: totalPnL,
+                days: tradingDays
+            };
+        }
+
+        function getMonthlyStats(year, month) {
+            const startDate = new Date(Date.UTC(year, month, 1));
+            const endDate = new Date(Date.UTC(year, month + 1, 0));
+            return getWeeklyStats(startDate, endDate);
+        }
+
+        function formatPnL(pnl) {
+            const prefix = pnl >= 0 ? '+' : '';
+            const className = pnl >= 0 ? 'profit' : 'loss';
+            return `<span class="${className}">${prefix}$${pnl.toFixed(2)}</span>`;
+        }
+
+        // 添加打开交易详情弹窗的函数
+        function showTradeDetails(date) {
+            const modal = document.getElementById('tradeModal');
+            const dateStr = date.toISOString().split('T')[0];
+            
+            // 获取当日交易
+            const dayTrades = trades.filter(trade => 
+                trade.TradeDate === dateStr && 
+                trade['Open/CloseIndicator'] === 'C'
+            );
+
+            // 设置模态框标题和统计信息
+            document.getElementById('modalDate').textContent = date.toLocaleDateString();
+            
+            // 计算统计数据
+            const totalPnL = dayTrades.reduce((sum, trade) => sum + (parseFloat(trade.FifoPnlRealized) || 0), 0);
+            const winners = dayTrades.filter(trade => parseFloat(trade.FifoPnlRealized) > 0).length;
+            const winrate = dayTrades.length ? (winners / dayTrades.length * 100).toFixed(2) : '0.00';
+            
+            document.getElementById('modalNetPnL').textContent = `Net P&L ${formatPnL(totalPnL)}`;
+            document.getElementById('modalTotalTrades').textContent = dayTrades.length;
+            document.getElementById('modalWinners').textContent = winners;
+            document.getElementById('modalLosers').textContent = dayTrades.length - winners;
+            document.getElementById('modalWinrate').textContent = `${winrate}%`;
+            
+            // 填充交易表格
+            const tableBody = document.getElementById('tradesTableBody');
+            tableBody.innerHTML = '';
+            
+            dayTrades.forEach(trade => {
+                const row = document.createElement('tr');
+                const pnl = parseFloat(trade.FifoPnlRealized) || 0;
+                const roi = ((pnl / TOTAL_ACCOUNT_VALUE) * 100).toFixed(2);
+                
+                row.innerHTML = `
+                    <td>${trade.DateTime}</td>
+                    <td>${trade.Symbol}</td>
+                    <td>${trade.Side}</td>
+                    <td>${trade.Symbol}</td>
+                    <td class="${pnl >= 0 ? 'profit' : 'loss'}">${formatPnL(pnl)}</td>
+                    <td class="${pnl >= 0 ? 'profit' : 'loss'}">${roi}%</td>
+                    <td>--</td>
+                    <td>--</td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+
+            modal.style.display = 'block';
+        }
+
+        // 关闭弹窗
+        function closeTradeModal() {
+            document.getElementById('tradeModal').style.display = 'none';
+        }
+
+        // 查看详情按钮的处理函数
+        function viewTradeDetails() {
+            // 可以在这里添加查看更多详情的逻辑
+            console.log('View more details');
+        }
+
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const firstDay = new Date(Date.UTC(year, month, 1));
+            const lastDay = new Date(Date.UTC(year, month + 1, 0));
+            
+            document.getElementById('currentMonth').textContent = 
+                firstDay.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+            const monthlyStats = getMonthlyStats(year, month);
+            document.getElementById('monthlyPnL').innerHTML = formatPnL(monthlyStats.pnL);
+            document.getElementById('tradingDays').textContent = 
+                `${monthlyStats.days} days`;
+
+            const calendar = document.getElementById('calendar');
+            calendar.innerHTML = '';
+
+            // Add headers
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Weekly'];
+            days.forEach(day => {
+                const header = document.createElement('div');
+                header.className = 'calendar-header';
+                header.textContent = day;
+                calendar.appendChild(header);
+            });
+
+            // Add days
+            let currentWeekPnL = 0;
+            let currentWeekDays = 0;
+            let weekStartDate = new Date(firstDay);
+
+            for (let i = 0; i < firstDay.getDay(); i++) {
+                calendar.appendChild(document.createElement('div'));
+            }
+
+            for (let day = 1; day <= lastDay.getDate(); day++) {
+                const date = new Date(Date.UTC(year, month, day));
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'calendar-day';
+                
+                const stats = getDailyStats(date);
+                if (stats) {
+                    dayDiv.className += stats.pnl >= 0 ? ' trading-day' : ' negative';
+                    dayDiv.innerHTML = `
+                        ${day}
+                        <div class="trade-info">
+                            ${formatPnL(stats.pnl)}<br>
+                            ${stats.trades} symbols<br>
+                            ${stats.pnlPercentage.toFixed(1)}%<br>
+                            ${stats.winRate.toFixed(1)}% WR
+                        </div>
+                    `;
+                    currentWeekPnL += stats.pnl;
+                    currentWeekDays++;
+                } else {
+                    dayDiv.textContent = day;
+                }
+                // 在创建日期单元格时添加点击事件
+                dayDiv.addEventListener('click', () => {
+                    showTradeDetails(date);
+                });
+
+                calendar.appendChild(dayDiv);
+
+                if (date.getDay() === 6 || day === lastDay.getDate()) {
+                    const weekDiv = document.createElement('div');
+                    weekDiv.className = 'week-summary';
+                    weekDiv.innerHTML = `
+                        Week ${Math.ceil(day / 7)}<br>
+                        ${formatPnL(currentWeekPnL)}<br>
+                        ${currentWeekDays} days
+                    `;
+                    calendar.appendChild(weekDiv);
+                    currentWeekPnL = 0;
+                    currentWeekDays = 0;
+                }
+            }
+        }
+
+        function navigateMonth(delta) {
+            currentDate.setMonth(currentDate.getMonth() + delta);
+            renderCalendar();
+        }
+
+        // 当点击模态框外部时关闭模态框
+        window.onclick = function(event) {
+            const modal = document.getElementById('tradeModal');
+            if (event.target === modal) {
+                closeTradeModal();
+            }
+        }
+
+        // Initial render
+        renderCalendar();
+    </script>
+</body>
+</html>
