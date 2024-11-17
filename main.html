@@ -175,9 +175,245 @@
                 background-color: #5D5FEF;
                 color: white;
             }
+            <style>
+        /* 新增日期范围选择器样式 */
+        .date-range {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 20px;
+        }
+
+        .date-picker-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .preset-dates {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .preset-dates button {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: left;
+        }
+
+        .preset-dates button:hover {
+            background: #f5f5f5;
+        }
+
+        /* 导入弹窗样式 */
+        .import-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .import-modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+        }
+
+        .import-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            color: #666;
+        }
+
+        .form-group input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .broker-select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+        }
+
+        .connect-button {
+            padding: 12px;
+            background: #5D5FEF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* 修复日历布局 */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr); /* 7天 + 周统计 */
+            gap: 10px;
+        }
+
+        .week-stats {
+            grid-column: 8;
+        }
+
+        /* 顶部工具栏样式 */
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px;
+        }
+
+        .toolbar-left {
+            display: flex;
+            gap: 10px;
+        }
+
+        .toolbar-right {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* 按钮样式 */
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: #f5f5f5;
+        }
+
+        /* 日期范围选择器样式 */
+        .date-range-picker {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 1000;
+            min-width: 600px;
+            padding: 20px;
+        }
+
+        .date-range-picker.active {
+            display: block;
+        }
+
+        .date-picker-container {
+            position: relative;
+        }
         </style>
 </head>
 <body>
+    <div class="toolbar">
+        <div class="toolbar-left">
+            <div class="date-picker-container">
+                <button class="btn" onclick="toggleDatePicker()">
+                    <svg width="20" height="20" viewBox="0 0 24 24">
+                        <path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/>
+                    </svg>
+                    Date range
+                </button>
+                
+                <div id="dateRangePicker" class="date-range-picker">
+                    <div class="date-range">
+                        <div class="date-picker-group">
+                            <span>Start Date</span>
+                            <input type="date" id="startDate">
+                            <span>→</span>
+                            <span>End Date</span>
+                            <input type="date" id="endDate">
+                        </div>
+                        <div class="preset-dates">
+                            <button onclick="setDateRange('today')">Today</button>
+                            <button onclick="setDateRange('thisWeek')">This Week</button>
+                            <button onclick="setDateRange('thisMonth')">This Month</button>
+                            <button onclick="setDateRange('last30Days')">Last 30 Days</button>
+                            <button onclick="setDateRange('lastMonth')">Last Month</button>
+                            <button onclick="setDateRange('thisQuarter')">This Quarter</button>
+                            <button onclick="setDateRange('ytd')">YTD (year to date)</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="toolbar-right">
+            <button class="btn" onclick="showImportModal()">
+                <svg width="20" height="20" viewBox="0 0 24 24">
+                    <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+                </svg>
+                Import IB Data
+            </button>
+        </div>
+    </div>    
+
+<!-- 导入弹窗 -->
+<div id="importModal" class="import-modal">
+    <div class="import-modal-content">
+        <h2>Import Trades</h2>
+        <p>Auto import your trades from your broker or platform.</p>
+        <form class="import-form" onsubmit="handleImport(event)">
+            <div class="form-group">
+                <label>Broker</label>
+                <select class="broker-select">
+                    <option value="ib">Interactive Brokers</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Flex Token <span style="color: red;">required</span></label>
+                <input type="text" id="flexToken" required>
+            </div>
+            <div class="form-group">
+                <label>Report Id <span style="color: red;">required</span></label>
+                <input type="text" id="reportId" required>
+            </div>
+            <div class="form-group">
+                <select class="broker-select">
+                    <option>Create new account</option>
+                </select>
+            </div>
+            <button type="submit" class="connect-button">Connect</button>
+        </form>
+    </div>
+</div>    
 <div class="container">
     <div class="file-controls">
         <input type="file" id="csvFile" accept=".csv" class="file-input">
@@ -400,54 +636,80 @@
 
         // 添加打开交易详情弹窗的函数
         function showTradeDetails(date) {
-            const modal = document.getElementById('tradeModal');
-            const dateStr = date.toISOString().split('T')[0];
-            
-            // 获取当日交易
-            const dayTrades = trades.filter(trade => 
-                trade.TradeDate === dateStr && 
-                trade['Open/CloseIndicator'] === 'C'
-            );
+        const modal = document.getElementById('tradeModal');
+        const dateStr = date.toISOString().split('T')[0];
+        
+        // 获取当日已关闭的交易
+        const dayTrades = trades.filter(trade => 
+            trade.TradeDate === dateStr && 
+            trade['Open/CloseIndicator'] === 'C'
+        );
 
-            // 设置模态框标题和统计信息
-            document.getElementById('modalDate').textContent = date.toLocaleDateString();
+        // 按股票合并交易记录
+        const consolidatedTrades = new Map();
+        
+        dayTrades.forEach(trade => {
+            const symbol = trade.Symbol;
+            const side = trade['Buy/Sell'].toLowerCase() === 'sell' ? 'LONG' : 'SHORT';
             
-            // 计算统计数据
-            const totalPnL = dayTrades.reduce((sum, trade) => sum + (parseFloat(trade.FifoPnlRealized) || 0), 0);
-            const winners = dayTrades.filter(trade => parseFloat(trade.FifoPnlRealized) > 0).length;
-            const winrate = dayTrades.length ? (winners / dayTrades.length * 100).toFixed(2) : '0.00';
+            if (!consolidatedTrades.has(symbol)) {
+                consolidatedTrades.set(symbol, {
+                    Symbol: symbol,
+                    Side: side,
+                    DateTime: trade.DateTime, // 使用第一笔交易的时间
+                    FifoPnlRealized: 0,
+                    Quantity: 0,
+                    trades: []
+                });
+            }
             
-            document.getElementById('modalNetPnL').textContent = `Net P&L ${formatPnL(totalPnL)}`;
-            document.getElementById('modalTotalTrades').textContent = dayTrades.length;
-            document.getElementById('modalWinners').textContent = winners;
-            document.getElementById('modalLosers').textContent = dayTrades.length - winners;
-            document.getElementById('modalWinrate').textContent = `${winrate}%`;
-            
-            // 填充交易表格
-            const tableBody = document.getElementById('tradesTableBody');
-            tableBody.innerHTML = '';
-            
-            dayTrades.forEach(trade => {
-                const row = document.createElement('tr');
-                const pnl = parseFloat(trade.FifoPnlRealized) || 0;
-                const roi = ((pnl / TOTAL_ACCOUNT_VALUE) * 100).toFixed(2);
-                
-                row.innerHTML = `
-                    <td>${trade.DateTime}</td>
-                    <td>${trade.Symbol}</td>
-                    <td>${trade.Side}</td>
-                    <td>${trade.Symbol}</td>
-                    <td class="${pnl >= 0 ? 'profit' : 'loss'}">${formatPnL(pnl)}</td>
-                    <td class="${pnl >= 0 ? 'profit' : 'loss'}">${roi}%</td>
-                    <td>--</td>
-                    <td>--</td>
-                `;
-                
-                tableBody.appendChild(row);
-            });
+            const consolidated = consolidatedTrades.get(symbol);
+            consolidated.FifoPnlRealized += parseFloat(trade.FifoPnlRealized) || 0;
+            consolidated.Quantity += Math.abs(parseFloat(trade.Quantity) || 0);
+            consolidated.trades.push(trade);
+        });
 
-            modal.style.display = 'block';
-        }
+        // 设置模态框标题和统计信息
+        document.getElementById('modalDate').textContent = date.toLocaleDateString();
+        
+        // 计算统计数据
+        const consolidatedArray = Array.from(consolidatedTrades.values());
+        const totalPnL = consolidatedArray.reduce((sum, trade) => sum + trade.FifoPnlRealized, 0);
+        const winners = consolidatedArray.filter(trade => trade.FifoPnlRealized > 0).length;
+        const winrate = consolidatedArray.length ? (winners / consolidatedArray.length * 100).toFixed(2) : '0.00';
+        
+        // 更新统计信息显示
+        document.getElementById('modalNetPnL').textContent = `Net P&L ${formatPnL(totalPnL)}`;
+        document.getElementById('modalTotalTrades').textContent = consolidatedArray.length;
+        document.getElementById('modalWinners').textContent = winners;
+        document.getElementById('modalLosers').textContent = consolidatedArray.length - winners;
+        document.getElementById('modalWinrate').textContent = `${winrate}%`;
+        
+        // 填充交易表格
+        const tableBody = document.getElementById('tradesTableBody');
+        tableBody.innerHTML = '';
+        
+        consolidatedArray.forEach(trade => {
+            const row = document.createElement('tr');
+            const pnl = trade.FifoPnlRealized;
+            const roi = ((pnl / TOTAL_ACCOUNT_VALUE) * 100).toFixed(2);
+            
+            row.innerHTML = `
+                <td>${trade.DateTime}</td>
+                <td>${trade.Symbol}</td>
+                <td>${trade.Side}</td>
+                <td>${trade.Symbol}</td>
+                <td class="${pnl >= 0 ? 'profit' : 'loss'}">${formatPnL(pnl)}</td>
+                <td class="${pnl >= 0 ? 'profit' : 'loss'}">${roi}%</td>
+                <td>--</td>
+                <td>--</td>
+            `;
+            
+            tableBody.appendChild(row);
+        });
+
+        modal.style.display = 'block';
+    }
 
         // 关闭弹窗
         function closeTradeModal() {
@@ -458,6 +720,197 @@
         function viewTradeDetails() {
             // 可以在这里添加查看更多详情的逻辑
             console.log('View more details');
+        }
+
+        // 新增日期范围处理函数
+        function setDateRange(range) {
+            const today = new Date();
+            let start = new Date();
+            let end = new Date();
+
+            switch(range) {
+                case 'today':
+                    break;
+                case 'thisWeek':
+                    start = new Date(today.setDate(today.getDate() - today.getDay()));
+                    break;
+                case 'thisMonth':
+                    start = new Date(today.getFullYear(), today.getMonth(), 1);
+                    end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                    break;
+                case 'last30Days':
+                    start = new Date(today.setDate(today.getDate() - 30));
+                    break;
+                case 'lastMonth':
+                    start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                    end = new Date(today.getFullYear(), today.getMonth(), 0);
+                    break;
+                case 'thisQuarter':
+                    const quarter = Math.floor(today.getMonth() / 3);
+                    start = new Date(today.getFullYear(), quarter * 3, 1);
+                    end = new Date(today.getFullYear(), (quarter + 1) * 3, 0);
+                    break;
+                case 'ytd':
+                    start = new Date(today.getFullYear(), 0, 1);
+                    break;
+            }
+
+            document.getElementById('startDate').value = start.toISOString().split('T')[0];
+            document.getElementById('endDate').value = end.toISOString().split('T')[0];
+            updateCalendar();
+        }
+
+        // IB数据导入处理
+        // 修改导入处理函数
+        async function handleImport(event) {
+            event.preventDefault();
+            const token = document.getElementById('flexToken').value;
+            const queryId = document.getElementById('reportId').value;
+
+            try {
+                // 第一步：获取 reference code
+                const response = await fetchWithProxy(
+                    `https://ndcdyn.interactivebrokers.com/AccountManagement/FlexWebService/SendRequest?t=${token}&q=${queryId}&v=3`
+                );
+                
+                const xmlText = await response.text();
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+
+                const status = xmlDoc.querySelector('Status')?.textContent;
+                
+                if (status === 'Success') {
+                    const referenceCode = xmlDoc.querySelector('ReferenceCode')?.textContent;
+                    
+                    // 第二步：使用 reference code 获取报告
+                    // 注意这里 token 和 reference code 的顺序
+                    const reportResponse = await fetchWithProxy(
+                        `https://ndcdyn.interactivebrokers.com/AccountManagement/FlexWebService/GetStatement?t=${token}&q=${referenceCode}&v=3`
+                    );
+                    
+                    // 检查响应类型
+                    const contentType = reportResponse.headers.get('content-type');
+                    
+                    if (contentType && contentType.includes('text/csv')) {
+                        // 如果是CSV直接处理
+                        const csvData = await reportResponse.text();
+                        processTradeData(csvData);
+                    } else {
+                        // 如果返回的是XML，检查状态
+                        const reportXml = await reportResponse.text();
+                        const reportDoc = parser.parseFromString(reportXml, "text/xml");
+                        
+                        if (reportDoc.querySelector('code')) {
+                            throw new Error(reportDoc.querySelector('code').textContent);
+                        }
+                    }
+                } else {
+                    const errorMessage = xmlDoc.querySelector('ErrorMessage')?.textContent;
+                    throw new Error(errorMessage || 'Import failed');
+                }
+            } catch (error) {
+                alert(`Import failed: ${error.message}`);
+            }
+        }
+
+        // 添加代理函数处理CORS
+        async function fetchWithProxy(url) {
+            const proxyUrl = 'https://fragrant-mode-a663.wing-light.workers.dev';
+            
+            try {
+                const response = await fetch(proxyUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json, text/plain, text/csv, */*'
+                    },
+                    body: JSON.stringify({
+                        url: url,
+                        method: 'GET'
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Proxy request failed: ${response.status} - ${errorText}`);
+                }
+
+                return response;
+            } catch (error) {
+                console.error('Proxy request error:', error);
+                throw new Error(`Failed to fetch through proxy: ${error.message}`);
+            }
+        }
+
+        // 处理CSV数据的函数
+        function processTradeData(csvData) {
+            // 解析CSV数据
+            const rows = csvData.split('\n');
+            const headers = rows[0].split(',');
+            const trades = [];
+            
+            for (let i = 1; i < rows.length; i++) {
+                if (!rows[i].trim()) continue;
+                
+                const values = rows[i].split(',');
+                const trade = {};
+                
+                headers.forEach((header, index) => {
+                    trade[header.trim()] = values[index]?.trim();
+                });
+                
+                trades.push(trade);
+            }
+            
+            // 更新日历数据
+            updateCalendarWithTrades(trades);
+            
+            // 关闭导入弹窗
+            document.getElementById('importModal').style.display = 'none';
+        }
+
+        // 更新日历数据的函数
+        function updateCalendarWithTrades(trades) {
+            trades.forEach(trade => {
+                // 根据交易数据更新日历显示
+                const tradeDate = new Date(trade.TradeDate);
+                const dayElement = document.querySelector(`[data-date="${tradeDate.toISOString().split('T')[0]}"]`);
+                
+                if (dayElement) {
+                    // 更新日历单元格的数据
+                    updateDayCell(dayElement, trade);
+                }
+            });
+            
+            // 重新计算统计数据
+            calculateStats();
+            // 重新渲染日历
+            renderCalendar();
+        }
+
+        // 更新单个日历单元格的函数
+        function updateDayCell(dayElement, trade) {
+            const pnl = parseFloat(trade.NetPnL || 0);
+            const currentPnl = parseFloat(dayElement.dataset.pnl || 0);
+            
+            dayElement.dataset.pnl = currentPnl + pnl;
+            dayElement.dataset.trades = (parseInt(dayElement.dataset.trades || 0) + 1).toString();
+            
+            // 更新显示
+            updateDayCellDisplay(dayElement);
+        }
+
+        // 更新日历单元格显示的函数
+        function updateDayCellDisplay(dayElement) {
+            const pnl = parseFloat(dayElement.dataset.pnl);
+            const trades = parseInt(dayElement.dataset.trades);
+            
+            dayElement.querySelector('.day-pnl').textContent = formatPnL(pnl);
+            dayElement.querySelector('.day-trades').textContent = `${trades} trade${trades !== 1 ? 's' : ''}`;
+            
+            // 更新颜色
+            dayElement.classList.toggle('positive', pnl > 0);
+            dayElement.classList.toggle('negative', pnl < 0);
         }
 
         function renderCalendar() {
@@ -525,6 +978,12 @@
                 calendar.appendChild(dayDiv);
 
                 if (date.getDay() === 6 || day === lastDay.getDate()) {
+                    const blocksNum = 6 - date.getDay();
+                    for (let i = 0; i < blocksNum; i++) {
+                        const nullDiv = document.createElement('div');
+                        nullDiv.className = 'calendar-day';
+                        calendar.appendChild(nullDiv);
+                    }
                     const weekDiv = document.createElement('div');
                     weekDiv.className = 'week-summary';
                     weekDiv.innerHTML = `
@@ -552,6 +1011,36 @@
             }
         }
 
+        // 切换日期选择器显示/隐藏
+        function toggleDatePicker() {
+            const picker = document.getElementById('dateRangePicker');
+            picker.classList.toggle('active');
+        }
+
+        // 显示导入模态框
+        function showImportModal() {
+            const modal = document.getElementById('importModal');
+            modal.style.display = 'block';
+        }
+
+        // 点击外部关闭日期选择器
+        document.addEventListener('click', function(event) {
+            const picker = document.getElementById('dateRangePicker');
+            const datePickerContainer = document.querySelector('.date-picker-container');
+            
+            if (!datePickerContainer.contains(event.target)) {
+                picker.classList.remove('active');
+            }
+        });
+
+        // 设置日期范围后关闭选择器
+        function setDateRange(range) {
+            // 原有的日期设置逻辑...
+            
+            // 设置完成后关闭选择器
+            document.getElementById('dateRangePicker').classList.remove('active');
+            updateCalendar();
+        }
         // Initial render
         renderCalendar();
     </script>
