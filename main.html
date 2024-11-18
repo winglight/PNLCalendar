@@ -788,8 +788,6 @@
                         `https://ndcdyn.interactivebrokers.com/AccountManagement/FlexWebService/GetStatement?t=${token}&q=${referenceCode}&v=3`
                     );
 
-                    console.log("reportResponse: " + reportResponse);
-                    
                     if (reportResponse.ok) {
                         const csvData = await reportResponse.text();
 
@@ -842,7 +840,7 @@
             // 解析CSV数据
             const rows = csvData.split('\n');
             const headers = rows[0].split(',');
-            const trades = [];
+            const newTrades = [];
             
             for (let i = 1; i < rows.length; i++) {
                 if (!rows[i].trim()) continue;
@@ -851,11 +849,13 @@
                 const trade = {};
                 
                 headers.forEach((header, index) => {
-                    trade[header.trim()] = values[index]?.trim();
+                    trade[header.replace(/['"]+/g, '').trim()] = values[index]?.replace(/['"]+/g, '').trim();
                 });
                 
-                trades.push(trade);
+                newTrades.push(trade);
             }
+
+            mergeTrades(newTrades);
             
             // 更新日历数据
             updateCalendarWithTrades(trades);
@@ -877,8 +877,6 @@
                 }
             });
             
-            // 重新计算统计数据
-            calculateStats();
             // 重新渲染日历
             renderCalendar();
         }
