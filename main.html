@@ -562,9 +562,9 @@
     }
 
     function getDailyStats(date) {
-        console.log(date)
+        //console.log(date)
         const dateStr = date.toISOString().split('T')[0];
-        console.log(dateStr)
+        //console.log(dateStr)
         
         // 只统计已关闭的交易
         const dayTrades = trades.filter(trade => 
@@ -787,23 +787,17 @@
                     const reportResponse = await fetchWithProxy(
                         `https://ndcdyn.interactivebrokers.com/AccountManagement/FlexWebService/GetStatement?t=${token}&q=${referenceCode}&v=3`
                     );
+
+                    console.log("reportResponse: " + reportResponse);
                     
-                    // 检查响应类型
-                    const contentType = reportResponse.headers.get('content-type');
-                    
-                    if (contentType && contentType.includes('text/csv')) {
-                        // 如果是CSV直接处理
+                    if (reportResponse.ok) {
                         const csvData = await reportResponse.text();
+
                         processTradeData(csvData);
                     } else {
-                        // 如果返回的是XML，检查状态
-                        const reportXml = await reportResponse.text();
-                        const reportDoc = parser.parseFromString(reportXml, "text/xml");
-                        
-                        if (reportDoc.querySelector('code')) {
-                            throw new Error(reportDoc.querySelector('code').textContent);
-                        }
+                        console.error("Failed to fetch the initial response:", response.statusText);
                     }
+                    
                 } else {
                     const errorMessage = xmlDoc.querySelector('ErrorMessage')?.textContent;
                     throw new Error(errorMessage || 'Import failed');
@@ -835,6 +829,7 @@
                     throw new Error(`Proxy request failed: ${response.status} - ${errorText}`);
                 }
 
+                console.log("fetch response: " + response);
                 return response;
             } catch (error) {
                 console.error('Proxy request error:', error);
