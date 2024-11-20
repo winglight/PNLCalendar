@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
     <title>Trade Calendar</title>
     <style>
         body {
@@ -69,7 +71,7 @@
         .profit {
             color: #2e7d32;
         }
-        .loss {
+        .fail {
             color: #c62828;
         }
         .file-input {
@@ -148,9 +150,6 @@
                 color: #4CAF50;
             }
 
-            .loss {
-                color: #F44336;
-            }
 
             .button-group {
                 margin-top: 20px;
@@ -339,6 +338,133 @@
         .date-picker-container {
             position: relative;
         }
+
+        .stats-container {
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .stat-value.positive {
+            color: #2ecc71;
+        }
+
+        .stat-gauge {
+            display: flex;
+            height: 4px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .win { background: #2ecc71; flex: 3; }
+        .neutral { background: #95a5a6; flex: 1; }
+        .loss { background: #e74c3c; flex: 1; }
+
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .chart-large {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .chart-large h3 {
+            margin: 0 0 15px 0;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .chart-item {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            height: 400px; /* 固定高度 */
+            position: relative; /* 添加相对定位 */
+        }
+
+        .chart-item canvas {
+            max-height: 350px !important; /* 限制canvas最大高度 */
+        }
+
+        .chart-item h3 {
+            margin: 0 0 15px 0;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .charts-section {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        @media (min-width: 768px) {
+            .charts-section {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .chart-container h3 {
+            margin: 0 0 15px 0;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 300px; /* 固定高度 */
+            width: 100%;
+        }
+
+        /* 确保canvas不会超出容器 */
+        .chart-wrapper canvas {
+            max-height: 100% !important;
+        }
         </style>
 </head>
 <body>
@@ -474,15 +600,114 @@
         </div>
     </div>
 </div>
+<div class="stats-container">
+    <!-- 统计指标卡片行 -->
+    <div class="stats-cards">
+        <div class="stat-card">
+            <div class="stat-header">
+                <span>Net P&L</span>
+                <span class="trade-count">95</span>
+            </div>
+            <div class="stat-value positive">$16,574.07</div>
+        </div>
+        
+        <div class="stat-card" id="win-rate">
+            <div class="stat-header">
+                <span>Trade Win %</span>
+                <span class="info-icon">ⓘ</span>
+            </div>
+            <div class="stat-value">77.89%</div>
+            <div class="stat-gauge">
+                <div class="win">74</div>
+                <div class="neutral">0</div>
+                <div class="loss">21</div>
+            </div>
+        </div>
+        
+        <div class="stat-card" id="profit-factor">
+            <div class="stat-header">
+                <span>Profit Factor</span>
+                <span class="info-icon">ⓘ</span>
+            </div>
+            <div class="stat-value">1.47</div>
+            <div class="profit-ring"></div>
+        </div>
+        
+        <div class="stat-card" id="day-win-rate">
+            <div class="stat-header">
+                <span>Day Win %</span>
+                <span class="info-icon">ⓘ</span>
+            </div>
+            <div class="stat-value">67.27%</div>
+            <div class="stat-gauge">
+                <div class="win">37</div>
+                <div class="neutral">12</div>
+                <div class="loss">18</div>
+            </div>
+        </div>
+        <div class="stat-card" id="avg-win-loss">
+            <div class="stat-header">
+                <span>Avg win/loss trade</span>
+                <span class="info-icon">ⓘ</span>
+            </div>
+            <div class="stat-value">67.27%</div>
+            <div class="stat-gauge">
+                <div class="win">37</div>
+                <div class="loss">18</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 图表行 -->
+    <div class="charts-section">
+        <div class="chart-container">
+            <h3>Daily Net Cumulative P&L</h3>
+            <div class="chart-wrapper">
+                <canvas id="cumulativePnLChart"></canvas>
+            </div>
+        </div>
+        <div class="chart-container">
+            <h3>Net Daily P&L</h3>
+            <div class="chart-wrapper">
+                <canvas id="dailyPnLChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="charts-container">
+        <div class="chart-item">
+            <h3>Trade Duration Performance</h3>
+            <canvas id="durationPerformanceChart"></canvas>
+        </div>
+        <div class="chart-item">
+            <h3>Trade Time Performance</h3>
+            <canvas id="timePerformanceChart"></canvas>
+        </div>
+        <div class="chart-item">
+            <h3>Drawdown</h3>
+            <canvas id="drawdownChart"></canvas>
+        </div>
+    </div>
+</div>
+
 <script>
     let trades = [];
     let currentDate = new Date();
     const TOTAL_ACCOUNT_VALUE = 100000;
 
+    // 全局存储Chart实例
+    const chartInstances = {
+        cumulativePnL: null,
+        dailyPnL: null,
+        durationPerformance: null,
+        timePerformance: null,
+        drawdown: null
+    };
+
     // 页面加载时立即从 localStorage 加载数据
     document.addEventListener('DOMContentLoaded', () => {
         loadTradesFromStorage();
         renderCalendar();
+        updateStatistics();
     });
 
     function loadTradesFromStorage() {
@@ -497,6 +722,7 @@
             localStorage.removeItem('trades');
             trades = [];
             renderCalendar();
+            updateStatistics();
         }
     }
 
@@ -513,6 +739,7 @@
             mergeTrades(newTrades);
             loadTradesFromStorage();
             renderCalendar();
+            updateStatistics();
         };
         
         reader.readAsText(file);
@@ -630,86 +857,86 @@
 
         function formatPnL(pnl) {
             const prefix = pnl >= 0 ? '+' : '';
-            const className = pnl >= 0 ? 'profit' : 'loss';
+            const className = pnl >= 0 ? 'profit' : 'fail';
             return `<span class="${className}">${prefix}$${pnl.toFixed(2)}</span>`;
         }
 
         // 添加打开交易详情弹窗的函数
         function showTradeDetails(date) {
-        const modal = document.getElementById('tradeModal');
-        const dateStr = date.toISOString().split('T')[0];
-        
-        // 获取当日已关闭的交易
-        const dayTrades = trades.filter(trade => 
-            trade.TradeDate === dateStr && 
-            trade['Open/CloseIndicator'] === 'C'
-        );
+            const modal = document.getElementById('tradeModal');
+            const dateStr = date.toISOString().split('T')[0];
+            
+            // 获取当日已关闭的交易
+            const dayTrades = trades.filter(trade => 
+                trade.TradeDate === dateStr && 
+                trade['Open/CloseIndicator'] === 'C'
+            );
 
-        // 按股票合并交易记录
-        const consolidatedTrades = new Map();
-        
-        dayTrades.forEach(trade => {
-            const symbol = trade.Symbol;
-            const side = trade['Buy/Sell'].toLowerCase() === 'sell' ? 'LONG' : 'SHORT';
+            // 按股票合并交易记录
+            const consolidatedTrades = new Map();
             
-            if (!consolidatedTrades.has(symbol)) {
-                consolidatedTrades.set(symbol, {
-                    Symbol: symbol,
-                    Side: side,
-                    DateTime: trade.DateTime, // 使用第一笔交易的时间
-                    FifoPnlRealized: 0,
-                    Quantity: 0,
-                    trades: []
-                });
-            }
-            
-            const consolidated = consolidatedTrades.get(symbol);
-            consolidated.FifoPnlRealized += parseFloat(trade.FifoPnlRealized) || 0;
-            consolidated.Quantity += Math.abs(parseFloat(trade.Quantity) || 0);
-            consolidated.trades.push(trade);
-        });
+            dayTrades.forEach(trade => {
+                const symbol = trade.Symbol;
+                const side = trade['Buy/Sell'].toLowerCase() === 'sell' ? 'LONG' : 'SHORT';
+                
+                if (!consolidatedTrades.has(symbol)) {
+                    consolidatedTrades.set(symbol, {
+                        Symbol: symbol,
+                        Side: side,
+                        DateTime: trade.DateTime, // 使用第一笔交易的时间
+                        FifoPnlRealized: 0,
+                        Quantity: 0,
+                        trades: []
+                    });
+                }
+                
+                const consolidated = consolidatedTrades.get(symbol);
+                consolidated.FifoPnlRealized += parseFloat(trade.FifoPnlRealized) || 0;
+                consolidated.Quantity += Math.abs(parseFloat(trade.Quantity) || 0);
+                consolidated.trades.push(trade);
+            });
 
-        // 设置模态框标题和统计信息
-        document.getElementById('modalDate').textContent = date.toLocaleDateString();
-        
-        // 计算统计数据
-        const consolidatedArray = Array.from(consolidatedTrades.values());
-        const totalPnL = consolidatedArray.reduce((sum, trade) => sum + trade.FifoPnlRealized, 0);
-        const winners = consolidatedArray.filter(trade => trade.FifoPnlRealized > 0).length;
-        const winrate = consolidatedArray.length ? (winners / consolidatedArray.length * 100).toFixed(2) : '0.00';
-        
-        // 更新统计信息显示
-        document.getElementById('modalNetPnL').textContent = `Net P&L ${formatPnL(totalPnL)}`;
-        document.getElementById('modalTotalTrades').textContent = consolidatedArray.length;
-        document.getElementById('modalWinners').textContent = winners;
-        document.getElementById('modalLosers').textContent = consolidatedArray.length - winners;
-        document.getElementById('modalWinrate').textContent = `${winrate}%`;
-        
-        // 填充交易表格
-        const tableBody = document.getElementById('tradesTableBody');
-        tableBody.innerHTML = '';
-        
-        consolidatedArray.forEach(trade => {
-            const row = document.createElement('tr');
-            const pnl = trade.FifoPnlRealized;
-            const roi = ((pnl / TOTAL_ACCOUNT_VALUE) * 100).toFixed(2);
+            // 设置模态框标题和统计信息
+            document.getElementById('modalDate').textContent = date.toLocaleDateString();
             
-            row.innerHTML = `
-                <td>${trade.DateTime}</td>
-                <td>${trade.Symbol}</td>
-                <td>${trade.Side}</td>
-                <td>${trade.Symbol}</td>
-                <td class="${pnl >= 0 ? 'profit' : 'loss'}">${formatPnL(pnl)}</td>
-                <td class="${pnl >= 0 ? 'profit' : 'loss'}">${roi}%</td>
-                <td>--</td>
-                <td>--</td>
-            `;
+            // 计算统计数据
+            const consolidatedArray = Array.from(consolidatedTrades.values());
+            const totalPnL = consolidatedArray.reduce((sum, trade) => sum + trade.FifoPnlRealized, 0);
+            const winners = consolidatedArray.filter(trade => trade.FifoPnlRealized > 0).length;
+            const winrate = consolidatedArray.length ? (winners / consolidatedArray.length * 100).toFixed(2) : '0.00';
             
-            tableBody.appendChild(row);
-        });
+            // 更新统计信息显示
+            document.getElementById('modalNetPnL').textContent = `Net P&L ${formatPnL(totalPnL)}`;
+            document.getElementById('modalTotalTrades').textContent = consolidatedArray.length;
+            document.getElementById('modalWinners').textContent = winners;
+            document.getElementById('modalLosers').textContent = consolidatedArray.length - winners;
+            document.getElementById('modalWinrate').textContent = `${winrate}%`;
+            
+            // 填充交易表格
+            const tableBody = document.getElementById('tradesTableBody');
+            tableBody.innerHTML = '';
+            
+            consolidatedArray.forEach(trade => {
+                const row = document.createElement('tr');
+                const pnl = trade.FifoPnlRealized;
+                const roi = ((pnl / TOTAL_ACCOUNT_VALUE) * 100).toFixed(2);
+                
+                row.innerHTML = `
+                    <td>${trade.DateTime}</td>
+                    <td>${trade.Symbol}</td>
+                    <td>${trade.Side}</td>
+                    <td>${trade.Symbol}</td>
+                    <td class="${pnl >= 0 ? 'profit' : 'fail'}">${formatPnL(pnl)}</td>
+                    <td class="${pnl >= 0 ? 'profit' : 'fail'}">${roi}%</td>
+                    <td>--</td>
+                    <td>--</td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
 
-        modal.style.display = 'block';
-    }
+            modal.style.display = 'block';
+        }
 
         // 关闭弹窗
         function closeTradeModal() {
@@ -791,7 +1018,13 @@
                     if (reportResponse.ok) {
                         const csvData = await reportResponse.text();
 
-                        processTradeData(csvData);
+                        if (csvData.startsWith('"ClientAccountID"')) {
+                            processTradeData(csvData);
+                        }else{
+                            alert(`Fetch csv failed: ${csvData}`);
+                        }
+
+                        
                     } else {
                         console.error("Failed to fetch the initial response:", response.statusText);
                     }
@@ -868,17 +1101,25 @@
         function updateCalendarWithTrades(trades) {
             trades.forEach(trade => {
                 // 根据交易数据更新日历显示
-                const tradeDate = new Date(trade.TradeDate);
-                const dayElement = document.querySelector(`[data-date="${tradeDate.toISOString().split('T')[0]}"]`);
-                
-                if (dayElement) {
-                    // 更新日历单元格的数据
-                    updateDayCell(dayElement, trade);
+                if (trade.TradeDate) {
+                    // console.log(trade.TradeDate);
+                    const tradeDate = new Date(trade.TradeDate);
+                    // console.log(tradeDate);
+                    const dayElement = document.querySelector(`[data-date="${trade.TradeDate}"]`);
+                    // console.log(dayElement);
+                    
+                    if (dayElement) {
+                        // 更新日历单元格的数据
+                        updateDayCell(dayElement, trade);
+                    }
                 }
+                
             });
             
             // 重新渲染日历
             renderCalendar();
+
+            updateStatistics();
         }
 
         // 更新单个日历单元格的函数
@@ -912,13 +1153,11 @@
             const firstDay = new Date(Date.UTC(year, month, 1));
             const lastDay = new Date(Date.UTC(year, month + 1, 0));
             
-            document.getElementById('currentMonth').textContent = 
-                firstDay.toLocaleString('default', { month: 'long', year: 'numeric' });
+            document.getElementById('currentMonth').textContent =                firstDay.toLocaleString('default', { month: 'long', year: 'numeric' });
 
             const monthlyStats = getMonthlyStats(year, month);
             document.getElementById('monthlyPnL').innerHTML = formatPnL(monthlyStats.pnL);
-            document.getElementById('tradingDays').textContent = 
-                `${monthlyStats.days} days`;
+            document.getElementById('tradingDays').textContent =                `${monthlyStats.days} days`;
 
             const calendar = document.getElementById('calendar');
             calendar.innerHTML = '';
@@ -989,6 +1228,7 @@
                     currentWeekDays = 0;
                 }
             }
+
         }
 
         function navigateMonth(delta) {
@@ -1034,8 +1274,416 @@
             document.getElementById('dateRangePicker').classList.remove('active');
             updateCalendar();
         }
-        // Initial render
-        renderCalendar();
+
+        // render charts
+        function calculateStats() {
+            // 只统计已关闭的交易
+            const dayTrades = trades.filter(trade => 
+                trade['Open/CloseIndicator'] === 'C'
+            );
+            // 1. Net P&L 计算
+            const netPnL = dayTrades.reduce((sum, trade) => sum + parseFloat(trade.FifoPnlRealized), 0);
+            
+            // 2. Trade Win % 计算
+            const winningTrades = dayTrades.filter(trade => parseFloat(trade.FifoPnlRealized) > 0);
+            const losingTrades = dayTrades.filter(trade => parseFloat(trade.FifoPnlRealized) < 0);
+            const neutralTrades = dayTrades.filter(trade => parseFloat(trade.FifoPnlRealized) === 0);
+            
+            const winRate = (winningTrades.length / dayTrades.length) * 100;
+            
+            // 3. Profit Factor 计算
+            const totalProfits = winningTrades.reduce((sum, trade) => sum + parseFloat(trade.FifoPnlRealized), 0);
+            const totalLosses = Math.abs(losingTrades.reduce((sum, trade) => sum + parseFloat(trade.FifoPnlRealized), 0));
+            const profitFactor = totalLosses === 0 ? totalProfits : totalProfits / totalLosses;
+            
+            // 4. Day Win % 计算
+            const tradingDays = new Map();
+            dayTrades.forEach(trade => {
+                const date = new Date(trade.OrderTime).toDateString();
+                if (!tradingDays.has(date)) {
+                    tradingDays.set(date, { pnL: 0 });
+                }
+                tradingDays.get(date).pnL += parseFloat(trade.FifoPnlRealized);
+            });
+            
+            const winningDays = Array.from(tradingDays.values()).filter(day => day.pnL > 0).length;
+            const losingDays = Array.from(tradingDays.values()).filter(day => day.pnL < 0).length;
+            const neutralDays = Array.from(tradingDays.values()).filter(day => day.pnL === 0).length;
+            
+            const dayWinRate = (winningDays / tradingDays.size) * 100;
+            
+            // 5. Average Win/Loss Trade 计算
+            const avgWin = winningTrades.length > 0 
+                ? totalProfits / winningTrades.length 
+                : 0;
+            const avgLoss = losingTrades.length > 0 
+                ? totalLosses / losingTrades.length 
+                : 0;
+            const avgRate = (avgWin / avgLoss) *100;
+
+            // 6. 生成每日累计P&L数据
+            const dailyCumulativePnL = [];
+            let cumulative = 0;
+            Array.from(tradingDays.entries())
+                .sort(([dateA], [dateB]) => new Date(dateA) - new Date(dateB))
+                .forEach(([date, data]) => {
+                    cumulative += data.pnL;
+                    dailyCumulativePnL.push({
+                        date: date,
+                        value: cumulative
+                    });
+                });
+
+            // 7. 生成每日P&L数据
+            const dailyPnL = Array.from(tradingDays.entries())
+                .sort(([dateA], [dateB]) => new Date(dateA) - new Date(dateB))
+                .map(([date, data]) => ({
+                    date: date,
+                    value: data.pnL
+                }));
+
+            return {
+                netPnL: netPnL,
+                tradeCount: dayTrades.length,
+                winRate: {
+                    percentage: winRate,
+                    winning: winningTrades.length,
+                    neutral: neutralTrades.length,
+                    losing: losingTrades.length
+                },
+                profitFactor: profitFactor,
+                dayWinRate: {
+                    percentage: dayWinRate,
+                    winning: winningDays,
+                    neutral: neutralDays,
+                    losing: losingDays
+                },
+                avgTrade: {
+                    avgRate: avgRate,
+                    avgWin: avgWin,
+                    avgLoss: avgLoss
+                },
+                dailyCumulativePnL: dailyCumulativePnL,
+                dailyPnL: dailyPnL
+            };
+        }
+
+        function updateStatistics() {
+            const stats = calculateAdvancedStats();
+            
+            // 更新统计卡片
+            document.querySelector('.stat-header .trade-count').textContent = stats.tradeCount                 ;
+            document.querySelector('.stat-card .stat-value').textContent = `$${stats.netPnL.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+            
+            document.querySelector('#win-rate .stat-value').textContent =                 `${stats.winRate.percentage.toFixed(2)}%`;
+            document.querySelector('#win-rate .win').textContent = stats.winRate.winning;
+            document.querySelector('#win-rate .neutral').textContent = stats.winRate.neutral;
+            document.querySelector('#win-rate .loss').textContent = stats.winRate.losing;
+            
+            document.querySelector('#profit-factor .stat-value').textContent =                stats.profitFactor.toFixed(2);
+            
+            document.querySelector('#day-win-rate .stat-value').textContent =                `${stats.dayWinRate.percentage.toFixed(2)}%`;
+            document.querySelector('#day-win-rate .win').textContent = stats.dayWinRate.winning;
+            document.querySelector('#day-win-rate .neutral').textContent = stats.dayWinRate.neutral;
+            document.querySelector('#day-win-rate .loss').textContent = stats.dayWinRate.losing;
+            
+            document.querySelector('#avg-win-loss .stat-value').textContent =                `${stats.avgTrade.avgRate.toFixed(2)}%`;
+            document.querySelector('#avg-win-loss .win').textContent = stats.avgTrade.winning;
+            document.querySelector('#avg-win-loss .loss').textContent = stats.avgTrade.losing;
+
+            // 更新图表
+            updateCharts(stats);
+
+            updateAdvancedCharts(stats);
+        }
+
+        // 销毁已存在的Chart实例
+        function destroyCharts() {
+            Object.values(chartInstances).forEach(chart => {
+                if (chart) {
+                    chart.destroy();
+                }
+            });
+        }
+
+        function updateCharts(stats) {
+            // 在创建新图表前销毁已存在的图表
+            destroyCharts();
+
+            // 累计盈亏图表
+            chartInstances.cumulativeChart = new Chart(
+                document.getElementById('cumulativePnLChart').getContext('2d'),
+                {
+                    type: 'line',
+                    data: {
+                        labels: stats.dailyCumulativePnL.map(d => d.date),
+                        datasets: [{
+                            label: 'Cumulative P&L',
+                            data: stats.dailyCumulativePnL.map(d => d.value),
+                            fill: true,
+                            borderColor: '#2ecc71',
+                            backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: value => '$' + value.toLocaleString()
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+
+            // 每日盈亏图表
+            chartInstances.dailyChart = new Chart(
+                document.getElementById('dailyPnLChart').getContext('2d'),
+                {
+                    type: 'bar',
+                    data: {
+                        labels: stats.dailyPnL.map(d => d.date),
+                        datasets: [{
+                            label: 'Daily P&L',
+                            data: stats.dailyPnL.map(d => d.value),
+                            backgroundColor: function(context) {
+                                const value = context.raw;
+                                return value >= 0 ? '#2ecc71' : '#e74c3c';
+                            }
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                ticks: {
+                                    callback: value => '$' + value.toLocaleString()
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+        }
+
+        function calculateAdvancedStats() {
+            const basicStats = calculateStats(trades);
+            
+            // 计算交易持续时间性能
+            const durationPerformance = trades.map(trade => {
+                const duration = (new Date(trade.closeTime) - new Date(trade.openTime)) / (1000 * 60); // 转换为分钟
+                return {
+                    duration: duration,
+                    pnl: parseFloat(trade.FifoPnlRealized),
+                    isWin: parseFloat(trade.FifoPnlRealized) > 0
+                };
+            });
+
+            // 计算交易时间性能
+            const timePerformance = trades.map(trade => {
+                const hour = new Date(trade.OrderTime).getHours();
+                const minutes = new Date(trade.OrderTime).getMinutes();
+                return {
+                    time: `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`,
+                    pnl: parseFloat(trade.FifoPnlRealized),
+                    isWin: parseFloat(trade.FifoPnlRealized) > 0
+                };
+            });
+
+            // 计算回撤
+            const drawdown = calculateDrawdown(basicStats.dailyPnL);
+
+            return {
+                ...basicStats,
+                durationPerformance,
+                timePerformance,
+                drawdown
+            };
+        }
+
+        function calculateDrawdown(dailyPnL) {
+            let peak = -Infinity;
+            let drawdown = [];
+            
+            dailyPnL.forEach((data, index) => {
+                if (data.value > peak) {
+                    peak = data.value;
+                }
+                const currentDrawdown = data.value - peak;
+                drawdown.push({
+                    date: data.date,
+                    value: currentDrawdown
+                });
+            });
+
+            return drawdown;
+        }
+
+        function updateAdvancedCharts(stats) {
+            // 交易持续时间性能图表
+            chartInstances.durationPerformance = new Chart(
+                document.getElementById('durationPerformanceChart').getContext('2d'),
+                {
+                    type: 'scatter',
+                    data: {
+                        datasets: [{
+                            label: 'Winning Trades',
+                            data: stats.durationPerformance
+                                .filter(d => d.isWin)
+                                .map(d => ({
+                                    x: d.duration,
+                                    y: d.pnl
+                                })),
+                            backgroundColor: '#2ecc71'
+                        },
+                        {
+                            label: 'Losing Trades',
+                            data: stats.durationPerformance
+                                .filter(d => !d.isWin)
+                                .map(d => ({
+                                    x: d.duration,
+                                    y: d.pnl
+                                })),
+                            backgroundColor: '#e74c3c'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                position: 'bottom',
+                                title: {
+                                    display: true,
+                                    text: 'Duration (minutes)'
+                                },
+                                ticks: {
+                                    callback: value => {
+                                        if (value >= 60) {
+                                            return `${Math.floor(value/60)}h${value%60}m`;
+                                        }
+                                        return `${value}m`;
+                                    }
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'P&L ($)'
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+
+            // 交易时间性能图表
+            chartInstances.timePerformance = new Chart(
+                document.getElementById('timePerformanceChart').getContext('2d'),
+                {
+                    type: 'scatter',
+                    data: {
+                        datasets: [{
+                            label: 'Winning Trades',
+                            data: stats.timePerformance
+                                .filter(d => d.isWin)
+                                .map(d => ({
+                                    x: d.time,
+                                    y: d.pnl
+                                })),
+                            backgroundColor: '#2ecc71'
+                        },
+                        {
+                            label: 'Losing Trades',
+                            data: stats.timePerformance
+                                .filter(d => !d.isWin)
+                                .map(d => ({
+                                    x: d.time,
+                                    y: d.pnl
+                                })),
+                            backgroundColor: '#e74c3c'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                type: 'category',
+                                title: {
+                                    display: true,
+                                    text: 'Time of Day'
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'P&L ($)'
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+
+            // 回撤图表
+            chartInstances.drawdown = new Chart(
+                document.getElementById('drawdownChart').getContext('2d'),
+                {
+                    type: 'line',
+                    data: {
+                        labels: stats.drawdown.map(d => d.date),
+                        datasets: [{
+                            label: 'Drawdown',
+                            data: stats.drawdown.map(d => -d.value),
+                            fill: true,
+                            borderColor: '#8e44ad',
+                            backgroundColor: 'rgba(142, 68, 173, 0.2)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                reverse: false,
+                                ticks: {
+                                    callback: value => '$' + (value).toLocaleString()
+                                }
+                            }
+                        },
+                        plugins: {
+                            annotation: {
+                                annotations: {
+                                    zero: {
+                                        type: 'line',
+                                        yMin: 0,
+                                        yMax: 0,
+                                        borderColor: '#95a5a6',
+                                        borderWidth: 1,
+                                        borderDash: [5, 5]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+        }
     </script>
 </body>
 </html>
