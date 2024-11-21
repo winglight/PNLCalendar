@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人财务管理系统</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            background-color: #f0f2f5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h1, h2, h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f5f5f5;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2196F3;
+        }
+
+        .chart-container {
+            margin-top: 20px;
+            height: 400px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: #333;
+            color: white;
+            border-radius: 5px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .loading-spinner {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            z-index: 1000;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .filter-panel {
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .validation-error {
+            color: #ff4444;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>个人财务管理系统</h1>
+
+        <div class="grid">
+            <!-- 添加账户表单 -->
+            <div class="card">
+                <h2>添加账户</h2>
+                <form id="accountForm">
+                    <div class="form-group">
+                        <label>账户名称</label>
+                        <input type="text" id="accountName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>初始余额</label>
+                        <input type="number" id="accountBalance" required step="0.01">
+                    </div>
+                    <button type="submit">添加账户</button>
+                </form>
+            </div>
+
+            <!-- 添加交易记录表单 -->
+            <div class="card">
+                <h2>添加交易记录</h2>
+                <form id="transactionForm">
+                    <div class="form-group">
+                        <label>日期</label>
+                        <input type="date" id="transactionDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>类型</label>
+                        <select id="transactionType" required>
+                            <option value="income">收入</option>
+                            <option value="expense">支出</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>分类</label>
+                        <select id="transactionCategory" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>金额</label>
+                        <input type="number" id="transactionAmount" required step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>账户</label>
+                        <select id="transactionAccount" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>备注</label>
+                        <textarea id="transactionNote"></textarea>
+                    </div>
+                    <button type="submit">添加记录</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 筛选面板 -->
+        <div class="filter-panel">
+            <h3>筛选选项</h3>
+            <div class="filter-group">
+                <div class="form-group">
+                    <label>日期范围</label>
+                    <select id="dateRange" class="filter-control">
+                        <option value="all">全部</option>
+                        <option value="today">今天</option>
+                        <option value="week">本周</option>
+                        <option value="month">本月</option>
+                        <option value="custom">自定义</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>开始日期</label>
+                    <input type="date" id="filterStartDate" class="filter-control">
+                </div>
+                <div class="form-group">
+                    <label>结束日期</label>
+                    <input type="date" id="filterEndDate" class="filter-control">
+                </div>
+            </div>
+            <div class="filter-group">
+                <div class="form-group">
+                    <label>分类</label>
+                    <select id="filterCategories" class="filter-control" multiple></select>
+                </div>
+                <div class="form-group">
+                    <label>账户</label>
+                    <select id="filterAccounts" class="filter-control" multiple></select>
+                </div>
+            </div>
+            <div class="filter-group">
+                <div class="form-group">
+                    <label>最小金额</label>
+                    <input type="number" id="filterMinAmount" class="filter-control" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>最大金额</label>
+                    <input type="number" id="filterMaxAmount" class="filter-control" step="0.01">
+                </div>
+            </div>
+        </div>
+
+        <!-- 统计信息 -->
+        <div class="card">
+            <h2>统计信息</h2>
+            <div class="stats">
+                <div class="stat-card">
+                    <h3>总收入</h3>
+                    <div id="totalIncome" class="stat-value">¥0.00</div>
+                </div>
+                <div class="stat-card">
+                    <h3>总支出</h3>
+                    <div id="totalExpense" class="stat-value">¥0.00</div>
+                </div>
+                <div class="stat-card">
+                    <h3>净收入</h3>
+                    <div id="netIncome" class="stat-value">¥0.00</div>
+                </div>
+                <div class="stat-card">
+                    <h3>总资产</h3>
+                    <div id="totalAssets" class="stat-value">¥0.00</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 图表 -->
+        <div class="card">
+            <h2>数据分析</h2>
+            <div class="form-group">
+                <label>图表类型</label>
+                <select id="chartType">
+                    <option value="bar">柱状图</option>
+                    <option value="line">折线图</option>
+                    <option value="pie">饼图</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>分组方式</label>
+                <select id="groupBy">
+                    <option value="day">按天</option>
+                    <option value="month">按月</option>
+                    <option value="category">按分类</option>
+                    <option value="account">按账户</option>
+                </select>
+            </div>
+            <div class="chart-container">
+                <canvas id="chartCanvas"></canvas>
+            </div>
+        </div>
+
+        <!-- 账户列表 -->
+        <div class="card">
+            <h2>账户列表</h2>
+            <table id="accountsTable">
+                <thead>
+                    <tr>
+                        <th>账户名称</th>
+                        <th>当前余额</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- 交易记录列表 -->
+        <div class="card">
+            <h2>交易记录</h2>
+            <div class="btn-group">
+                <button onclick="exportData('json')">导出JSON</button>
+                <button onclick="exportData('csv')">导出CSV</button>
+                <input type="file" id="importFile" accept=".json,.csv" style="display: none">
+                <button onclick="document.getElementById('importFile').click()">导入数据</button>
+            </div>
+            <table id="transactionsTable">
+                <thead>
+                    <tr>
+                        <th>日期</th>
+                        <th>类型</th>
+                        <th>分类</th>
+                        <th>金额</th>
+                        <th>账户</th>
+                        <th>备注</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+    <div id="loading-spinner" class="loading-spinner"></div>
+
+    <script>
+        // 数据模型
+        let data = {
+            accounts: [],
+            records: [],
+            categories: {
+                income: ['工资', '投资收益', '其他收入'],
+                expense: ['餐饮', '交通', '购物', '住房', '娱乐', '其他支出']
+            },
+            filters: {
+                dateRange: 'all',
+                startDate: null,
+                endDate: null,
+                categories: [],
+                accounts: [],
+                minAmount: null,
+                maxAmount: null
+            }
+        };
+
+        // 初始化函数
+        function init() {
+            loadData();
+            setupEventListeners();
+            updateAccountSelect();
+            updateCategorySelect();
+            updateTables();
+            updateStats();
+            generateAdvancedStats();
+        }
+
+        // 数据持久化
+        function loadData() {
+            const savedData = localStorage.getItem('financeData');
+            if (savedData) {
+                data = JSON.parse(savedData);
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('financeData', JSON.stringify(data));
+        }
+
+        // 账户管理
+        function addAccount(event) {
+            event.preventDefault();
+            const name = document.getElementById('accountName').value;
+            const balance = parseFloat(document.getElementById('accountBalance').value);
+
+            data.accounts.push({
+                id: Date.now(),
+                name,
+                balance
+            });
+
+            saveData();
+            updateAccountSelect();
+            updateTables();
+            updateStats();
+            showToast('账户添加成功！');
+            document.getElementById('accountForm').reset();
+        }
+
+        function updateAccount(id, newBalance) {
+            const account = data.accounts.find(a => a.id === id);
+            if (account) {
+                account.balance = newBalance;
+                saveData();
+                updateTables();
+                updateStats();
+            }
+        }
+
+        function deleteAccount(id) {
+            if (confirm('确定要删除此账户吗？相关交易记录也将被删除。')) {
+                data.accounts = data.accounts.filter(a => a.id !== id);
+                data.records = data.records.filter(r => r.accountId !== id);
+                saveData();
+                updateAccountSelect();
+                updateTables();
+                updateStats();
+                showToast('账户删除成功！');
+            }
+        }
+
+        // 交易记录管理
+        function addTransaction(event) {
+            event.preventDefault();
+            const date = document.getElementById('transactionDate').value;
+            const type = document.getElementById('transactionType').value;
+            const category = document.getElementById('transactionCategory').value;
+            const amount = parseFloat(document.getElementById('transactionAmount').value);
+            const accountId = parseInt(document.getElementById('transactionAccount').value);
+            const note = document.getElementById('transactionNote').value;
+
+            // 更新账户余额
+            const account = data.accounts.find(a => a.id === accountId);
+            if (account) {
+                account.balance += type === 'income' ? amount : -amount;
+            }
+
+            // 添加记录
+            data.records.push({
+                id: Date.now(),
+                date,
+                type,
+                category,
+                amount,
+                accountId,
+                note
+            });
+
+            saveData();
+            updateTables();
+            updateStats();
+            generateAdvancedStats();
+            showToast('交易记录添加成功！');
+            document.getElementById('transactionForm').reset();
+        }
+
+        function deleteTransaction(id) {
+            if (confirm('确定要删除此记录吗？')) {
+                const record = data.records.find(r => r.id === id);
+                if (record) {
+                    // 恢复账户余额
+                    const account = data.accounts.find(a => a.id === record.accountId);
+                    if (account) {
+                        account.balance += record.type === 'income' ? -record.amount : record.amount;
+                    }
+
+                    data.records = data.records.filter(r => r.id !== id);
+                    saveData();
+                    updateTables();
+                    updateStats();
+                    generateAdvancedStats();
+                    showToast('交易记录删除成功！');
+                }
+            }
+        }
+
+        // UI更新函数
+        function updateAccountSelect() {
+            const accountSelects = document.querySelectorAll('#transactionAccount, #filterAccounts');
+            accountSelects.forEach(select => {
+                select.innerHTML = '';
+                data.accounts.forEach(account => {
+                    const option = document.createElement('option');
+                    option.value = account.id;
+                    option.textContent = account.name;
+                    select.appendChild(option);
+                });
+            });
+        }
+
+        function updateCategorySelect() {
+            const typeSelect = document.getElementById('transactionType');
+            const categorySelect = document.getElementById('transactionCategory');
+            const filterSelect = document.getElementById('filterCategories');
+
+            const updateOptions = (categories) => {
+                categorySelect.innerHTML = '';
+                filterSelect.innerHTML = '';
+                categories.forEach(category => {
+                    const option1 = document.createElement('option');
+                    option1.value = category;
+                    option1.textContent = category;
+                    categorySelect.appendChild(option1);
+
+                    const option2 = document.createElement('option');
+                    option2.value = category;
+                    option2.textContent = category;
+                    filterSelect.appendChild(option2);
+                });
+            };
+
+            updateOptions(data.categories[typeSelect.value]);
+            typeSelect.addEventListener('change', () => {
+                updateOptions(data.categories[typeSelect.value]);
+            });
+        }
+
+        function updateTables() {
+            // 更新账户表格
+            const accountsBody = document.querySelector('#accountsTable tbody');
+            accountsBody.innerHTML = '';
+            data.accounts.forEach(account => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${account.name}</td>
+                    <td>¥${account.balance.toFixed(2)}</td>
+                    <td>
+                        <button onclick="deleteAccount(${account.id})" class="btn-danger">删除</button>
+                    </td>
+                `;
+                accountsBody.appendChild(row);
+            });
+
+            // 更新交易记录表格
+            const transactionsBody = document.querySelector('#transactionsTable tbody');
+            transactionsBody.innerHTML = '';
+            const filteredRecords = filterRecords();
+            filteredRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
+            filteredRecords.forEach(record => {
+                const account = data.accounts.find(a => a.id === record.accountId);
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${record.date}</td>
+                    <td>${record.type === 'income' ? '收入' : '支出'}</td>
+                    <td>${record.category}</td>
+                    <td>¥${record.amount.toFixed(2)}</td>
+                    <td>${account ? account.name : '未知账户'}</td>
+                    <td>${record.note || '-'}</td>
+                    <td>
+                        <button onclick="deleteTransaction(${record.id})" class="btn-danger">删除</button>
+                    </td>
+                `;
+                transactionsBody.appendChild(row);
+            });
+        }
+
+        function updateStats() {
+            const filteredRecords = filterRecords();
+            
+            const totalIncome = filteredRecords
+                .filter(r => r.type === 'income')
+                .reduce((sum, r) => sum + r.amount, 0);
+
+            const totalExpense = filteredRecords
+                .filter(r => r.type === 'expense')
+                .reduce((sum, r) => sum + r.amount, 0);
+
+            const netIncome = totalIncome - totalExpense;
+            const totalAssets = data.accounts.reduce((sum, a) => sum + a.balance, 0);
+
+            document.getElementById('totalIncome').textContent = `¥${totalIncome.toFixed(2)}`;
+            document.getElementById('totalExpense').textContent = `¥${totalExpense.toFixed(2)}`;
+            document.getElementById('netIncome').textContent = `¥${netIncome.toFixed(2)}`;
+            document.getElementById('totalAssets').textContent = `¥${totalAssets.toFixed(2)}`;
+        }
+
+        // 数据筛选
+        function filterRecords() {
+            return data.records.filter(record => {
+                const recordDate = new Date(record.date);
+                const matchesDateRange = checkDateRange(recordDate);
+                const matchesCategories = checkCategories(record);
+                const matchesAccounts = checkAccounts(record);
+                const matchesAmount = checkAmountRange(record.amount);
+
+                return matchesDateRange && matchesCategories && 
+                       matchesAccounts && matchesAmount;
+            });
+        }
+
+        function checkDateRange(date) {
+            if (data.filters.dateRange === 'all') return true;
+            const start = data.filters.startDate ? new Date(data.filters.startDate) : null;
+            const end = data.filters.endDate ? new Date(data.filters.endDate) : null;
+            
+            return (!start || date >= start) && (!end || date <= end);
+        }
+
+        function checkCategories(record) {
+            if (!data.filters.categories.length) return true;
+            return data.filters.categories.includes(record.category);
+        }
+
+        function checkAccounts(record) {
+            if (!data.filters.accounts.length) return true;
+            return data.filters.accounts.includes(record.accountId.toString());
+        }
+
+        function checkAmountRange(amount) {
+            const min = data.filters.minAmount;
+            const max = data.filters.maxAmount;
+            return (!min || amount >= min) && (!max || amount <= max);
+        }
+
+        // 统计图表
+        function generateAdvancedStats() {
+            const filteredRecords = filterRecords();
+            const chartType = document.getElementById('chartType').value;
+            const groupBy = document.getElementById('groupBy').value;
+
+            const ctx = document.getElementById('chartCanvas').getContext('2d');
+            if (window.currentChart) {
+                window.currentChart.destroy();
+            }
+
+            const chartData = processDataForChart(filteredRecords, chartType, groupBy);
+            window.currentChart = new Chart(ctx, {
+                type: chartType,
+                data: chartData,
+                options: generateChartOptions(chartType, groupBy)
+            });
+        }
+
+        function processDataForChart(records, chartType, groupBy) {
+            const grouped = groupData(records, groupBy);
+            
+            if (chartType === 'pie') {
+                return {
+                    labels: Object.keys(grouped),
+                    datasets: [{
+                        data: Object.values(grouped).map(g => g.total),
+                        backgroundColor: generateColors(Object.keys(grouped).length)
+                    }]
+                };
+            }
+
+            return {
+                labels: Object.keys(grouped),
+                datasets: [{
+                    label: '金额',
+                    data: Object.values(grouped).map(g => g.total),
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            };
+        }
+
+        function groupData(records, groupBy) {
+            const grouped = {};
+            
+            records.forEach(record => {
+                let key;
+                switch(groupBy) {
+                    case 'day':
+                        key = record.date;
+                        break;
+                    case 'month':
+                        key = record.date.substring(0, 7);
+                        break;
+                    case 'category':
+                        key = record.category;
+                        break;
+                    case 'account':
+                        const account = data.accounts.find(a => a.id === record.accountId);
+                        key = account ? account.name : '未知账户';
+                        break;
+                }
+
+                if (!grouped[key]) {
+                    grouped[key] = {
+                        total: 0,
+                        count: 0
+                    };
+                }
+
+                grouped[key].total += record.type === 'income' ? record.amount : -record.amount;
+                grouped[key].count++;
+            });
+
+            return grouped;
+        }
+
+        function generateColors(count) {
+            const colors = [];
+            for (let i = 0; i < count; i++) {
+                const hue = (i * 137.508) % 360;
+                colors.push(`hsl(${hue}, 70%, 60%)`);
+            }
+            return colors;
+        }
+
+        function generateChartOptions(chartType, groupBy) {
+            const options = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: `按${groupBy}统计`
+                    }
+                }
+            };
+
+            if (chartType !== 'pie') {
+                options.scales = {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: value => `¥${value.toFixed(2)}`
+                        }
+                    }
+                };
+            }
+
+            return options;
+        }
+
+        // 导入导出功能
+        function exportData(format) {
+            showLoading();
+            setTimeout(() => {
+                try {
+                    switch(format) {
+                        case 'json':
+                            exportJson();
+                            break;
+                        case 'csv':
+                            exportCsv();
+                            break;
+                    }
+                    showToast('导出成功！');
+                } catch (error) {
+                    showToast('导出失败：' + error.message);
+                } finally {
+                    hideLoading();
+                }
+            }, 500);
+        }
+
+        function exportJson() {
+            const jsonString = JSON.stringify(data, null, 2);
+            downloadFile(jsonString, 'finance_data.json', 'application/json');
+        }
+
+        function exportCsv() {
+            const headers = ['日期', '类型', '分类', '金额', '账户', '备注'];
+            const rows = data.records.map(record => {
+                const account = data.accounts.find(a => a.id === record.accountId);
+                return [
+                    record.date,
+                    record.type === 'income' ? '收入' : '支出',
+                    record.category,
+                    record.amount.toFixed(2),
+                    account ? account.name : '未知账户',
+                    record.note || ''
+                ].map(field => `"${field}"`);
+            });
+
+            const csvContent = [
+                headers.join(','),
+                ...rows.map(row => row.join(','))
+            ].join('\n');
+
+            downloadFile(csvContent, 'finance_data.csv', 'text/csv');
+        }
+
+        function downloadFile(content, filename, type) {
+            const blob = new Blob([content], { type });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        async function importData(file) {
+            showLoading();
+            try {
+                const content = await readFile(file);
+                const extension = file.name.split('.').pop().toLowerCase();
+
+                let importedData;
+                switch(extension) {
+                    case 'json':
+                        importedData = JSON.parse(content);
+                        break;
+                    case 'csv':
+                        importedData = parseCsv(content);
+                        break;
+                    default:
+                        throw new Error('不支持的文件格式');
+                }
+
+                if (validateImportedData(importedData)) {
+                    mergeData(importedData);
+                    showToast('导入成功！');
+                    init();
+                }
+            } catch (error) {
+                showToast('导入失败：' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function readFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = e => resolve(e.target.result);
+                reader.onerror = e => reject(e);
+                reader.readAsText(file);
+            });
+        }
+
+        function parseCsv(content) {
+            const lines = content.split('\n');
+            const headers = lines[0].split(',');
+            const records = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                const values = lines[i].split(',');
+                if (values.length === headers.length) {
+                    const record = {};
+                    headers.forEach((header, index) => {
+                        record[header.trim()] = values[index].trim();
+                    });
+                    records.push(record);
+                }
+            }
+
+            return { records };
+        }
+
+        function validateImportedData(importedData) {
+            return true; // 简化版本，实际应该有更多验证
+        }
+
+        function mergeData(importedData) {
+            data = {
+                ...data,
+                ...importedData
+            };
+            saveData();
+        }
+
+        // UI反馈
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+
+        function showLoading() {
+            document.getElementById('loading-spinner').style.display = 'block';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading-spinner').style.display = 'none';
+        }
+
+        // 事件监听器设置
+        function setupEventListeners() {
+            document.getElementById('accountForm').addEventListener('submit', addAccount);
+            document.getElementById('transactionForm').addEventListener('submit', addTransaction);
+            document.getElementById('importFile').addEventListener('change', event => {
+                const file = event.target.files[0];
+                if (file) {
+                    importData(file);
+                }
+            });
+
+            document.getElementById('chartType').addEventListener('change', generateAdvancedStats);
+            document.getElementById('groupBy').addEventListener('change', generateAdvancedStats);
+
+            document.getElementById('dateRange').addEventListener('change', updateFil
