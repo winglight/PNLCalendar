@@ -941,4 +941,109 @@
             document.getElementById('chartType').addEventListener('change', generateAdvancedStats);
             document.getElementById('groupBy').addEventListener('change', generateAdvancedStats);
 
-            document.getElementById('dateRange').addEventListener('change', updateFil
+            document.getElementById('dateRange').addEventListener('change', updateFilters);
+            document.getElementById('accountFilter').addEventListener('change', updateFilters);
+            document.getElementById('categoryFilter').addEventListener('change', updateFilters);
+        }
+
+        // 更新过滤器
+        function updateFilters() {
+            const dateRange = document.getElementById('dateRange').value;
+            const accountId = document.getElementById('accountFilter').value;
+            const category = document.getElementById('categoryFilter').value;
+            
+            let filteredTransactions = transactions;
+            
+            // 日期过滤
+            if (dateRange !== 'all') {
+                const today = new Date();
+                const startDate = new Date();
+                
+                switch(dateRange) {
+                    case '7days':
+                        startDate.setDate(today.getDate() - 7);
+                        break;
+                    case '30days':
+                        startDate.setDate(today.getDate() - 30);
+                        break;
+                    case '90days':
+                        startDate.setDate(today.getDate() - 90);
+                        break;
+                    case '1year':
+                        startDate.setFullYear(today.getFullYear() - 1);
+                        break;
+                }
+                
+                filteredTransactions = filteredTransactions.filter(t => 
+                    new Date(t.date) >= startDate && new Date(t.date) <= today
+                );
+            }
+            
+            // 账户过滤
+            if (accountId !== 'all') {
+                filteredTransactions = filteredTransactions.filter(t => 
+                    t.accountId === accountId
+                );
+            }
+            
+            // 类别过滤
+            if (category !== 'all') {
+                filteredTransactions = filteredTransactions.filter(t => 
+                    t.category === category
+                );
+            }
+            
+            updateTransactionList(filteredTransactions);
+            generateAdvancedStats();
+        }
+
+        // 导入数据
+        function importData(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.accounts && data.transactions) {
+                        accounts = data.accounts;
+                        transactions = data.transactions;
+                        saveData();
+                        updateUI();
+                        alert('数据导入成功！');
+                    } else {
+                        throw new Error('无效的数据格式');
+                    }
+                } catch (error) {
+                    alert('导入失败：' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // 导出数据
+        function exportData() {
+            const data = {
+                accounts: accounts,
+                transactions: transactions
+            };
+            const dataStr = JSON.stringify(data);
+            const blob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'personal_finance_data.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // 初始化应用
+        function initApp() {
+            loadData();
+            updateUI();
+            setupEventListeners();
+        }
+
+        // 页面加载完成后初始化应用
+        document.addEventListener('DOMContentLoaded', initApp);
+    </Script>
