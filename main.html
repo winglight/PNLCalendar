@@ -1500,7 +1500,7 @@
                     pnl: parseFloat(trade.FifoPnlRealized),
                     isWin: parseFloat(trade.FifoPnlRealized) > 0
                 };
-            });
+            }).sort((a, b) => a.time.localeCompare(b.time));
 
             // 计算回撤
             const drawdown = calculateDrawdown(basicStats.dailyPnL);
