@@ -4,6 +4,10 @@
 
 盈亏日历工具专为活跃交易者和投资者设计，帮助他们通过直观的日历格式管理和分析交易表现。该工具通过整合每日盈亏（PnL）数据，提供了一种强大且高效的方式来监控、评估并改进交易策略。
 
+## 截屏
+![软件截屏](./images/screenshot1.jpg)
+![软件截屏2](./images/screenshot2.jpg)
+
 ## 功能
 
 ### 1.	交互式日历视图：
@@ -24,7 +28,7 @@
 
 ### 1.	初始化：
 *	在任意现代浏览器中打开工具。
-*	确保您的交易数据已准备好（CSV 格式或过 Interactive Brokers 的 FlexQueries）。
+*	确保您的交易数据已准备好（CSV 格式或 Interactive Brokers 的 Flex Queries）。
 ### 2.	导入数据：
 *	在工具栏中点击“Import IB Data”。
 *	输入您的 IBKR Flex Token 和 ReportID 以获取交易数据。[如何获取参考tradezella的文档](https://intercom.help/tradezella-4066d388d93c/en/articles/6063403-interactive-broker-how-to-sync-your-interactive-broker-ibkr-account-with-tradezella)
