@@ -710,10 +710,38 @@
         updateStatistics();
     });
 
+    function getSameDayTrades(cTrade, allTrades) {
+        const existTrades = Object.values(allTrades);
+        const sameTrades = existTrades.filter(trade =>  trade.Symbol === cTrade.Symbol && 
+            trade.TradeDate ===  cTrade.TradeDate &&
+            trade['Open/CloseIndicator'] === cTrade['Open/CloseIndicator']);
+        if (sameTrades.length > 0) {
+            return sameTrades[0];
+        }else{
+            return null;
+        }
+    }
+
     function loadTradesFromStorage() {
         const storedTrades = localStorage.getItem('trades');
         if (storedTrades) {
-            trades = JSON.parse(storedTrades);
+            allTrades = JSON.parse(storedTrades);
+            trades = Object.values(
+                allTrades.reduce((acc, item) => {
+                    // 如果相同交易已存在，则合并
+                    const existTrade = getSameDayTrades(item, acc);
+                    if (existTrade) {
+                        if (acc[existTrade.TransactionID]["Open/CloseIndicator"] === "C") {
+                            acc[existTrade.TransactionID].FifoPnlRealized = parseFloat(acc[existTrade.TransactionID].FifoPnlRealized) + parseFloat(item.FifoPnlRealized);    
+                        }
+                        acc[existTrade.TransactionID].Quantity += item.Quantity; 
+                    } else {
+                        // 如果相同交易不存在，则初始化
+                        acc[item.TransactionID] = { ...item };
+                    }
+                    return acc;
+                }, {})
+            );
         }
     }
 
@@ -771,6 +799,13 @@
         return result;
     }
 
+    function getTradeOpenTime(cTrade, allTrades) {
+        const openTime = allTrades.filter(trade =>  trade.Symbol === cTrade.Symbol && 
+            trade.DateTime < cTrade.DateTime &&
+            trade['Open/CloseIndicator'] === 'O').reduce((max, item) => (item.DateTime > max ? item.DateTime : max), "");
+        return openTime;
+    }
+
     function mergeTrades(newTrades) {
         const tradeMap = new Map();
         
@@ -781,6 +816,10 @@
 
         // 合并新交易
         newTrades.forEach(trade => {
+            if (trade['Open/CloseIndicator'] === 'C') {
+                const openTime = getTradeOpenTime(trade, newTrades);
+                trade.OpenDateTime = openTime;
+            }
             tradeMap.set(trade.TransactionID, trade);
         });
 
@@ -1482,33 +1521,102 @@
             const basicStats = calculateStats(trades);
             
             // 计算交易持续时间性能
-            const durationPerformance = trades.map(trade => {
-                const duration = (new Date(trade.closeTime) - new Date(trade.openTime)) / (1000 * 60); // 转换为分钟
-                return {
-                    duration: duration,
-                    pnl: parseFloat(trade.FifoPnlRealized),
-                    isWin: parseFloat(trade.FifoPnlRealized) > 0
-                };
+            const durationPerformance = trades.filter(trade =>  trade['Open/CloseIndicator'] === 'C').reduce((acc, trade) => {
+                // 计算交易持续时间（分钟）
+                const duration = (new Date(trade.DateTime) - new Date(trade.OpenDateTime)) / (1000 * 60);
+                
+                // 创建持续时间区间
+                let durationRange;
+                if (duration <= 5) durationRange = '0-5m';
+                else if (duration <= 15) durationRange = '5-15m';
+                else if (duration <= 30) durationRange = '15-30m';
+                else if (duration <= 60) durationRange = '30-60m';
+                else if (duration <= 120) durationRange = '1-2h';
+                else if (duration <= 240) durationRange = '2-4h';
+                else durationRange = '4h+';
+
+                // 初始化区间数据
+                if (!acc[durationRange]) {
+                    acc[durationRange] = {
+                        totalPnL: 0,
+                        count: 0,
+                        winners: 0,
+                        losers: 0
+                    };
+                }
+
+                // 更新区间统计
+                acc[durationRange].totalPnL += parseFloat(trade.FifoPnlRealized);
+                acc[durationRange].count += 1;
+                if (parseFloat(trade.FifoPnlRealized) > 0) acc[durationRange].winners += 1;
+                if (parseFloat(trade.FifoPnlRealized) < 0) acc[durationRange].losers += 1;
+
+                return acc;
+            }, {});
+
+            // 转换为图表数据格式
+            const durationPerformanceData = {
+                labels: ['0-5m', '5-15m', '15-30m', '30-60m', '1-2h', '2-4h', '4h+'],
+                avgPnL: [],
+                winRate: []
+            };
+
+            durationPerformanceData.labels.forEach(label => {
+                const data = durationPerformance[label] || { totalPnL: 0, count: 0, winners: 0, losers: 0 };
+                const avgPnL = data.count > 0 ? data.totalPnL / data.count : 0;
+                const winRate = data.count > 0 ? (data.winners / data.count) * 100 : 0;
+                
+                durationPerformanceData.avgPnL.push(avgPnL);
+                durationPerformanceData.winRate.push(winRate);
             });
 
             // 计算交易时间性能
-            const timePerformance = trades.map(trade => {
-                const hour = new Date(trade.OrderTime).getHours();
-                const minutes = new Date(trade.OrderTime).getMinutes();
-                return {
-                    time: `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`,
-                    pnl: parseFloat(trade.FifoPnlRealized),
-                    isWin: parseFloat(trade.FifoPnlRealized) > 0
-                };
-            }).sort((a, b) => a.time.localeCompare(b.time));
+            const timePerformance = trades.reduce((acc, trade) => {
+                const hour = new Date(trade.DateTime).getHours();
+                
+                if (!acc[hour]) {
+                    acc[hour] = {
+                        totalPnL: 0,
+                        count: 0,
+                        winners: 0,
+                        losers: 0
+                    };
+                }
+
+                acc[hour].totalPnL += parseFloat(trade.FifoPnlRealized);
+                acc[hour].count += 1;
+                if (parseFloat(trade.FifoPnlRealized) > 0) acc[hour].winners += 1;
+                if (parseFloat(trade.FifoPnlRealized) < 0) acc[hour].losers += 1;
+
+                return acc;
+            }, {});
+
+            // 确保所有小时都有数据，并按照时间顺序排列
+            const timePerformanceData = {
+                labels: Array.from({length: 24}, (_, i) => {
+                    const hour = i.toString().padStart(2, '0');
+                    return `${hour}:00`;
+                }),
+                avgPnL: [],
+                winRate: []
+            };
+
+            timePerformanceData.labels.forEach((_, i) => {
+                const data = timePerformance[i] || { totalPnL: 0, count: 0, winners: 0, losers: 0 };
+                const avgPnL = data.count > 0 ? data.totalPnL / data.count : 0;
+                const winRate = data.count > 0 ? (data.winners / data.count) * 100 : 0;
+                
+                timePerformanceData.avgPnL.push(avgPnL);
+                timePerformanceData.winRate.push(winRate);
+            });
 
             // 计算回撤
             const drawdown = calculateDrawdown(basicStats.dailyPnL);
 
             return {
                 ...basicStats,
-                durationPerformance,
-                timePerformance,
+                durationPerformance: durationPerformanceData,
+                timePerformance: timePerformanceData,
                 drawdown
             };
         }
@@ -1536,53 +1644,47 @@
             chartInstances.durationPerformance = new Chart(
                 document.getElementById('durationPerformanceChart').getContext('2d'),
                 {
-                    type: 'scatter',
+                    type: 'bar',
                     data: {
-                        datasets: [{
-                            label: 'Winning Trades',
-                            data: stats.durationPerformance
-                                .filter(d => d.isWin)
-                                .map(d => ({
-                                    x: d.duration,
-                                    y: d.pnl
-                                })),
-                            backgroundColor: '#2ecc71'
-                        },
-                        {
-                            label: 'Losing Trades',
-                            data: stats.durationPerformance
-                                .filter(d => !d.isWin)
-                                .map(d => ({
-                                    x: d.duration,
-                                    y: d.pnl
-                                })),
-                            backgroundColor: '#e74c3c'
-                        }]
+                        labels: stats.durationPerformance.labels,
+                        datasets: [
+                            {
+                                label: 'Average P&L',
+                                data: stats.durationPerformance.avgPnL,
+                                yAxisID: 'y1',
+                                type: 'bar',
+                                backgroundColor: 'rgba(46, 204, 113, 0.6)',
+                                borderColor: '#2ecc71',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Win Rate',
+                                data: stats.durationPerformance.winRate,
+                                yAxisID: 'y2',
+                                type: 'line',
+                                borderColor: '#3498db',
+                                borderWidth: 2,
+                                fill: false
+                            }
+                        ]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: true,
                         scales: {
-                            x: {
-                                type: 'linear',
-                                position: 'bottom',
-                                title: {
-                                    display: true,
-                                    text: 'Duration (minutes)'
-                                },
+                            y1: {
+                                position: 'left',
+                                beginAtZero: true,
                                 ticks: {
-                                    callback: value => {
-                                        if (value >= 60) {
-                                            return `${Math.floor(value/60)}h${value%60}m`;
-                                        }
-                                        return `${value}m`;
-                                    }
+                                    callback: value => '$' + value.toLocaleString()
                                 }
                             },
-                            y: {
-                                title: {
-                                    display: true,
-                                    text: 'P&L ($)'
+                            y2: {
+                                position: 'right',
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: {
+                                    callback: value => value + '%'
                                 }
                             }
                         }
@@ -1594,51 +1696,54 @@
             chartInstances.timePerformance = new Chart(
                 document.getElementById('timePerformanceChart').getContext('2d'),
                 {
-                    type: 'scatter',
+                    type: 'bar',
                     data: {
-                        datasets: [{
-                            label: 'Winning Trades',
-                            data: stats.timePerformance
-                                .filter(d => d.isWin)
-                                .map(d => ({
-                                    x: d.time,
-                                    y: d.pnl
-                                })),
-                            backgroundColor: '#2ecc71'
-                        },
-                        {
-                            label: 'Losing Trades',
-                            data: stats.timePerformance
-                                .filter(d => !d.isWin)
-                                .map(d => ({
-                                    x: d.time,
-                                    y: d.pnl
-                                })),
-                            backgroundColor: '#e74c3c'
-                        }]
+                        labels: stats.timePerformance.labels,
+                        datasets: [
+                            {
+                                label: 'Average P&L',
+                                data: stats.timePerformance.avgPnL,
+                                yAxisID: 'y1',
+                                type: 'bar',
+                                backgroundColor: 'rgba(46, 204, 113, 0.6)',
+                                borderColor: '#2ecc71',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Win Rate',
+                                data: stats.timePerformance.winRate,
+                                yAxisID: 'y2',
+                                type: 'line',
+                                borderColor: '#3498db',
+                                borderWidth: 2,
+                                fill: false
+                            }
+                        ]
                     },
                     options: {
                         responsive: true,
-                        maintainAspectRatio: false,
+                        maintainAspectRatio: true,
                         scales: {
-                            x: {
-                                type: 'category',
-                                title: {
-                                    display: true,
-                                    text: 'Time of Day'
+                            y1: {
+                                position: 'left',
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: value => '$' + value.toLocaleString()
                                 }
                             },
-                            y: {
-                                title: {
-                                    display: true,
-                                    text: 'P&L ($)'
+                            y2: {
+                                position: 'right',
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: {
+                                    callback: value => value + '%'
                                 }
                             }
                         }
                     }
                 }
             );
-
+            
             // 回撤图表
             chartInstances.drawdown = new Chart(
                 document.getElementById('drawdownChart').getContext('2d'),
