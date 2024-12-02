@@ -46,6 +46,38 @@ This PnL Calendar Tool is designed for active traders and investors to manage an
 ### 5.	Save and Manage Data:
 *	All data is stored locally inyour browser. Use the “Clear Data”button to reset when needed.
 
+## Additional Steps:
+* if you want to try another broker, it might refer this: [IB csv file](./example_ib.csv)
+* By now, there're a few fields necessary:
+	1.	TransactionID: 
+A unique identifier for each trade.
+	2.	Symbol: 
+The code of the traded instrument (e.g., stock or other assets).
+	3.	TradeDate: 
+The date when the trade occurred.
+	4.	Open/CloseIndicator: 
+Indicates whether the trade is an open or close position, with common values being O (Open) or C (Close).
+	5.	DateTime: 
+The timestamp of the trade.
+	6.	Quantity: 
+The number of shares/contracts traded.
+	7.	FifoPnlRealized: 
+The realized profit or loss of the trade.
+	8.	Buy/Sell: 
+Indicates whether the trade is a buy or sell operation.
+	9.	OrderTime: 
+The time when the trade order was placed.
+
+Usage Explanation:
+
+	•	These fields are used for daily, weekly, and monthly PnL calculations (e.g., FifoPnlRealized and TradeDate).
+	•	Used for summarizing trade statistics by instrument (e.g., Symbol and Quantity).
+	•	The Open/CloseIndicator distinguishes open and close trades and is used to categorize them in the calendar.
+	•	Key trade information (e.g., Buy/Sell, DateTime, and FifoPnlRealized) is displayed in the detailed trade view.
+	•	DateTime and OpenDateTime are used to calculate trade duration performance.
+
+If you need additional clarification or further details about any field, let me know!
+
 ## Recommended Broker
 
 To experience seamless trading data integration and low-cost trading services, we highly recommend using Interactive Brokers (IBKR). Start your journey with one of the most powerful trading platforms today.
