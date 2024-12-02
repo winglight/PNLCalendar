@@ -27,12 +27,16 @@ This PnL Calendar Tool is designed for active traders and investors to manage an
 ## How to Use
 
 ### 1.	Set Up:
-*	Open the tool in any modern browser.
-*	Ensure your trading data isaccessible in CSV format or via Interactive Brokers Flex Queries.
+*	Open the main.html file in any modern browser.
+*	Ensure your trading data is accessible in CSV format or via Interactive Brokers Flex Queries.
+
 ### 2.	Import Data:
 *	Click “Import IB Data” in the toolbar.
-*	Enter your IBKR Flex Token and Report ID to fetch your trading data.[how to from tradezella document](https://intercom.help/tradezella-4066d388d93c/en/articles/6063403-interactive-broker-how-to-sync-your-interactive-broker-ibkr-account-with-tradezella)
-*	Alternatively, upload a CSV file containing your trade history.
+![Import IB data](./images/screenshot3.jpg)
+
+*	Enter your IBKR Flex Token and Report ID to fetch your trading data.[The how-to guide from tradezella document](https://intercom.help/tradezella-4066d388d93c/en/articles/6063403-interactive-broker-how-to-sync-your-interactive-broker-ibkr-account-with-tradezella)
+*	Alternatively, upload a CSV file containing your trade history, which's still exported from IB flex queries.
+
 ### 3.	Explore Your Performance:
 *	Navigate through months to view daily and weekly summaries.
 *	Click on any day to see detailed trade data.
