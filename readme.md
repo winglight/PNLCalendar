@@ -46,9 +46,9 @@ This PnL Calendar Tool is designed for active traders and investors to manage an
 ### 5.	Save and Manage Data:
 *	All data is stored locally inyour browser. Use the “Clear Data”button to reset when needed.
 
-## Additional Steps:
-* if you want to try another broker, it might refer this: [IB csv file](./example_ib.csv)
-* By now, there're a few fields necessary:
+## Additional Steps(Other brokers):
+* if you want to try another broker, you might refer this: [IB CSV file](./example_ib.csv)
+* By now, there're a few fields necessary of the trade:
 	1.	TransactionID: 
 A unique identifier for each trade.
 	2.	Symbol: 
