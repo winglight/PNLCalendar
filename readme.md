@@ -29,6 +29,7 @@ This PnL Calendar Tool is designed for active traders and investors to manage an
 ### 1.	Set Up:
 *	Open the main.html file in any modern browser.
 *	Ensure your trading data is accessible in CSV format or via Interactive Brokers Flex Queries.
+*   Default proxy(for CORS) is my personal CloudFlare worker, please replace it with yours for security.
 
 ### 2.	Import Data:
 *	Click “Import IB Data” in the toolbar.
@@ -45,6 +46,25 @@ This PnL Calendar Tool is designed for active traders and investors to manage an
 *	Scroll down to view cumulative PnL, trade duration insights, andother advanced metrics through dynamic charts.
 ### 5.	Save and Manage Data:
 *	All data is stored locally inyour browser. Use the “Clear Data”button to reset when needed.
+
+## Using a Proxy to Handle CORS Issues
+
+The tool integrates with Interactive Brokers’ Flex Queries API, which requires a server-side proxy to bypass CORS restrictions when fetching data. A proxyUrl is used for this purpose in the code.
+
+Setting Up a Proxy with Cloudflare Workers
+
+You can easily set up your own proxy using Cloudflare Workers([code example](./worker.js)). 
+
+Deploying Your Proxy
+
+	1.	Log in to your Cloudflare dashboard.
+	2.	Navigate to Workers > Create a Service.
+	3.	Copy the worker.js code into the script editor.
+	4.	Deploy your worker and note the assigned URL (e.g., https://your-worker-url.workers.dev).
+	5.	Replace the proxyUrl in the tool’s JavaScript code with your worker’s URL.
+    const proxyUrl = 'https://your-worker-url.workers.dev';
+
+By setting up your proxy, you ensure a secure and reliable way to fetch API data without being affected by CORS restrictions.
 
 ## Additional Steps(Other brokers):
 * if you want to try another broker, you might refer this: [IB CSV file](./example_ib.csv)
