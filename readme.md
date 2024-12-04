@@ -4,6 +4,9 @@
 
 This PnL Calendar Tool is designed for active traders and investors to manage and analyze their trading performance visually. By integrating daily profit and loss (PnL) data into an intuitive calendar format, it provides a powerful way to monitor, evaluate, and improve trading strategies.
 
+## Demo
+Try this: [Demo](https://pnl.broyustudio.com/)
+
 ## Screenshots
 ![Screenshot1](./images/screenshot1.jpg)
 ![Screenshot2](./images/screenshot2.jpg)
