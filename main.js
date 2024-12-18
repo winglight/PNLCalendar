@@ -39,7 +39,7 @@ const chartInstances = {
     function loadTradesFromStorage() {
         const storedTrades = localStorage.getItem('trades');
         if (storedTrades) {
-            allTrades = JSON.parse(storedTrades);
+            const allTrades = JSON.parse(storedTrades);
             trades = Object.values(
                 allTrades.reduce((acc, item) => {
                     // 如果相同交易已存在，则合并
