@@ -9,7 +9,7 @@ Try this: [Demo](https://pnl.broyustudio.com/)
 
 # New Feature
 * CloudFlare R2 storage and sync
-  ![Screenshot4](./images/Screenshot4.png)
+  ![Screenshot4](./images/screenshot4.png)
 
 ## Screenshots
 ![Screenshot1](./images/screenshot1.jpg)
