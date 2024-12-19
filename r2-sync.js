@@ -75,9 +75,9 @@ export class R2Sync {
         const configDialog = document.createElement("div");
         configDialog.className = "config-dialog";
         configDialog.innerHTML = `
-            <h2>R2 配置</h2>
+            <h2>R2 Config</h2>
             <label>
-                启用R2同步
+                Enable R2 sync
                 <input type="checkbox" id="r2-enabled" ${this.config.enabled ? 'checked' : ''}>
             </label>
             <label>
@@ -92,8 +92,8 @@ export class R2Sync {
                 Token
                 <input type="text" id="token" value="${this.config.token}">
             </label>
-            <button id="save-config">保存</button>
-            <button id="close-config">关闭</button>
+            <button id="save-config">Save</button>
+            <button id="close-config">Close</button>
         `;
 
         document.body.appendChild(configDialog);
