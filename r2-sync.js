@@ -34,20 +34,26 @@ export class R2Sync {
     async syncToR2(data, entity = 'todos') {
         if (!this.config.enabled) return;
         
+        // Create a zip file
+        const zip = new JSZip();
+        
+        // Add files to zip
+        const jsonString = JSON.stringify(data);
+        zip.file(entity, jsonString);
+        
+        // Generate zip content
+        const zipContent = await zip.generateAsync({type: "blob"});
+        
         try {
-            const response = await fetch(`${this.config.url}/${this.config.app}/${entity}.json`, {
+            await fetch(`${this.config.url}/${this.config.app}/${entity}.zip`, {
                 method: 'PUT',
                 headers: {
                     'X-Custom-Auth-Key': `${this.config.token}`
                 },
-                body: JSON.stringify(data)
+                body: zipContent
             });
-            
-            if (!response.ok) throw new Error('Sync failed');
-            return true;
         } catch (error) {
-            console.error('R2 sync failed:', error);
-            return false;
+            console.error('Upload failed:', error);
         }
     }
 
@@ -56,16 +62,34 @@ export class R2Sync {
         if (!this.config.enabled) return null;
         
         try {
-            const response = await fetch(`${this.config.url}/${this.config.app}/${entity}.json`, {
+            const response = await fetch(`${this.config.url}/${this.config.app}/${entity}.zip`, {
                 headers: {
                     'X-Custom-Auth-Key': `${this.config.token}`
                 }
             });
             
-            if (!response.ok) throw new Error('Load failed');
-            return await response.json();
+            if (!response.ok) return null;
+            
+            // Get zip file blob
+            const zipBlob = await response.blob();
+            
+            // Load and parse zip
+            const zip = new JSZip();
+            const contents = await zip.loadAsync(zipBlob);
+            
+            // Extract files
+            const files = [];
+            for (let filename in contents.files) {
+                const content = await contents.files[filename].async("string");
+                files.push({
+                    name: filename,
+                    content: content
+                });
+            }
+            
+            return JSON.parse(files[0].content);
         } catch (error) {
-            console.error('R2 load failed:', error);
+            console.error('Download failed:', error);
             return null;
         }
     }
