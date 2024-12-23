@@ -8,8 +8,14 @@ This PnL Calendar Tool is designed for active traders and investors to manage an
 Try this: [Demo](https://pnl.broyustudio.com/)
 
 ## New Feature
+
 * CloudFlare R2 storage and sync
+
 ![Screenshot4](./images/screenshot4.png)
+
+* Zipped json file to 20% size
+
+![Screenshot5](./images/screenshot5.png)
 
 ## Screenshots
 ![Screenshot1](./images/screenshot1.jpg)
