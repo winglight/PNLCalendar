@@ -9,6 +9,9 @@ Try this: [Demo](https://pnl.broyustudio.com/)
 
 ## New Feature
 
+* Add "Top Profitable Stocks" and "Most Loss Stocks" Lists
+![Screenshot6](./images/screenshot6.png)
+
 * CloudFlare R2 storage and sync
 
 ![Screenshot4](./images/screenshot4.png)
