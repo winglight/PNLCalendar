@@ -413,3 +413,82 @@ button:hover {
 .chart-wrapper canvas {
     max-height: 100% !important;
 }
+
+.drawdown-section {
+    display: flex;
+    gap: 20px;
+}
+
+.drawdown-chart {
+    flex: 1;
+}
+
+.chart-item stats-section {
+    margin-bottom: 20px;
+}
+
+.chart-item stats-section h4 {
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.chart-item stats-list {
+    list-style: none;
+    padding: 0;
+}
+
+.chart-item stats-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.chart-item stats-list li:last-child {
+    border-bottom: none;
+}
+
+.stock-stats-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 15px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.stock-stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.stock-stats-table th,
+.stock-stats-table td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.stock-stats-table th {
+    background: #f5f5f5;
+    font-weight: 600;
+    color: #333;
+}
+
+.stock-stats-table tbody tr:hover {
+    background: #f8f8f8;
+}
+
+.stock-stats-table .symbol {
+    font-weight: 600;
+    color: #2962ff;
+}
+
+.stock-stats-table .profit {
+    color: #2e7d32;
+}
+
+.stock-stats-table .loss {
+    background-color: white;
+    color: #c62828;
+}

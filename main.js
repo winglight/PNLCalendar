@@ -886,7 +886,7 @@ function updateCharts(stats) {
     );
 }
 
-function calculateAdvancedStats() {
+function calculateAdvancedStats(trades) {
     const basicStats = calculateStats(filteredTrades);
 
     // 计算交易持续时间性能
@@ -982,11 +982,39 @@ function calculateAdvancedStats() {
     // 计算回撤
     const drawdown = calculateDrawdown(basicStats.dailyPnL);
 
+    // Calculate per-stock statistics
+    const stockStats = {};
+    filteredTrades.filter(trade => trade['Open/CloseIndicator'] === 'C').forEach(trade => {
+        if (!stockStats[trade.Symbol]) {
+            stockStats[trade.Symbol] = {
+                symbol: trade.Symbol,
+                totalProfit: 0,
+                totalLoss: 0,
+                tradeCount: 0
+            };
+        }
+        
+        const profit = parseFloat(trade.FifoPnlRealized);
+        stockStats[trade.Symbol].tradeCount++;
+        if (profit >= 0) {
+            stockStats[trade.Symbol].totalProfit += profit;
+        } else {
+            stockStats[trade.Symbol].totalLoss += Math.abs(profit);
+        }
+    });
+
+    // Convert to array and sort
+    const stockList = Object.values(stockStats);
+    const sortedByProfit = [...stockList].sort((a, b) => b.totalProfit - a.totalProfit);
+    const sortedByLoss = [...stockList].sort((a, b) => b.totalLoss - a.totalLoss);
+
     return {
         ...basicStats,
         durationPerformance: durationPerformanceData,
         timePerformance: timePerformanceData,
-        drawdown
+        drawdown,
+        topProfitableStocks: sortedByProfit.slice(0, 3),
+        topLossStocks: sortedByLoss.slice(0, 3)
     };
 }
 
@@ -1157,4 +1185,27 @@ function updateAdvancedCharts(stats) {
             }
         }
     );
+
+    // Update stock lists
+    const formatMoney = (num) => `$${num.toFixed(2)}`;
+    
+    const topProfitList = document.getElementById('topProfitableStocks');
+    topProfitList.innerHTML = stats.topProfitableStocks.map(stock => `
+        <tr>
+            <td class="symbol">${stock.symbol}</td>
+            <td class="profit">${formatMoney(stock.totalProfit)}</td>
+            <td class="loss">${formatMoney(stock.totalLoss)}</td>
+            <td>${stock.tradeCount}</td>
+        </tr>
+    `).join('');
+    
+    const topLossList = document.getElementById('topLossStocks');
+    topLossList.innerHTML = stats.topLossStocks.map(stock => `
+        <tr>
+            <td class="symbol">${stock.symbol}</td>
+            <td class="profit">${formatMoney(stock.totalProfit)}</td>
+            <td class="loss">${formatMoney(stock.totalLoss)}</td>
+            <td>${stock.tradeCount}</td>
+        </tr>
+    `).join('');
 }
