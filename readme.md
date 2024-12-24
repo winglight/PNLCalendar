@@ -121,3 +121,6 @@ To experience seamless trading data integration and low-cost trading services, w
 ## Sign up here: [Interactive Brokers Referral Link](https://ibkr.com/referral/yu950)
 
 Enjoy analyzing your trades and making better-informed decisions with this tool! Let us know if you have any feedback or suggestions.
+
+## License
+This project is licensed under the Creative Commons Attribution-NonCommercial-NoDerivs 4.0 International License - see the [LICENSE](LICENSE) file for details.
