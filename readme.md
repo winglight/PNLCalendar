@@ -9,6 +9,10 @@ Try this: [Demo](https://pnl.broyustudio.com/)
 
 ## New Feature
 
+* Add two charts "Weekly Statistics" and "Weekly Win/Loss Trade Analysis"
+![Screenshot7](./images/screenshot7.png)
+![Screenshot8](./images/screenshot8.png)
+
 * Add "Top Profitable Stocks" and "Most Loss Stocks" Lists
 ![Screenshot6](./images/screenshot6.png)
 
