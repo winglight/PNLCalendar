@@ -23,7 +23,9 @@ const chartInstances = {
     dailyPnL: null,
     durationPerformance: null,
     timePerformance: null,
-    drawdown: null
+    drawdown: null,
+    weeklyWinRate: null,  
+    weeklyTrades: null
 };
 
 // Initialize
@@ -1008,14 +1010,64 @@ function calculateAdvancedStats(trades) {
     const sortedByProfit = [...stockList].sort((a, b) => b.totalProfit - a.totalProfit);
     const sortedByLoss = [...stockList].sort((a, b) => b.totalLoss - a.totalLoss);
 
+    // 添加周统计计算
+    const weeklyStats = filteredTrades.reduce((acc, trade) => {
+        const date = new Date(trade.TradeDate);
+        const weekKey = `${date.getFullYear()}-W${getWeekNumber(date)}`;
+        
+        if (!acc[weekKey]) {
+            acc[weekKey] = {
+                winCount: 0,
+                totalTrades: 0,
+                totalPnL: 0,
+                tradeAmount: 0
+            };
+        }
+        
+        if (trade['Open/CloseIndicator'] === 'C') {
+            const pnl = parseFloat(trade.FifoPnlRealized);
+            acc[weekKey].totalPnL += pnl;
+            acc[weekKey].win = pnl >= 0 ? (acc[weekKey].win || 0) + 1 : (acc[weekKey].win || 0);
+            acc[weekKey].winProfit = pnl >= 0 ? (acc[weekKey].winProfit || 0) + pnl : (acc[weekKey].winProfit || 0);
+            acc[weekKey].loss = pnl < 0 ? (acc[weekKey].loss || 0) + 1 : (acc[weekKey].loss || 0);
+            acc[weekKey].lossAmount = pnl < 0 ? (acc[weekKey].lossAmount || 0) + Math.abs(pnl) : (acc[weekKey].lossAmount || 0);
+            acc[weekKey].totalTrades++;
+            acc[weekKey].tradeAmount += Math.abs(parseFloat(trade.CostBasis));
+            if (pnl > 0) acc[weekKey].winCount++;
+        }
+        
+        return acc;
+    }, {});
+
+    // 转换为图表数据格式
+    const weeklyData = Object.entries(weeklyStats).map(([week, data]) => ({
+        week,
+        winRate: (data.winCount / data.totalTrades) * 100,
+        tradeCount: data.totalTrades,
+        avgWinLoss: (data.winProfit / (data.win || 1)) / ((data.lossAmount / (data.loss || 1)) || 1) * 100,
+        winProfit: data.winProfit || 0,
+        lossAmount: data.lossAmount || 0,
+        tradeAmount: data.tradeAmount
+    }));
+
     return {
         ...basicStats,
         durationPerformance: durationPerformanceData,
         timePerformance: timePerformanceData,
         drawdown,
         topProfitableStocks: sortedByProfit.slice(0, 3),
-        topLossStocks: sortedByLoss.slice(0, 3)
+        topLossStocks: sortedByLoss.slice(0, 3),
+        weeklyData: weeklyData.sort((a, b) => a.week.localeCompare(b.week))
     };
+}
+
+// 辅助函数：获取周数
+function getWeekNumber(date) {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+    return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
 }
 
 function calculateDrawdown(dailyPnL) {
@@ -1208,4 +1260,134 @@ function updateAdvancedCharts(stats) {
             <td>${stock.tradeCount}</td>
         </tr>
     `).join('');
+
+    // 周度胜率和交易次数图表
+    chartInstances.weeklyWinRate = new Chart(
+        document.getElementById('weeklyStatsChart').getContext('2d'),
+        {
+            type: 'bar',
+            data: {
+                labels: stats.weeklyData.map(d => d.week),
+                datasets: [
+                    {
+                        label: 'Trade Count',
+                        data: stats.weeklyData.map(d => d.tradeCount),
+                        type: 'bar',
+                        backgroundColor: 'rgba(46, 204, 113, 0.6)',
+                        yAxisID: 'y1'
+                    },
+                    {
+                        label: 'Win Rate %',
+                        data: stats.weeklyData.map(d => d.winRate),
+                        type: 'line',
+                        borderColor: '#3498db',
+                        yAxisID: 'y2'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y1: {
+                        position: 'left',
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Trade Count'
+                        }
+                    },
+                    y2: {
+                        position: 'right',
+                        beginAtZero: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: 'Win Rate %'
+                        },
+                        ticks: {
+                            callback: value => value + '%'
+                        }
+                    }
+                }
+            }
+        }
+    );
+
+    // 周度平均盈亏和交易金额图表
+    chartInstances.weeklyTrades = new Chart(
+        document.getElementById('weeklyTradeAnalysisChart').getContext('2d'),
+        {
+            type: 'bar',
+            data: {
+                labels: stats.weeklyData.map(d => d.week),
+                datasets: [
+                    {
+                        label: 'Win Profit',
+                        data: stats.weeklyData.map(d => d.winProfit),
+                        type: 'bar',
+                        backgroundColor: 'rgba(46, 204, 113, 0.6)',
+                        stack: 'amount'
+                    },
+                    {
+                        label: 'Loss Amount',
+                        data: stats.weeklyData.map(d => d.lossAmount),
+                        type: 'bar',
+                        backgroundColor: 'rgba(231, 76, 60, 0.6)',
+                        stack: 'amount'
+                    },
+                    {
+                        label: 'Avg Win/Loss',
+                        data: stats.weeklyData.map(d => d.avgWinLoss),
+                        type: 'line',
+                        borderColor: '#f1c40f',
+                        borderWidth: 2,
+                        fill: false,
+                        yAxisID: 'y2'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y1: {
+                        position: 'left',
+                        stacked: true,
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Amount ($)'
+                        },
+                        ticks: {
+                            callback: value => '$' + value.toFixed(2)
+                        }
+                    },
+                    y2: {
+                        position: 'right',
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Avg Win/Loss (%)'
+                        },
+                        ticks: {
+                            callback: value => value.toFixed(2) + '%'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': $' + context.raw.toFixed(2);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    );
 }
