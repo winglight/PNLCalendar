@@ -7,6 +7,10 @@ This PnL Calendar Tool is designed for active traders and investors to manage an
 ## Demo
 Try this: [Demo](https://pnl.broyustudio.com/)
 
+## Screenshots
+![Screenshot1](./images/screenshot1.jpg)
+![Screenshot2](./images/screenshot2.jpg)
+
 ## New Feature
 
 * Add two charts "Weekly Statistics" and "Weekly Win/Loss Trade Analysis"
@@ -23,10 +27,6 @@ Try this: [Demo](https://pnl.broyustudio.com/)
 * Zipped json file to 20% size
 
 ![Screenshot5](./images/screenshot5.png)
-
-## Screenshots
-![Screenshot1](./images/screenshot1.jpg)
-![Screenshot2](./images/screenshot2.jpg)
 
 ## Features
 
