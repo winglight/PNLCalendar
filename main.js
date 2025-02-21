@@ -315,7 +315,8 @@ function showTradeDetails(date) {
                 DateTime: trade.DateTime, // 使用第一笔交易的时间
                 FifoPnlRealized: 0,
                 Quantity: 0,
-                trades: []
+                trades: [],
+                TradeTimes: new Map()
             });
         }
 
@@ -411,7 +412,7 @@ function closeTradeModal() {
                             <th>Instrument</th>
                             <th>Net P&L</th>
                             <th>Net ROI</th>
-                            <th>Realized R-Multiple</th>
+                            <th>Trade Times</th>
                             <th>Playbook</th>
                         </tr>
                     </thead>
