@@ -69,6 +69,14 @@ function setupEventListeners() {
             navigateMonth(direction);
         });
     });
+    const viewDetailsBtn = document.getElementById('viewDetailsBtn');
+    if (viewDetailsBtn) {
+        viewDetailsBtn.addEventListener('click', viewTradeDetails);
+    }
+    const closeDetailsBtn = document.getElementById('closeTradeModalBtn');
+    if (closeDetailsBtn) {
+        closeDetailsBtn.addEventListener('click', closeTradeModal);
+    }
 }
 
 // Handle R2 Config
@@ -351,19 +359,82 @@ function showTradeDetails(date) {
 }
 
 // 关闭弹窗
+// Modify closeTradeModal function
 function closeTradeModal() {
-    document.getElementById('tradeModal').style.display = 'none';
+    const modal = document.getElementById('tradeModal');
+    if (modal) {
+        modal.style.display = 'none';
+        // Reset but don't remove modal content
+        const modalContent = modal.querySelector('.trade-modal-content');
+        if (modalContent) {
+            modalContent.innerHTML = `
+                <div class="modal-header">
+                    <h2 id="modalDate"></h2>
+                    <h2 id="modalNetPnL"></h2>
+                </div>
+                <div class="trade-stats">
+                    <div>
+                        <span>Total Trades: </span><span id="modalTotalTrades"></span>
+                        <span>Winners: </span><span id="modalWinners"></span>
+                        <span>Winrate: </span><span id="modalWinrate"></span>
+                    </div>
+                    <div>
+                        <span>Losers: </span><span id="modalLosers"></span>
+                        <span>Volume: </span><span id="modalVolume"></span>
+                        <span>Profit Factor: </span><span id="modalProfitFactor"></span>
+                    </div>
+                </div>
+                <table class="trades-table">
+                    <thead>
+                        <tr>
+                            <th>Open Time</th>
+                            <th>Ticker</th>
+                            <th>Side</th>
+                            <th>Instrument</th>
+                            <th>Net P&L</th>
+                            <th>Net ROI</th>
+                            <th>Realized R-Multiple</th>
+                            <th>Playbook</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tradesTableBody">
+                    </tbody>
+                </table>
+                <div class="button-group">
+                    <button class="cancel-button" id="closeTradeModalBtn">Cancel</button>
+                    <button class="details-button" id="viewDetailsBtn">View Details</button>
+                </div>
+            `;
+            
+            // Reattach event listeners
+            const closeBtn = modalContent.querySelector('#closeTradeModalBtn');
+            const viewDetailsBtn = modalContent.querySelector('#viewDetailsBtn');
+            
+            if (closeBtn) {
+                closeBtn.addEventListener('click', closeTradeModal);
+            }
+            if (viewDetailsBtn) {
+                viewDetailsBtn.addEventListener('click', viewTradeDetails);
+            }
+        }
+    }
 }
 
 // 查看详情按钮的处理函数
 function viewTradeDetails() {
     const dateStr = document.getElementById('modalDate').textContent;
-    const date = new Date(dateStr);
+    const localDate = new Date(dateStr);
+    const date = new Date(Date.UTC(
+        localDate.getFullYear(),
+        localDate.getMonth(),
+        localDate.getDate()
+    ));
+    const today = date.toISOString().split('T')[0]
     const modalContent = document.querySelector('.trade-modal-content');
     
     // Get detailed trades for the selected date
     const detailedTrades = allTrades.filter(trade => 
-        trade.TradeDate === date.toISOString().split('T')[0] &&
+        trade.TradeDate === today &&
         trade['Open/CloseIndicator'] === 'C'
     );
 
