@@ -32,15 +32,24 @@ const chartInstances = {
 async function init() {
     await loadTrades();
     setupEventListeners();
-    renderCalendar();
-    updateStatistics();
 }
 
 // Load trades from R2 or localStorage
 async function loadTrades() {
-    const r2Data = await r2Sync.loadFromR2('trades');
-    allTrades = r2Data || loadTradesFromStorage();
-    filteredTrades = [...allTrades];
+    allTrades = loadTradesFromStorage();
+    if (allTrades && allTrades.length > 0) {
+        filteredTrades = [...allTrades];
+        renderCalendar();
+        updateStatistics();
+    }
+    
+    r2Sync.loadFromR2('trades').then((trades) => {
+        allTrades = trades;
+        filteredTrades = [...allTrades];
+        renderCalendar();
+        updateStatistics();
+        localStorage.setItem('trades', JSON.stringify(allTrades));
+    });
 }
 
 // Save trades
@@ -314,6 +323,15 @@ function showTradeDetails(date) {
         consolidated.FifoPnlRealized += parseFloat(trade.FifoPnlRealized) || 0;
         consolidated.Quantity += Math.abs(parseFloat(trade.Quantity) || 0);
         consolidated.trades.push(trade);
+
+        // Count trades by DateTime
+        const tradeTime = trade.DateTime;
+        consolidated.TradeTimes.set(tradeTime, (consolidated.TradeTimes.get(tradeTime) || 0) + 1);
+    });
+
+    consolidatedTrades.forEach(consolidated => {
+        // Convert TradeTimes Map to total count of unique times
+        consolidated.TradeTimes = consolidated.TradeTimes.size;
     });
 
     // 设置模态框标题和统计信息
@@ -348,7 +366,7 @@ function showTradeDetails(date) {
                     <td>${trade.Symbol}</td>
                     <td class="${pnl >= 0 ? 'profit' : 'fail'}">${formatPnL(pnl)}</td>
                     <td class="${pnl >= 0 ? 'profit' : 'fail'}">${roi}%</td>
-                    <td>--</td>
+                    <td>${trade.TradeTimes}</td>
                     <td>--</td>
                 `;
 
@@ -436,7 +454,11 @@ function viewTradeDetails() {
     const detailedTrades = allTrades.filter(trade => 
         trade.TradeDate === today &&
         trade['Open/CloseIndicator'] === 'C'
-    );
+    ).sort((a, b) => {
+        const timeA = new Date(a.DateTime).getTime();
+        const timeB = new Date(b.DateTime).getTime();
+        return timeA - timeB;
+    });
 
     // Create detailed view
     const detailedView = `
@@ -466,7 +488,7 @@ function viewTradeDetails() {
                         const duration = calculateDuration(trade.OpenDateTime, trade.DateTime);
                         return `
                             <tr>
-                                <td>${new Date(trade.DateTime).toLocaleTimeString()}</td>
+                                <td>${new Date(trade.DateTime).toLocaleString()}</td>
                                 <td class="symbol">${trade.Symbol}</td>
                                 <td>${trade['Buy/Sell']}</td>
                                 <td>${Math.abs(trade.Quantity)}</td>
