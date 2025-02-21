@@ -506,3 +506,31 @@ button:hover {
 .github-link:hover {
     opacity: 1;
 }
+
+.trades-details {
+    max-height: 500px;
+    overflow-y: auto;
+    margin: 20px 0;
+}
+
+.trades-table th,
+.trades-table td {
+    padding: 8px 12px;
+    text-align: left;
+}
+
+.trades-table tr:hover {
+    background-color: #f5f5f5;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+}
+
+.close-button:hover {
+    color: #333;
+}

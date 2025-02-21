@@ -357,8 +357,80 @@ function closeTradeModal() {
 
 // 查看详情按钮的处理函数
 function viewTradeDetails() {
-    // 可以在这里添加查看更多详情的逻辑
-    console.log('View more details');
+    const dateStr = document.getElementById('modalDate').textContent;
+    const date = new Date(dateStr);
+    const modalContent = document.querySelector('.trade-modal-content');
+    
+    // Get detailed trades for the selected date
+    const detailedTrades = allTrades.filter(trade => 
+        trade.TradeDate === date.toISOString().split('T')[0] &&
+        trade['Open/CloseIndicator'] === 'C'
+    );
+
+    // Create detailed view
+    const detailedView = `
+        <div class="modal-header">
+            <h2>${dateStr} - Detailed Trades</h2>
+            <button onclick="closeTradeModal()" class="close-button">&times;</button>
+        </div>
+        <div class="trades-details">
+            <table class="trades-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Symbol</th>
+                        <th>Side</th>
+                        <th>Quantity</th>
+                        <th>Entry Price</th>
+                        <th>Exit Price</th>
+                        <th>Duration</th>
+                        <th>P&L</th>
+                        <th>ROI%</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${detailedTrades.map(trade => {
+                        const pnl = parseFloat(trade.FifoPnlRealized);
+                        const roi = ((pnl / TOTAL_ACCOUNT_VALUE) * 100).toFixed(2);
+                        const duration = calculateDuration(trade.OpenDateTime, trade.DateTime);
+                        return `
+                            <tr>
+                                <td>${new Date(trade.DateTime).toLocaleTimeString()}</td>
+                                <td class="symbol">${trade.Symbol}</td>
+                                <td>${trade['Buy/Sell']}</td>
+                                <td>${Math.abs(trade.Quantity)}</td>
+                                <td>${trade.TradePrice}</td>
+                                <td>${trade.ClosePrice}</td>
+                                <td>${duration}</td>
+                                <td class="${pnl >= 0 ? 'profit' : 'fail'}">${formatPnL(pnl)}</td>
+                                <td class="${pnl >= 0 ? 'profit' : 'fail'}">${roi}%</td>
+                            </tr>
+                        `;
+                    }).join('')}
+                </tbody>
+            </table>
+        </div>
+        <div class="button-group">
+            <button class="cancel-button" onclick="closeTradeModal()">Close</button>
+        </div>
+    `;
+
+    modalContent.innerHTML = detailedView;
+}
+
+// Helper function to calculate trade duration
+function calculateDuration(startTime, endTime) {
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+    const diffMinutes = Math.floor((end - start) / (1000 * 60));
+    
+    if (diffMinutes < 60) {
+        return `${diffMinutes}m`;
+    } else {
+        const hours = Math.floor(diffMinutes / 60);
+        const minutes = diffMinutes % 60;
+        return `${hours}h ${minutes}m`;
+    }
 }
 
 // 新增日期范围处理函数
