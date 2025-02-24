@@ -86,6 +86,37 @@ function setupEventListeners() {
     if (closeDetailsBtn) {
         closeDetailsBtn.addEventListener('click', closeTradeModal);
     }
+
+    const symbolFilter = document.getElementById('symbolFilter');
+    const symbolDropdown = document.getElementById('symbolDropdown');
+    const symbolDropdownBtn = document.getElementById('symbolDropdownBtn');
+    
+    // Handle input changes
+    symbolFilter.addEventListener('input', (e) => {
+        const searchText = e.target.value.toLowerCase();
+        showSymbolDropdown(searchText);
+    });
+
+    // Handle dropdown item selection
+    symbolDropdown.addEventListener('click', (e) => {
+        const option = e.target.closest('.symbol-option');
+        if (option) {
+            const symbol = option.dataset.symbol;
+            filterBySymbol(symbol);
+        }
+    });
+    
+    // Handle dropdown button click
+    symbolDropdownBtn.addEventListener('click', () => {
+        showSymbolDropdown();
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.symbol-filter-container')) {
+            symbolDropdown.classList.remove('active');
+        }
+    });
 }
 
 // Handle R2 Config
@@ -1556,4 +1587,31 @@ function updateAdvancedCharts(stats) {
             }
         }
     );
+}
+
+function showSymbolDropdown(searchText = '') {
+    const symbolDropdown = document.getElementById('symbolDropdown');
+    const uniqueSymbols = [...new Set(allTrades.map(trade => trade.Symbol))];
+    
+    const filteredSymbols = uniqueSymbols.filter(symbol => 
+        symbol.toLowerCase().includes(searchText.toLowerCase())
+    ).sort();
+    
+    symbolDropdown.innerHTML = filteredSymbols.map(symbol => `
+        <div class="symbol-option" data-symbol="${symbol}">${symbol}</div>
+    `).join('');
+    
+    symbolDropdown.classList.add('active');
+}
+
+function filterBySymbol(symbol) {
+    document.getElementById('symbolFilter').value = symbol;
+    document.getElementById('symbolDropdown').classList.remove('active');
+    
+    filteredTrades = symbol ? 
+        allTrades.filter(trade => trade.Symbol === symbol) : 
+        [...allTrades];
+        
+    renderCalendar();
+    updateStatistics();
 }

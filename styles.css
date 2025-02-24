@@ -534,3 +534,65 @@ button:hover {
 .close-button:hover {
     color: #333;
 }
+
+.symbol-filter-container {
+    position: relative;
+    margin-left: 10px;
+}
+
+.combobox-wrapper {
+    display: flex;
+    align-items: center;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.symbol-input {
+    padding: 8px;
+    border: none;
+    outline: none;
+    width: 150px;
+    font-size: 14px;
+}
+
+.dropdown-toggle {
+    padding: 8px;
+    background: none;
+    border: none;
+    border-left: 1px solid #ddd;
+    cursor: pointer;
+}
+
+.dropdown-toggle:hover {
+    background: #f5f5f5;
+}
+
+.symbol-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 1000;
+}
+
+.symbol-dropdown.active {
+    display: block;
+}
+
+.symbol-option {
+    padding: 8px;
+    cursor: pointer;
+}
+
+.symbol-option:hover {
+    background: #f5f5f5;
+}
