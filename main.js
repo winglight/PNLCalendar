@@ -7,7 +7,7 @@ const r2Sync = new R2Sync();
 let allTrades = [];
 let filteredTrades = [];
 let currentDate = new Date();
-const TOTAL_ACCOUNT_VALUE = 100000;
+// const TOTAL_ACCOUNT_VALUE = 100000;
 
 // DOM Elements
 const showDateRangeBtn = document.getElementById('showDateRangeBtn');
@@ -238,6 +238,15 @@ function mergeTrades(newTrades) {
         if (trade['Open/CloseIndicator'] === 'C') {
             const openTime = getTradeOpenTime(trade, newTrades);
             trade.OpenDateTime = openTime;
+
+            // 确保 CostBasis 字段存在且为数值
+            if (!trade.CostBasis || isNaN(parseFloat(trade.CostBasis))) {
+                // 如果没有 CostBasis，尝试从其他字段计算
+                // 例如：数量 * 开仓价格
+                const quantity = Math.abs(parseFloat(trade.Quantity) || 0);
+                const tradePrice = parseFloat(trade.TradePrice) || 0;
+                trade.CostBasis = (quantity * tradePrice).toString();
+            }
         }
         tradeMap.set(trade.TransactionID, trade);
     });
@@ -267,17 +276,21 @@ function getDailyStats(date) {
         if (!symbolTrades.has(trade.Symbol)) {
             symbolTrades.set(trade.Symbol, {
                 quantity: 0,
-                pnl: 0
+                pnl: 0,
+                costBasis: 0
             });
         }
         const stats = symbolTrades.get(trade.Symbol);
         stats.quantity += Math.abs(parseFloat(trade.Quantity) || 0);
         stats.pnl += parseFloat(trade.FifoPnlRealized) || 0;
+        stats.costBasis += Math.abs(parseFloat(trade.CostBasis) || 0);
     });
 
     const totalPnL = Array.from(symbolTrades.values()).reduce((sum, stat) => sum + stat.pnl, 0);
+    const totalCostBasis = Array.from(symbolTrades.values()).reduce((sum, stat) => sum + stat.costBasis, 0);
     const totalTrades = symbolTrades.size;
-    const pnlPercentage = (totalPnL / TOTAL_ACCOUNT_VALUE) * 100;
+    // 使用实际交易金额计算盈亏百分比，而不是固定账户价值
+    const pnlPercentage = totalCostBasis > 0 ? (totalPnL / totalCostBasis) * 100 : 0;
 
     const winningTrades = dayTrades.filter(trade => parseFloat(trade.FifoPnlRealized) > 0).length;
     const winRate = (winningTrades / dayTrades.length) * 100;
@@ -338,7 +351,7 @@ function showTradeDetails(date) {
     dayTrades.forEach(trade => {
         const symbol = trade.Symbol;
         const side = trade['Buy/Sell'].toLowerCase() === 'sell' ? 'LONG' : 'SHORT';
-
+    
         if (!consolidatedTrades.has(symbol)) {
             consolidatedTrades.set(symbol, {
                 Symbol: symbol,
@@ -346,16 +359,18 @@ function showTradeDetails(date) {
                 DateTime: trade.DateTime, // 使用第一笔交易的时间
                 FifoPnlRealized: 0,
                 Quantity: 0,
+                CostBasis: 0, // 添加CostBasis字段
                 trades: [],
                 TradeTimes: new Map()
             });
         }
-
+    
         const consolidated = consolidatedTrades.get(symbol);
         consolidated.FifoPnlRealized += parseFloat(trade.FifoPnlRealized) || 0;
         consolidated.Quantity += Math.abs(parseFloat(trade.Quantity) || 0);
+        consolidated.CostBasis += Math.abs(parseFloat(trade.CostBasis) || 0); // 累加CostBasis
         consolidated.trades.push(trade);
-
+    
         // Count trades by DateTime
         const tradeTime = trade.DateTime;
         consolidated.TradeTimes.set(tradeTime, (consolidated.TradeTimes.get(tradeTime) || 0) + 1);
@@ -389,7 +404,25 @@ function showTradeDetails(date) {
     consolidatedArray.forEach(trade => {
         const row = document.createElement('tr');
         const pnl = trade.FifoPnlRealized;
-        const roi = ((pnl / TOTAL_ACCOUNT_VALUE) * 100).toFixed(2);
+        
+        // 修复 ROI 计算逻辑
+        // 对于亏损交易，我们需要确保 ROI 计算正确
+        const costBasis = Math.abs(parseFloat(trade.CostBasis || 0));
+        let roi;
+        
+        if (costBasis > 0) {
+            // 使用正确的 ROI 计算公式：(盈亏/成本)*100
+            roi = ((pnl / costBasis) * 100).toFixed(2);
+            
+            // 验证 ROI 是否在合理范围内
+            if (pnl < 0 && parseFloat(roi) < -100) {
+                // 亏损不应超过 100%（即全部本金）
+                console.warn(`异常 ROI 值: ${roi}%, 盈亏: ${pnl}, 成本: ${costBasis}`);
+                roi = Math.max(parseFloat(roi), -100).toFixed(2);
+            }
+        } else {
+            roi = '0.00';
+        }
 
         row.innerHTML = `
                     <td>${trade.DateTime}</td>
@@ -495,52 +528,74 @@ function viewTradeDetails() {
     // Create detailed view
     const detailedView = `
         <div class="modal-header">
-            <h2>${dateStr} - Detailed Trades</h2>
-            <button onclick="closeTradeModal()" class="close-button">&times;</button>
+            <h2>${dateStr}</h2>
+            <h2>详细交易记录</h2>
         </div>
-        <div class="trades-details">
-            <table class="trades-table">
-                <thead>
+        <table class="trades-table">
+            <thead>
+                <tr>
+                    <th>时间</th>
+                    <th>股票</th>
+                    <th>方向</th>
+                    <th>数量</th>
+                    <th>开仓价</th>
+                    <th>平仓价</th>
+                    <th>持仓时间</th>
+                    <th>盈亏</th>
+                    <th>ROI</th>
+                </tr>
+            </thead>
+            <tbody>
+            ${detailedTrades.map(trade => {
+                const pnl = parseFloat(trade.FifoPnlRealized);
+                
+                // 修复 ROI 计算逻辑
+                const costBasis = Math.abs(parseFloat(trade.CostBasis || 0));
+                let roi;
+                
+                if (costBasis > 0) {
+                    // 使用正确的 ROI 计算公式
+                    roi = ((pnl / costBasis) * 100).toFixed(2);
+                    
+                    // 验证 ROI 是否在合理范围内
+                    if (pnl < 0 && parseFloat(roi) < -100) {
+                        // 亏损不应超过 100%
+                        console.warn(`异常 ROI 值: ${roi}%, 盈亏: ${pnl}, 成本: ${costBasis}`);
+                        roi = Math.max(parseFloat(roi), -100).toFixed(2);
+                    }
+                } else {
+                    roi = '0.00';
+                }
+                
+                const duration = calculateDuration(trade.OpenDateTime, trade.DateTime);
+                return `
                     <tr>
-                        <th>Time</th>
-                        <th>Symbol</th>
-                        <th>Side</th>
-                        <th>Quantity</th>
-                        <th>Entry Price</th>
-                        <th>Exit Price</th>
-                        <th>Duration</th>
-                        <th>P&L</th>
-                        <th>ROI%</th>
+                        <td>${new Date(trade.DateTime).toLocaleString()}</td>
+                        <td class="symbol">${trade.Symbol}</td>
+                        <td>${trade['Buy/Sell']}</td>
+                        <td>${Math.abs(trade.Quantity)}</td>
+                        <td>${trade.TradePrice}</td>
+                        <td>${trade.ClosePrice}</td>
+                        <td>${duration}</td>
+                        <td class="${pnl >= 0 ? 'profit' : 'fail'}">${formatPnL(pnl)}</td>
+                        <td class="${pnl >= 0 ? 'profit' : 'fail'}">${roi}%</td>
                     </tr>
-                </thead>
-                <tbody>
-                    ${detailedTrades.map(trade => {
-                        const pnl = parseFloat(trade.FifoPnlRealized);
-                        const roi = ((pnl / TOTAL_ACCOUNT_VALUE) * 100).toFixed(2);
-                        const duration = calculateDuration(trade.OpenDateTime, trade.DateTime);
-                        return `
-                            <tr>
-                                <td>${new Date(trade.DateTime).toLocaleString()}</td>
-                                <td class="symbol">${trade.Symbol}</td>
-                                <td>${trade['Buy/Sell']}</td>
-                                <td>${Math.abs(trade.Quantity)}</td>
-                                <td>${trade.TradePrice}</td>
-                                <td>${trade.ClosePrice}</td>
-                                <td>${duration}</td>
-                                <td class="${pnl >= 0 ? 'profit' : 'fail'}">${formatPnL(pnl)}</td>
-                                <td class="${pnl >= 0 ? 'profit' : 'fail'}">${roi}%</td>
-                            </tr>
-                        `;
-                    }).join('')}
-                </tbody>
-            </table>
-        </div>
+                `;
+            }).join('')}
+        </tbody>
+        </table>
         <div class="button-group">
-            <button class="cancel-button" onclick="closeTradeModal()">Close</button>
+            <button class="cancel-button" id="closeTradeModalBtn">返回</button>
         </div>
     `;
 
     modalContent.innerHTML = detailedView;
+    
+    // 重新添加关闭按钮事件监听
+    const closeBtn = modalContent.querySelector('#closeTradeModalBtn');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeTradeModal);
+    }
 }
 
 // Helper function to calculate trade duration
@@ -926,7 +981,7 @@ function calculateStats() {
     const avgLoss = losingTrades.length > 0
         ? totalLosses / losingTrades.length
         : 0;
-    const avgRate = (avgWin / avgLoss) * 100;
+    const avgRate = avgLoss > 0 ? (avgWin / avgLoss) * 100 : 0;
 
     // 6. 生成每日累计P&L数据
     const dailyCumulativePnL = [];
