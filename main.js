@@ -356,6 +356,7 @@ function showTradeDetails(date) {
             consolidatedTrades.set(symbol, {
                 Symbol: symbol,
                 Side: side,
+                OpenDateTime: trade.OpenDateTime, // 开仓时间
                 DateTime: trade.DateTime, // 使用第一笔交易的时间
                 FifoPnlRealized: 0,
                 Quantity: 0,
@@ -425,6 +426,7 @@ function showTradeDetails(date) {
         }
 
         row.innerHTML = `
+                    <td>${trade.OpenDateTime}</td>
                     <td>${trade.DateTime}</td>
                     <td>${trade.Symbol}</td>
                     <td>${trade.Side}</td>
@@ -471,6 +473,7 @@ function closeTradeModal() {
                     <thead>
                         <tr>
                             <th>Open Time</th>
+                            <th>Close Time</th>
                             <th>Ticker</th>
                             <th>Side</th>
                             <th>Instrument</th>
