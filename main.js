@@ -1,4 +1,3 @@
-// main.js - 应用程序入口点
 import { 
     loadTrades, 
     saveTrades, 
@@ -22,6 +21,11 @@ import {
 import { 
     updateStatistics 
 } from './stats.js';
+import { R2Sync } from './r2-sync.js';
+
+// Global state
+let allTrades = [];
+// const TOTAL_ACCOUNT_VALUE = 100000;
 
 // DOM Elements
 let showDateRangeBtn, clearDataBtn, handleImportBtn, showImportModalBtn, configR2Btn, csvFile;
@@ -112,6 +116,37 @@ function setupEventListeners() {
             toggleDatePicker(); // 隐藏日期选择器
         });
     }
+
+    const symbolFilter = document.getElementById('symbolFilter');
+    const symbolDropdown = document.getElementById('symbolDropdown');
+    const symbolDropdownBtn = document.getElementById('symbolDropdownBtn');
+    
+    // Handle input changes
+    symbolFilter.addEventListener('input', (e) => {
+        const searchText = e.target.value.toLowerCase();
+        showSymbolDropdown(searchText);
+    });
+
+    // Handle dropdown item selection
+    symbolDropdown.addEventListener('click', (e) => {
+        const option = e.target.closest('.symbol-option');
+        if (option) {
+            const symbol = option.dataset.symbol;
+            filterBySymbol(symbol);
+        }
+    });
+    
+    // Handle dropdown button click
+    symbolDropdownBtn.addEventListener('click', () => {
+        showSymbolDropdown();
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.symbol-filter-container')) {
+            symbolDropdown.classList.remove('active');
+        }
+    });
 }
 
 // Handle R2 Config
@@ -247,6 +282,33 @@ async function fetchWithProxy(url) {
         console.error('Proxy request error:', error);
         throw new Error(`Failed to fetch through proxy: ${error.message}`);
     }
+}
+
+function showSymbolDropdown(searchText = '') {
+    const symbolDropdown = document.getElementById('symbolDropdown');
+    const uniqueSymbols = [...new Set(allTrades.map(trade => trade.Symbol))];
+    
+    const filteredSymbols = uniqueSymbols.filter(symbol => 
+        symbol.toLowerCase().includes(searchText.toLowerCase())
+    ).sort();
+    
+    symbolDropdown.innerHTML = filteredSymbols.map(symbol => `
+        <div class="symbol-option" data-symbol="${symbol}">${symbol}</div>
+    `).join('');
+    
+    symbolDropdown.classList.add('active');
+}
+
+function filterBySymbol(symbol) {
+    document.getElementById('symbolFilter').value = symbol;
+    document.getElementById('symbolDropdown').classList.remove('active');
+    
+    filteredTrades = symbol ? 
+        allTrades.filter(trade => trade.Symbol === symbol) : 
+        [...allTrades];
+        
+    renderCalendar();
+    updateStatistics();
 }
 
 // 导出模块
