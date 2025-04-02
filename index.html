@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+<!-- 在head部分添加或修改viewport元数据 -->
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trade Calendar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Trading Calendar</title>
     <link rel="stylesheet" href="r2-config.css">
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -92,7 +93,7 @@
         <button onclick="clearData()">Clear Data</button>
     </div>
     <div class="header">
-        <div class="month-nav">
+        <div class="month-navigation">
             <button data-direction=-1>←</button>
             <h2 id="currentMonth"></h2>
             <button data-direction=1>→</button>
@@ -206,13 +207,13 @@
 
     <!-- 图表行 -->
     <div class="charts-section">
-        <div class="chart-container">
+        <div class="chart-container" style="width:100%; max-width:100%;">
             <h3>Daily Net Cumulative P&L</h3>
             <div class="chart-wrapper">
                 <canvas id="cumulativePnLChart"></canvas>
             </div>
         </div>
-        <div class="chart-container">
+        <div class="chart-container" style="width:100%; max-width:100%;">
             <h3>Net Daily P&L</h3>
             <div class="chart-wrapper">
                 <canvas id="dailyPnLChart"></canvas>

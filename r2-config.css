@@ -8,20 +8,34 @@
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     z-index: 1000;
-    }
+    width: 95%;
+    max-width: 400px;
+}
 
-    .config-dialog label {
+.config-dialog label {
     display: block;
     margin: 10px 0;
-    }
+}
 
-    .config-dialog input {
+.config-dialog input {
     width: 100%;
-    padding: 5px;
+    padding: 8px;
     margin-top: 5px;
-    }
+    box-sizing: border-box;
+}
 
-    .config-dialog button {
+.config-dialog button {
     margin: 10px 5px;
-    padding: 5px 15px;
+    padding: 8px 15px;
+}
+
+@media (max-width: 576px) {
+    .config-dialog {
+        padding: 15px;
     }
+    
+    .config-dialog button {
+        width: calc(50% - 10px);
+        margin: 10px 0;
+    }
+}
