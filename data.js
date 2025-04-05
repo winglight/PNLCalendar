@@ -249,6 +249,17 @@ export function filterTradesByDateRange(startDate, endDate) {
     return filteredTrades;
 }
 
+// 根据Symbol过滤交易
+export function filterTradesBySymbol(symbol) {
+    if (!symbol) return;
+    
+    filteredTrades = symbol ? 
+        allTrades.filter(trade => trade.Symbol === symbol) : 
+        [...allTrades];
+    
+    return filteredTrades;
+}
+
 // 计算交易持续时间
 export function calculateDuration(startTime, endTime) {
     if (!startTime || !endTime) return '--';

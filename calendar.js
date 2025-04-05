@@ -27,8 +27,8 @@ export function renderCalendar() {
     // 添加表头 - 移动设备时不显示周日和Weekly
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Weekly'];
     days.forEach((day, index) => {
-        // 在移动设备上跳过周日和Weekly列
-        if (isMobile && (index === 0 || index === 7)) return;
+        // 在移动设备上跳过周六日和Weekly列
+        if (isMobile && (index === 0 || index === 6 || index === 7)) return;
         
         const header = document.createElement('div');
         header.className = 'calendar-header';
@@ -42,7 +42,8 @@ export function renderCalendar() {
     let weekStartDate = new Date(firstDay);
 
     // 填充月初空白
-    for (let i = 0; i < firstDay.getDay(); i++) {
+    let i = isMobile?1:0;
+    for (i; i < firstDay.getDay(); i++) {
         calendar.appendChild(document.createElement('div'));
     }
 
@@ -51,8 +52,8 @@ export function renderCalendar() {
         const date = new Date(Date.UTC(year, month, day));
         const dayOfWeek = date.getDay();
         
-        // 在移动设备上跳过周日
-        if (isMobile && dayOfWeek === 0) continue;
+        // 在移动设备上跳过周六日
+        if (isMobile && (dayOfWeek === 0 || dayOfWeek === 6)) continue;
         
         const dayDiv = document.createElement('div');
         dayDiv.className = 'calendar-day';
@@ -81,7 +82,7 @@ export function renderCalendar() {
         calendar.appendChild(dayDiv);
 
         // 处理周末或月末
-        if (date.getDay() === 6 || day === lastDay.getDate()) {
+        if ((!isMobile) && (date.getDay() === 6 || day === lastDay.getDate())) {
             const weekSummary = document.createElement('div');
             weekSummary.className = 'week-summary';
             
@@ -211,6 +212,13 @@ export function showTradeDetails(date) {
     });
 
     modal.style.display = 'block';
+
+    // 添加点击外部关闭功能
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeTradeModal();
+        }
+    });
 }
 
 // 关闭交易详情弹窗
@@ -341,9 +349,24 @@ export function viewTradeDetails() {
 }
 
 // 显示日期选择器
+// 切换日期选择器显示/隐藏
 export function toggleDatePicker() {
     const datePicker = document.getElementById('dateRangePicker');
     datePicker.classList.toggle('active');
+    
+    // 添加点击外部关闭功能
+    if (datePicker.classList.contains('active')) {
+        // 使用setTimeout确保当前点击事件不会立即触发关闭
+        setTimeout(() => {
+            const closeOnClickOutside = (e) => {
+                if (!datePicker.contains(e.target) && e.target.id !== 'showDateRangeBtn') {
+                    datePicker.classList.remove('active');
+                    document.removeEventListener('click', closeOnClickOutside);
+                }
+            };
+            document.addEventListener('click', closeOnClickOutside);
+        }, 0);
+    }
 }
 
 // 更新日历中的交易数据

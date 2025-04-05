@@ -1,4 +1,5 @@
 import { 
+    allTrades,
     loadTrades, 
     saveTrades, 
     clearData, 
@@ -6,6 +7,7 @@ import {
     r2Sync, 
     setDateRange, 
     filterTradesByDateRange,
+    filterTradesBySymbol,
     processTradeData,
     mergeTrades
 } from './data.js';
@@ -22,10 +24,6 @@ import {
     updateStatistics 
 } from './stats.js';
 import { R2Sync } from './r2-sync.js';
-
-// Global state
-let allTrades = [];
-// const TOTAL_ACCOUNT_VALUE = 100000;
 
 // DOM Elements
 let showDateRangeBtn, clearDataBtn, handleImportBtn, showImportModalBtn, configR2Btn, csvFile;
@@ -107,7 +105,8 @@ function setupEventListeners() {
     const applyDateRangeBtn = document.getElementById('applyDateRange');
     
     if (applyDateRangeBtn && startDateInput && endDateInput) {
-        applyDateRangeBtn.addEventListener('click', () => {
+        applyDateRangeBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // 阻止事件冒泡，防止触发外部点击事件
             const startDate = new Date(startDateInput.value);
             const endDate = new Date(endDateInput.value);
             filterTradesByDateRange(startDate, endDate);
@@ -175,7 +174,15 @@ function handleImport(event) {
 // 显示导入模态框
 function showImportModal() {
     const modal = document.getElementById('importModal');
-    if (modal) modal.style.display = 'block';
+    if (modal) {
+        modal.style.display = 'block';
+        // 添加点击外部关闭功能
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    }
 }
 
 // 关闭导入模态框
@@ -303,9 +310,7 @@ function filterBySymbol(symbol) {
     document.getElementById('symbolFilter').value = symbol;
     document.getElementById('symbolDropdown').classList.remove('active');
     
-    filteredTrades = symbol ? 
-        allTrades.filter(trade => trade.Symbol === symbol) : 
-        [...allTrades];
+    filterTradesBySymbol(symbol);
         
     renderCalendar();
     updateStatistics();

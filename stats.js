@@ -430,41 +430,92 @@ export function updateStatistics() {
     const netPnLEl = document.querySelector('.stat-card .stat-value');
     if (netPnLEl) netPnLEl.textContent = `$${stats.netPnL.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
 
+    // 修改胜率统计卡片，使条形图宽度与实际数值成比例
     const winRateEl = document.querySelector('#win-rate .stat-value');
     if (winRateEl) winRateEl.textContent = `${stats.winRate.percentage.toFixed(2)}%`;
     
     const winEl = document.querySelector('#win-rate .win');
-    if (winEl) winEl.textContent = stats.winRate.winning;
+    if (winEl) {
+        winEl.textContent = stats.winRate.winning;
+        // 计算胜率比例
+        const totalTrades = stats.winRate.winning + stats.winRate.neutral + stats.winRate.losing;
+        const winPercent = totalTrades > 0 ? (stats.winRate.winning / totalTrades * 100) : 0;
+        winEl.style.width = `${winPercent}%`;
+    }
     
     const neutralEl = document.querySelector('#win-rate .neutral');
-    if (neutralEl) neutralEl.textContent = stats.winRate.neutral;
+    if (neutralEl) {
+        neutralEl.textContent = stats.winRate.neutral;
+        // 计算平局比例
+        const totalTrades = stats.winRate.winning + stats.winRate.neutral + stats.winRate.losing;
+        const neutralPercent = totalTrades > 0 ? (stats.winRate.neutral / totalTrades * 100) : 0;
+        neutralEl.style.width = `${neutralPercent}%`;
+    }
     
     const lossEl = document.querySelector('#win-rate .loss');
-    if (lossEl) lossEl.textContent = stats.winRate.losing;
+    if (lossEl) {
+        lossEl.textContent = stats.winRate.losing;
+        // 计算亏损比例
+        const totalTrades = stats.winRate.winning + stats.winRate.neutral + stats.winRate.losing;
+        const lossPercent = totalTrades > 0 ? (stats.winRate.losing / totalTrades * 100) : 0;
+        lossEl.style.width = `${lossPercent}%`;
+    }
 
     const profitFactorEl = document.querySelector('#profit-factor .stat-value');
     if (profitFactorEl) profitFactorEl.textContent = stats.profitFactor.toFixed(2);
 
+    // 修改日胜率统计卡片，使条形图宽度与实际数值成比例
     const dayWinRateEl = document.querySelector('#day-win-rate .stat-value');
     if (dayWinRateEl) dayWinRateEl.textContent = `${stats.dayWinRate.percentage.toFixed(2)}%`;
     
     const dayWinEl = document.querySelector('#day-win-rate .win');
-    if (dayWinEl) dayWinEl.textContent = stats.dayWinRate.winning;
+    if (dayWinEl) {
+        dayWinEl.textContent = stats.dayWinRate.winning;
+        // 计算日胜率比例
+        const totalDays = stats.dayWinRate.winning + stats.dayWinRate.neutral + stats.dayWinRate.losing;
+        const dayWinPercent = totalDays > 0 ? (stats.dayWinRate.winning / totalDays * 100) : 0;
+        dayWinEl.style.width = `${dayWinPercent}%`;
+    }
     
     const dayNeutralEl = document.querySelector('#day-win-rate .neutral');
-    if (dayNeutralEl) dayNeutralEl.textContent = stats.dayWinRate.neutral;
+    if (dayNeutralEl) {
+        dayNeutralEl.textContent = stats.dayWinRate.neutral;
+        // 计算日平局比例
+        const totalDays = stats.dayWinRate.winning + stats.dayWinRate.neutral + stats.dayWinRate.losing;
+        const dayNeutralPercent = totalDays > 0 ? (stats.dayWinRate.neutral / totalDays * 100) : 0;
+        dayNeutralEl.style.width = `${dayNeutralPercent}%`;
+    }
     
     const dayLossEl = document.querySelector('#day-win-rate .loss');
-    if (dayLossEl) dayLossEl.textContent = stats.dayWinRate.losing;
+    if (dayLossEl) {
+        dayLossEl.textContent = stats.dayWinRate.losing;
+        // 计算日亏损比例
+        const totalDays = stats.dayWinRate.winning + stats.dayWinRate.neutral + stats.dayWinRate.losing;
+        const dayLossPercent = totalDays > 0 ? (stats.dayWinRate.losing / totalDays * 100) : 0;
+        dayLossEl.style.width = `${dayLossPercent}%`;
+    }
 
+    // 修改平均盈亏统计卡片，使条形图宽度与实际数值成比例
     const avgWinLossEl = document.querySelector('#avg-win-loss .stat-value');
     if (avgWinLossEl) avgWinLossEl.textContent = `${stats.avgTrade.avgRate.toFixed(2)}%`;
     
     const avgWinEl = document.querySelector('#avg-win-loss .win');
-    if (avgWinEl) avgWinEl.textContent = stats.avgTrade.winning;
+    if (avgWinEl) {
+        avgWinEl.textContent = stats.avgTrade.winning;
+        // 计算平均盈利比例
+        const totalAvg = parseFloat(stats.avgTrade.winning) + parseFloat(stats.avgTrade.losing);
+        const avgWinPercent = totalAvg > 0 ? (parseFloat(stats.avgTrade.winning) / totalAvg * 100) : 0;
+        avgWinEl.style.width = `${avgWinPercent}%`;
+    }
     
     const avgLossEl = document.querySelector('#avg-win-loss .loss');
-    if (avgLossEl) avgLossEl.textContent = stats.avgTrade.losing;
+    if (avgLossEl) {
+        avgLossEl.textContent = stats.avgTrade.losing;
+        // 计算平均亏损比例
+        const totalAvg = parseFloat(stats.avgTrade.winning) + parseFloat(stats.avgTrade.losing);
+        const avgLossPercent = totalAvg > 0 ? (parseFloat(stats.avgTrade.losing) / totalAvg * 100) : 0;
+        avgLossEl.style.width = `${avgLossPercent}%`;
+    }
 
     // 更新图表
     updateCharts(stats);
