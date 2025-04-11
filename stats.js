@@ -2,15 +2,7 @@
 import { allTrades, filteredTrades, TOTAL_ACCOUNT_VALUE, formatPnL } from './data.js';
 
 // 全局存储Chart实例
-export const chartInstances = {
-    cumulativePnL: null,
-    dailyPnL: null,
-    durationPerformance: null,
-    timePerformance: null,
-    drawdown: null,
-    weeklyWinRate: null,  
-    weeklyTrades: null
-};
+export const chartInstances = {};
 
 // 获取每日统计数据
 export function getDailyStats(date) {
@@ -539,7 +531,7 @@ export function updateCharts(stats) {
     // 累计盈亏图表
     const cumulativePnLChart = document.getElementById('cumulativePnLChart');
     if (cumulativePnLChart) {
-        chartInstances.cumulativePnL = new Chart(
+        chartInstances.cumulativePnLChart = new Chart(
             cumulativePnLChart.getContext('2d'),
             {
                 type: 'line',
@@ -584,7 +576,7 @@ export function updateCharts(stats) {
     // 每日盈亏图表
     const dailyPnLChart = document.getElementById('dailyPnLChart');
     if (dailyPnLChart) {
-        chartInstances.dailyPnL = new Chart(
+        chartInstances.dailyPnLChart = new Chart(
             dailyPnLChart.getContext('2d'),
             {
                 type: 'bar',
@@ -651,7 +643,7 @@ export function updateAdvancedCharts(stats) {
     // 持续时间性能图表
     const durationPerformanceChart = document.getElementById('durationPerformanceChart');
     if (durationPerformanceChart) {
-        chartInstances.durationPerformance = new Chart(
+        chartInstances.durationPerformanceChart = new Chart(
             durationPerformanceChart.getContext('2d'),
             {
                 type: 'bar',
@@ -709,7 +701,7 @@ export function updateAdvancedCharts(stats) {
     // 交易时间性能图表
     const timePerformanceChart = document.getElementById('timePerformanceChart');
     if (timePerformanceChart) {
-        chartInstances.timePerformance = new Chart(
+        chartInstances.timePerformanceChart = new Chart(
             timePerformanceChart.getContext('2d'),
             {
                 type: 'bar',
@@ -768,7 +760,7 @@ export function updateAdvancedCharts(stats) {
     if (stats.drawdown && stats.drawdown.drawdownData.length > 0) {
         const drawdownChart = document.getElementById('drawdownChart');
         if (drawdownChart) {
-            chartInstances.drawdown = new Chart(
+            chartInstances.drawdownChart = new Chart(
                 drawdownChart.getContext('2d'),
                 {
                     type: 'line',
@@ -830,7 +822,7 @@ export function updateAdvancedCharts(stats) {
     `).join('');
 
     // 周度胜率和交易次数图表
-    chartInstances.weeklyWinRate = new Chart(
+    chartInstances.weeklyStatsChart = new Chart(
         document.getElementById('weeklyStatsChart').getContext('2d'),
         {
             type: 'bar',
@@ -884,7 +876,7 @@ export function updateAdvancedCharts(stats) {
 
 
     // 周度平均盈亏和交易金额图表
-    chartInstances.weeklyTrades = new Chart(
+    chartInstances.weeklyTradeAnalysisChart = new Chart(
         document.getElementById('weeklyTradeAnalysisChart').getContext('2d'),
         {
             type: 'bar',

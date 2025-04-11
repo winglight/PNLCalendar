@@ -21,7 +21,8 @@ import {
     currentDate 
 } from './calendar.js';
 import { 
-    updateStatistics 
+    updateStatistics,
+    chartInstances
 } from './stats.js';
 import { R2Sync } from './r2-sync.js';
 
@@ -325,3 +326,271 @@ export {
     closeImportModal,
     handleIBImport
 };
+
+// 初始化全屏功能
+function initFullscreenButtons() {
+    // 获取所有全屏按钮
+    const fullscreenBtns = document.querySelectorAll('.fullscreen-btn');
+    const statModal = document.getElementById('statModal');
+    const statModalTitle = document.getElementById('statModalTitle');
+    const statModalContent = document.getElementById('statModalContent');
+    const closeBtn = statModal.querySelector('.close-button');
+    
+    // 为每个全屏按钮添加点击事件
+    fullscreenBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const cardType = this.getAttribute('data-card');
+            
+            // 如果是图表全屏按钮，不处理（由initChartFullscreenButtons处理）
+            if (this.getAttribute('data-chart')) {
+                return;
+            }
+            
+            // 查找父元素，增加错误处理
+            const card = this.closest('.stat-card');
+            if (!card) {
+                console.warn('未找到统计卡片元素');
+                return;
+            }
+            
+            // 查找标题元素，增加错误处理
+            const titleElement = card.querySelector('.stat-header span');
+            const title = titleElement ? titleElement.textContent : '统计详情';
+            
+            // 设置模态框标题
+            statModalTitle.textContent = title;
+            
+            // 根据卡片类型生成内容
+            let content = '';
+            
+            switch(cardType) {
+                case 'net-pnl':
+                    const pnlValue = card.querySelector('.stat-value')?.textContent || '0';
+                    content = `<div class="stat-value positive" style="font-size: 36px;">${pnlValue}</div>`;
+                    break;
+                    
+                case 'win-rate':
+                case 'day-win-rate':
+                    const winRateValue = card.querySelector('.stat-value')?.textContent || '0%';
+                    const winCount = card.querySelector('.win')?.textContent || '0';
+                    const neutralCount = card.querySelector('.neutral')?.textContent || '0';
+                    const lossCount = card.querySelector('.loss')?.textContent || '0';
+                    
+                    content = `
+                        <div class="stat-value" style="font-size: 36px;">${winRateValue}</div>
+                        <div class="stat-gauge" style="height: 40px; margin: 20px 0;">
+                            <div class="win" style="width: ${calculatePercent(winCount, neutralCount, lossCount)}%">${winCount}</div>
+                            ${neutralCount !== '0' ? `<div class="neutral" style="width: ${calculatePercent(neutralCount, winCount, lossCount)}%">${neutralCount}</div>` : ''}
+                            <div class="loss" style="width: ${calculatePercent(lossCount, winCount, neutralCount)}%">${lossCount}</div>
+                        </div>
+                        <div style="margin-top: 20px;">
+                            <p>胜利交易: ${winCount} 笔</p>
+                            ${neutralCount !== '0' ? `<p>平局交易: ${neutralCount} 笔</p>` : ''}
+                            <p>亏损交易: ${lossCount} 笔</p>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'profit-factor':
+                    const pfValue = card.querySelector('.stat-value')?.textContent || '0';
+                    content = `
+                        <div class="stat-value" style="font-size: 36px;">${pfValue}</div>
+                        <p style="margin-top: 20px;">盈利因子是总盈利除以总亏损的比率。高于1表示盈利，值越高越好。</p>
+                    `;
+                    break;
+                    
+                case 'avg-win-loss':
+                    const avgValue = card.querySelector('.stat-value')?.textContent || '0%';
+                    const avgWin = card.querySelector('.win')?.textContent || '0';
+                    const avgLoss = card.querySelector('.loss')?.textContent || '0';
+                    
+                    content = `
+                        <div class="stat-value" style="font-size: 36px;">${avgValue}</div>
+                        <div class="stat-gauge" style="height: 40px; margin: 20px 0;">
+                            <div class="win" style="width: ${calculatePercent(avgWin, 0, avgLoss)}%">${avgWin}</div>
+                            <div class="loss" style="width: ${calculatePercent(avgLoss, avgWin, 0)}%">${avgLoss}</div>
+                        </div>
+                        <div style="margin-top: 20px;">
+                            <p>平均盈利: ${avgWin}</p>
+                            <p>平均亏损: ${avgLoss}</p>
+                        </div>
+                    `;
+                    break;
+                    
+                default:
+                    content = '<p>无法显示此卡片的详细信息</p>';
+            }
+            
+            // 设置模态框内容
+            statModalContent.innerHTML = content;
+            
+            // 显示模态框
+            statModal.style.display = 'flex';
+        });
+    });
+    
+    // 关闭按钮事件
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+            statModal.style.display = 'none';
+        });
+    } else {
+        console.warn('未找到关闭按钮');
+    }
+    
+    // 点击模态框背景关闭
+    statModal.addEventListener('click', function(e) {
+        if (e.target === statModal) {
+            statModal.style.display = 'none';
+        }
+    });
+}
+
+// 计算百分比
+function calculatePercent(value, otherValue1, otherValue2) {
+    const val = parseFloat(value) || 0;
+    const other1 = parseFloat(otherValue1) || 0;
+    const other2 = parseFloat(otherValue2) || 0;
+    const total = val + other1 + other2;
+    
+    return total > 0 ? (val / total * 100) : 0;
+}
+
+// 初始化图表全屏功能
+function initChartFullscreenButtons() {
+    // 获取所有图表全屏按钮
+    const chartFullscreenBtns = document.querySelectorAll('.fullscreen-btn[data-chart]');
+    const chartModal = document.getElementById('chartModal');
+    const chartModalTitle = document.getElementById('chartModalTitle');
+    const chartModalContent = document.getElementById('chartModalContent');
+    const closeBtn = chartModal.querySelector('.close-button');
+    
+    // 为每个全屏按钮添加点击事件
+    chartFullscreenBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const chartId = this.getAttribute('data-chart');
+            // 修复这里的错误，确保能找到标题元素
+            let chartTitle = '';
+            const headerElement = this.closest('.chart-header');
+            if (headerElement) {
+                const titleElement = headerElement.querySelector('h3');
+                if (titleElement) {
+                    chartTitle = titleElement.textContent;
+                }
+            }
+            
+            // 设置模态框标题
+            chartModalTitle.textContent = chartTitle || '图表详情';
+            
+            // 根据图表类型生成内容
+            let content = '';
+            
+            if (chartId === 'stockStats') {
+                // 股票统计表格
+                const stockStatsContainer = this.closest('.stock-stats-container');
+                if (stockStatsContainer) {
+                    const clonedContainer = stockStatsContainer.cloneNode(true);
+                    const header = clonedContainer.querySelector('.chart-header');
+                    if (header) header.remove(); // 移除标题部分
+                    content = `<div class="stock-stats-container" style="height: auto;">${clonedContainer.innerHTML}</div>`;
+                } else {
+                    content = '<div>无法加载股票统计数据</div>';
+                }
+            } else {
+                // 创建新的canvas元素
+                content = `
+                    <div class="chart-wrapper" style="width: 100%; height: 65vh;">
+                        <canvas id="${chartId}_fullscreen" style="width: 100%; height: 100%;"></canvas>
+                    </div>
+                `;
+            }
+            
+            // 设置模态框内容
+            chartModalContent.innerHTML = content;
+            
+            // 显示模态框
+            chartModal.style.display = 'flex';
+            
+            // 如果是图表，复制原图表数据到全屏图表
+            if (chartId !== 'stockStats' && chartInstances && chartInstances[chartId]) {
+                const originalChart = chartInstances[chartId];
+                if (originalChart) {
+                    try {
+                        // 获取原图表的配置
+                        const config = originalChart.config;
+                        
+                        // 调整全屏图表的配置
+                        if (config.options) {
+                            // 确保图表响应式
+                            config.options.responsive = true;
+                            config.options.maintainAspectRatio = false;
+                            
+                            // 增大字体大小
+                            if (config.options.plugins && config.options.plugins.title) {
+                                config.options.plugins.title.font = {
+                                    size: 18
+                                };
+                            }
+                            
+                            // 增大刻度字体
+                            if (config.options.scales) {
+                                Object.keys(config.options.scales).forEach(axis => {
+                                    if (config.options.scales[axis].ticks) {
+                                        config.options.scales[axis].ticks.font = {
+                                            size: 14
+                                        };
+                                    }
+                                });
+                            }
+                            
+                            // 显示图例
+                            if (config.options.plugins && config.options.plugins.legend) {
+                                config.options.plugins.legend.display = true;
+                            }
+                        }
+                        
+                        // 创建全屏图表
+                        const canvasElement = document.getElementById(`${chartId}_fullscreen`);
+                        if (canvasElement) {
+                            // 确保Canvas元素有正确的尺寸
+                            canvasElement.style.width = '100%';
+                            canvasElement.style.height = '100%';
+                            
+                            // 延迟一帧再渲染图表，确保DOM已更新
+                            setTimeout(() => {
+                                const ctx = canvasElement.getContext('2d');
+                                chartInstances[`${chartId}_fullscreen`] = new Chart(ctx, config);
+                            }, 50);
+                        }
+                    } catch (error) {
+                        console.error('创建全屏图表时出错:', error);
+                        chartModalContent.innerHTML = '<div>加载图表时出错</div>';
+                    }
+                }
+            }
+        });
+    });
+    
+    // 关闭按钮事件
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+            chartModal.style.display = 'none';
+        });
+    }
+    
+    // 点击模态框背景关闭
+    chartModal.addEventListener('click', function(e) {
+        if (e.target === chartModal) {
+            chartModal.style.display = 'none';
+        }
+    });
+}
+
+// 在页面加载完成后初始化图表全屏按钮
+document.addEventListener('DOMContentLoaded', function() {
+    // 初始化全屏按钮
+    initFullscreenButtons();
+    
+    // 初始化图表全屏按钮
+    initChartFullscreenButtons();
+});

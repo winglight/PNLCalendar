@@ -166,7 +166,10 @@
         <div class="stat-card">
             <div class="stat-header">
                 <span>Net P&L</span>
-                <span class="trade-count">95</span>
+                <div class="header-controls">
+                    <span class="trade-count">95</span>
+                    <span class="fullscreen-btn" data-card="net-pnl">⛶</span>
+                </div>
             </div>
             <div class="stat-value positive">$16,574.07</div>
         </div>
@@ -174,7 +177,10 @@
         <div class="stat-card" id="win-rate">
             <div class="stat-header">
                 <span>Trade Win %</span>
-                <span class="info-icon">ⓘ</span>
+                <div class="header-controls">
+                    <span class="info-icon">ⓘ</span>
+                    <span class="fullscreen-btn" data-card="win-rate">⛶</span>
+                </div>
             </div>
             <div class="stat-value">77.89%</div>
             <div class="stat-gauge">
@@ -187,7 +193,10 @@
         <div class="stat-card" id="profit-factor">
             <div class="stat-header">
                 <span>Profit Factor</span>
-                <span class="info-icon">ⓘ</span>
+                <div class="header-controls">
+                    <span class="info-icon">ⓘ</span>
+                    <span class="fullscreen-btn" data-card="profit-factor">⛶</span>
+                </div>
             </div>
             <div class="stat-value">1.47</div>
             <div class="profit-ring"></div>
@@ -196,7 +205,10 @@
         <div class="stat-card" id="day-win-rate">
             <div class="stat-header">
                 <span>Day Win %</span>
-                <span class="info-icon">ⓘ</span>
+                <div class="header-controls">
+                    <span class="info-icon">ⓘ</span>
+                    <span class="fullscreen-btn" data-card="day-win-rate">⛶</span>
+                </div>
             </div>
             <div class="stat-value">67.27%</div>
             <div class="stat-gauge">
@@ -208,7 +220,10 @@
         <div class="stat-card" id="avg-win-loss">
             <div class="stat-header">
                 <span>Avg win/loss trade</span>
-                <span class="info-icon">ⓘ</span>
+                <div class="header-controls">
+                    <span class="info-icon">ⓘ</span>
+                    <span class="fullscreen-btn" data-card="avg-win-loss">⛶</span>
+                </div>
             </div>
             <div class="stat-value">67.27%</div>
             <div class="stat-gauge">
@@ -221,13 +236,19 @@
     <!-- 图表行 -->
     <div class="charts-section">
         <div class="chart-container" style="width:100%; max-width:100%;">
-            <h3>Daily Net Cumulative P&L</h3>
+            <div class="chart-header">
+                <h3>Daily Net Cumulative P&L</h3>
+                <span class="fullscreen-btn" data-chart="cumulativePnLChart">⛶</span>
+            </div>
             <div class="chart-wrapper">
                 <canvas id="cumulativePnLChart"></canvas>
             </div>
         </div>
         <div class="chart-container" style="width:100%; max-width:100%;">
-            <h3>Net Daily P&L</h3>
+            <div class="chart-header">
+                <h3>Net Daily P&L</h3>
+                <span class="fullscreen-btn" data-chart="dailyPnLChart">⛶</span>
+            </div>
             <div class="chart-wrapper">
                 <canvas id="dailyPnLChart"></canvas>
             </div>
@@ -235,18 +256,31 @@
     </div>
     <div class="charts-container">
         <div class="chart-item">
-            <h3>Trade Duration Performance</h3>
+            <div class="chart-header">
+                <h3>Trade Duration Performance</h3>
+                <span class="fullscreen-btn" data-chart="durationPerformanceChart">⛶</span>
+            </div>
             <canvas id="durationPerformanceChart"></canvas>
         </div>
         <div class="chart-item">
-            <h3>Trade Time Performance</h3>
+            <div class="chart-header">
+                <h3>Trade Time Performance</h3>
+                <span class="fullscreen-btn" data-chart="timePerformanceChart">⛶</span>
+            </div>
             <canvas id="timePerformanceChart"></canvas>
         </div>
         <div class="chart-item">
-            <h3>Drawdown</h3>
+            <div class="chart-header">
+                <h3>Drawdown</h3>
+                <span class="fullscreen-btn" data-chart="drawdownChart">⛶</span>
+            </div>
             <canvas id="drawdownChart"></canvas>
         </div>
         <div class="chart-item stock-stats-container">
+            <div class="chart-header">
+                <h3>Stock Statistics</h3>
+                <span class="fullscreen-btn" data-chart="stockStats">⛶</span>
+            </div>
             <div class="stats-section">
                 <h4>Top Profitable Stocks</h4>
                 <table class="stock-stats-table">
@@ -283,11 +317,17 @@
     </div>
     <div class="charts-section">
         <div class="chart-item">
-            <h3>Weekly Statistics</h3>
+            <div class="chart-header">
+                <h3>Weekly Statistics</h3>
+                <span class="fullscreen-btn" data-chart="weeklyStatsChart">⛶</span>
+            </div>
             <canvas id="weeklyStatsChart"></canvas>
         </div>
         <div class="chart-item">
-            <h3>Weekly Win/Loss Trade Analysis</h3>
+            <div class="chart-header">
+                <h3>Weekly Win/Loss Trade Analysis</h3>
+                <span class="fullscreen-btn" data-chart="weeklyTradeAnalysisChart">⛶</span>
+            </div>
             <canvas id="weeklyTradeAnalysisChart"></canvas>
         </div>
     </div>
@@ -299,5 +339,23 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="r2-sync.js" type="module"></script>
     <script src="main.js" type="module"></script>
+
+    <!-- 添加统计卡片全屏模态框 -->
+    <div id="statModal" class="stat-modal">
+        <div class="stat-modal-content">
+            <button class="close-button">&times;</button>
+            <h2 id="statModalTitle"></h2>
+            <div id="statModalContent"></div>
+        </div>
+    </div>
+
+    <!-- 添加图表全屏模态框 -->
+    <div id="chartModal" class="chart-modal">
+        <div class="chart-modal-content">
+            <button class="close-button">&times;</button>
+            <h2 id="chartModalTitle"></h2>
+            <div id="chartModalContent"></div>
+        </div>
+    </div>
 </body>
 </html>
