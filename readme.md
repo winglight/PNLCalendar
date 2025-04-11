@@ -1,5 +1,5 @@
-# Trade Calendar with PnL Visualization
-
+# Trade Calendar with PnL Visualization	（[中文](readme_cn.md)）
+![logo](favicon.png)
 ## Table of Contents
 
 - [Purpose](#purpose)
