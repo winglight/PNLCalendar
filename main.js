@@ -296,15 +296,92 @@ function showSymbolDropdown(searchText = '') {
     const symbolDropdown = document.getElementById('symbolDropdown');
     const uniqueSymbols = [...new Set(allTrades.map(trade => trade.Symbol))];
     
+    // 过滤符合搜索文本的 symbols
     const filteredSymbols = uniqueSymbols.filter(symbol => 
         symbol.toLowerCase().includes(searchText.toLowerCase())
     ).sort();
     
-    symbolDropdown.innerHTML = filteredSymbols.map(symbol => `
-        <div class="symbol-option" data-symbol="${symbol}">${symbol}</div>
-    `).join('');
+    // 生成前缀通配符选项
+    const wildcardPrefixes = new Set(); // 存储实际的前缀（不带*）
+    if (searchText && searchText.length >= 2) {
+        // 获取所有以搜索文本开头的 symbols
+        const prefixMatches = uniqueSymbols.filter(symbol => 
+            symbol.toLowerCase().startsWith(searchText.toLowerCase())
+        );
+        
+        // 按长度分组符号
+        const symbolsByLength = {};
+        prefixMatches.forEach(symbol => {
+            const length = symbol.length;
+            if (!symbolsByLength[length]) {
+                symbolsByLength[length] = [];
+            }
+            symbolsByLength[length].push(symbol);
+        });
+        
+        // 对于每个长度，找出共同前缀
+        Object.keys(symbolsByLength).forEach(length => {
+            const symbols = symbolsByLength[length];
+            if (symbols.length > 1) {
+                // 找出这组符号的共同前缀
+                const commonPrefix = findCommonPrefix(symbols);
+                if (commonPrefix.length > searchText.length) {
+                    wildcardPrefixes.add(commonPrefix);
+                }
+            }
+        });
+        
+        // 对于单个符号，检查是否有数字部分可以作为前缀
+        prefixMatches.forEach(symbol => {
+            // 查找第一个数字的位置
+            const digitMatch = symbol.match(/\d/);
+            if (digitMatch && digitMatch.index > searchText.length) {
+                const prefix = symbol.substring(0, digitMatch.index);
+                // 检查是否有多个符合此前缀的交易
+                const matchCount = prefixMatches.filter(s => s.startsWith(prefix)).length;
+                if (matchCount > 1) {
+                    wildcardPrefixes.add(prefix);
+                }
+            }
+        });
+    }
+    
+    // 转换前缀为通配符选项
+    const wildcardOptions = Array.from(wildcardPrefixes).map(prefix => `${prefix}*`).sort();
+    
+    // 合并通配符选项和普通选项
+    const allOptions = [...wildcardOptions, ...filteredSymbols];
+    
+    // 生成下拉框 HTML
+    symbolDropdown.innerHTML = allOptions.map(option => {
+        const isWildcard = option.endsWith('*');
+        return `
+            <div class="symbol-option ${isWildcard ? 'wildcard-option' : ''}" data-symbol="${option}">
+                ${option} ${isWildcard ? `<span class="wildcard-hint">(通配符)</span>` : ''}
+            </div>
+        `;
+    }).join('');
     
     symbolDropdown.classList.add('active');
+}
+
+// 辅助函数：查找一组字符串的共同前缀
+function findCommonPrefix(strings) {
+    if (!strings || strings.length === 0) return '';
+    if (strings.length === 1) return strings[0];
+    
+    let prefix = strings[0];
+    for (let i = 1; i < strings.length; i++) {
+        // 逐字符比较，找出共同前缀
+        let j = 0;
+        while (j < prefix.length && j < strings[i].length && prefix[j] === strings[i][j]) {
+            j++;
+        }
+        prefix = prefix.substring(0, j);
+        if (prefix === '') break;
+    }
+    
+    return prefix;
 }
 
 function filterBySymbol(symbol) {

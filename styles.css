@@ -876,3 +876,15 @@ button svg {
         width: 100%;
     }
 }
+
+/* 通配符选项样式 */
+.wildcard-option {
+    background-color: #f0f8ff; /* 浅蓝色背景 */
+    font-weight: 500;
+}
+
+.wildcard-hint {
+    font-size: 0.8em;
+    color: #666;
+    margin-left: 5px;
+}

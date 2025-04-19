@@ -253,9 +253,18 @@ export function filterTradesByDateRange(startDate, endDate) {
 export function filterTradesBySymbol(symbol) {
     if (!symbol) return;
     
-    filteredTrades = symbol ? 
-        allTrades.filter(trade => trade.Symbol === symbol) : 
-        [...allTrades];
+    // 检查是否是通配符模式
+    if (symbol.endsWith('*')) {
+        const prefix = symbol.slice(0, -1); // 移除 * 符号
+        filteredTrades = allTrades.filter(trade => 
+            trade.Symbol.startsWith(prefix)
+        );
+    } else {
+        // 精确匹配
+        filteredTrades = allTrades.filter(trade => 
+            trade.Symbol === symbol
+        );
+    }
     
     return filteredTrades;
 }
