@@ -41,12 +41,14 @@ export async function loadTrades() {
         filteredTrades = [...allTrades];
     }
     
-    const trades = await r2Sync.loadFromR2('trades');
-    if (trades && trades.length > 0) {
-        allTrades = trades;
-        filteredTrades = [...allTrades];
-        localStorage.setItem('trades', JSON.stringify(allTrades));
-    }
+    setTimeout(async() => {
+        const trades = await r2Sync.loadFromR2('trades');
+        if (trades && trades.length > 0) {
+            allTrades = trades;
+            filteredTrades = [...allTrades];
+            localStorage.setItem('trades', JSON.stringify(allTrades));
+        }
+    }, 100);
     
     return true;
 }
@@ -194,11 +196,23 @@ export function setDateRange(range) {
             break;
         case 'thisMonth':
             start = new Date(today.getFullYear(), today.getMonth(), 1);
-            end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            end = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+            break;
+        case 'thisQuarter':
+            // 计算当前季度的起始月份 (0-2为第一季度，3-5为第二季度，以此类推)
+            const quarterStartMonth = Math.floor(today.getMonth() / 3) * 3;
+            // 设置当前季度的起始日期（季度第一个月的第一天）
+            start = new Date(today.getFullYear(), quarterStartMonth, 1);
+            // 设置当前季度的结束日期（季度最后一个月的最后一天）
+            end = new Date(today.getFullYear(), quarterStartMonth + 3, 1);
+            break;
+        case 'last30Days':
+            start = new Date(today.getFullYear(), today.getMonth(), today.getDate()-30);
+            end = new Date(today.getFullYear(), today.getMonth(), today.getDate()+1);
             break;
         case 'lastMonth':
             start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-            end = new Date(today.getFullYear(), today.getMonth(), 0);
+            end = new Date(today.getFullYear(), today.getMonth(), 1);
             break;
         case 'thisYear':
             start = new Date(today.getFullYear(), 0, 1);
@@ -207,6 +221,10 @@ export function setDateRange(range) {
         case 'lastYear':
             start = new Date(today.getFullYear() - 1, 0, 1);
             end = new Date(today.getFullYear() - 1, 11, 31);
+            break;
+        case 'ytd':
+            start = new Date(today.getFullYear(), 0, 1);
+            end = new Date(today.getFullYear(), 11, 31);
             break;
         case 'all':
             // 设置一个很早的开始日期和今天作为结束日期
