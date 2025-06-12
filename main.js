@@ -24,7 +24,6 @@ import {
     updateStatistics,
     chartInstances
 } from './stats.js';
-import { R2Sync } from './r2-sync.js';
 
 // DOM Elements
 let showDateRangeBtn, clearDataBtn, handleImportBtn, showImportModalBtn, configR2Btn, csvFile;

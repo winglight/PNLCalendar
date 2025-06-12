@@ -39,18 +39,17 @@ export async function loadTrades() {
     allTrades = loadTradesFromStorage();
     if (allTrades && allTrades.length > 0) {
         filteredTrades = [...allTrades];
-        return true;
     }
     
-    const trades = await r2Sync.loadFromR2('trades');
-    if (trades && trades.length > 0) {
-        allTrades = trades;
-        filteredTrades = [...allTrades];
-        localStorage.setItem('trades', JSON.stringify(allTrades));
-        return true;
-    }
+    r2Sync.loadFromR2('trades').then(trades => {
+        if (trades && trades.length > 0) {
+            allTrades = trades;
+            filteredTrades = [...allTrades];
+            localStorage.setItem('trades', JSON.stringify(allTrades));
+        }
+    });
     
-    return false;
+    return true;
 }
 
 // 保存交易数据
