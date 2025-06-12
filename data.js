@@ -41,14 +41,12 @@ export async function loadTrades() {
         filteredTrades = [...allTrades];
     }
     
-    r2Sync.loadFromR2('trades').then(trades => {
-        if (trades && trades.length > 0) {
-            allTrades = trades;
-            filteredTrades = [...allTrades];
-            localStorage.setItem('trades', JSON.stringify(allTrades));
-        }
-        return true;
-    });
+    const trades = await r2Sync.loadFromR2('trades');
+    if (trades && trades.length > 0) {
+        allTrades = trades;
+        filteredTrades = [...allTrades];
+        localStorage.setItem('trades', JSON.stringify(allTrades));
+    }
     
     return true;
 }
