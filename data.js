@@ -47,6 +47,7 @@ export async function loadTrades() {
             filteredTrades = [...allTrades];
             localStorage.setItem('trades', JSON.stringify(allTrades));
         }
+        return true;
     });
     
     return true;
