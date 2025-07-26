@@ -267,6 +267,17 @@ export function closeTradeModal() {
                     <button class="details-button" id="viewDetailsBtn">View Details</button>
                 </div>
             `;
+            
+            // 重新绑定按钮事件监听器
+            const viewDetailsBtn = document.getElementById('viewDetailsBtn');
+            if (viewDetailsBtn) {
+                viewDetailsBtn.addEventListener('click', viewTradeDetails);
+            }
+            
+            const closeTradeModalBtn = document.getElementById('closeTradeModalBtn');
+            if (closeTradeModalBtn) {
+                closeTradeModalBtn.addEventListener('click', closeTradeModal);
+            }
         }
     }
 }
