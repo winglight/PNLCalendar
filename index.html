@@ -16,6 +16,12 @@
     </a>
     <div class="toolbar">
         <div class="toolbar-left">
+            <button id="showLogSidebarBtn" class="log-sidebar-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24">
+                    <path d="M18,2A2,2 0 0,1 20,4V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V4A2,2 0 0,1 6,2H18M18,4H6V20H18V4M15.5,17H8.5V15.5H15.5V17M15.5,9.5H8.5V8H15.5V9.5M15.5,13.25H8.5V11.75H15.5V13.25Z"/>
+                </svg>
+                日志
+            </button>
             <div class="date-picker-container">
                 <button  id="showDateRangeBtn">
                     <svg width="20" height="20" viewBox="0 0 24 24">
@@ -337,7 +343,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="r2-sync.js" type="module"></script>
-    <script src="main.js" type="module"></script>
+<script src="main.js" type="module"></script>
 
     <!-- 添加统计卡片全屏模态框 -->
     <div id="statModal" class="stat-modal">
@@ -356,5 +362,159 @@
             <div id="chartModalContent"></div>
         </div>
     </div>
+    <!-- Log Entry Modal -->
+    <div id="logModal" class="modal hidden">
+      <div class="modal-content log-modal">
+        <span class="close" id="closeLogModal">&times;</span>
+        <h2 id="logModalTitle">复盘日志</h2>
+        <form id="logForm">
+          <div class="form-row">
+            <label for="logDate">日期</label>
+            <input type="date" id="logDate" name="date" required />
+          </div>
+          <div class="form-row">
+            <label for="logType">类型</label>
+            <select id="logType" name="type">
+              <option value="daily">每日复盘</option>
+              <option value="weekly">每周复盘</option>
+            </select>
+          </div>
+          <div class="form-row two-cols">
+            <div>
+              <label for="tradeCount">今天/本周做了几笔交易</label>
+              <input type="number" id="tradeCount" name="quickReview.count" min="0" />
+            </div>
+            <div>
+              <label for="feelScore">整体感觉如何（1-5）</label>
+              <input type="number" id="feelScore" name="quickReview.feel" min="1" max="5" />
+            </div>
+          </div>
+          <div class="form-row">
+            <label for="facts">记录事实</label>
+            <textarea id="facts" name="facts" rows="4" placeholder="只写发生了什么，不带情绪"></textarea>
+          </div>
+          <div class="form-row">
+            <label for="learnings">提炼学习点</label>
+            <textarea id="learnings" name="learnings" rows="4" placeholder="从市场走势、操作、情绪管理中提炼1–2个收获"></textarea>
+          </div>
+          <div class="form-row">
+            <label for="improvements">优化方向</label>
+            <textarea id="improvements" name="improvements" rows="3" placeholder="下次可以改进的一个小动作"></textarea>
+          </div>
+          <div class="form-row">
+            <label for="affirmations">自我肯定</label>
+            <textarea id="affirmations" name="affirmations" rows="3" placeholder="哪怕亏钱，也找一条做得对的地方"></textarea>
+          </div>
+          <div class="form-row">
+            <label for="linkedTrades">关联交易ID（逗号分隔，可选）</label>
+            <input type="text" id="linkedTrades" name="linkedTradeIds" placeholder="例如：t123,t124" />
+          </div>
+          
+          <!-- 每周复盘专用字段 -->
+          <div id="weeklyFields" class="weekly-fields hidden">
+            <div class="form-section">
+              <h3>1. 本周数据</h3>
+              <div class="form-row readonly-row">
+                <label>总交易笔数（自动计算）</label>
+                <input type="number" id="weeklyTotalTrades" readonly />
+              </div>
+              <div class="form-row readonly-row">
+                <label>盈亏结果（自动计算）</label>
+                <input type="text" id="weeklyPnlResult" readonly />
+              </div>
+              <div class="form-row readonly-row">
+                <label>最大单笔盈利/亏损（自动计算）</label>
+                <input type="text" id="weeklyMaxWinLoss" readonly />
+              </div>
+              <div class="form-row readonly-row">
+                <label>胜率（自动计算）</label>
+                <input type="text" id="weeklyWinRate" readonly />
+              </div>
+              <div class="form-row readonly-row">
+                <label>是否遵守"每日最多3笔交易"规则（自动计算）</label>
+                <input type="text" id="weeklyDailyLimit" readonly />
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h3>2. 成功经验</h3>
+              <div class="form-row">
+                <label for="plannedTrades">✅ 哪些交易符合计划，带来了预期结果？</label>
+                <textarea id="plannedTrades" name="plannedTrades" rows="3" placeholder="描述符合计划的交易..."></textarea>
+              </div>
+              <div class="form-row">
+                <label for="emotionalStability">✅ 哪些行为让我情绪稳定？</label>
+                <textarea id="emotionalStability" name="emotionalStability" rows="3" placeholder="描述让你保持情绪稳定的行为..."></textarea>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h3>3. 失误总结</h3>
+              <div class="form-row">
+                <label for="violatedPlans">❌ 哪些交易违背了计划？（下拉框多选）</label>
+                <select id="violatedPlans" name="violatedPlans" multiple>
+                  <option value="超量交易">超量交易</option>
+                  <option value="未设止损">未设止损</option>
+                  <option value="追涨杀跌">追涨杀跌</option>
+                  <option value="持仓过夜">持仓过夜</option>
+                  <option value="违反策略">违反策略</option>
+                  <option value="情绪化操作">情绪化操作</option>
+                </select>
+              </div>
+              <div class="form-row">
+                <label for="emotionalFactors">❌ 哪些情绪（贪婪/恐惧/犹豫）影响了操作？（下拉框多选）</label>
+                <select id="emotionalFactors" name="emotionalFactors" multiple>
+                  <option value="贪婪">贪婪</option>
+                  <option value="恐惧">恐惧</option>
+                  <option value="犹豫">犹豫</option>
+                  <option value="焦虑">焦虑</option>
+                  <option value="后悔">后悔</option>
+                  <option value="兴奋">兴奋</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h3>4. 下周优化</h3>
+              <div class="form-row">
+                <label for="goodHabitToKeep">🎯 我下周要保持的1个好习惯</label>
+                <textarea id="goodHabitToKeep" name="goodHabitToKeep" rows="2" placeholder="例如：保持止损纪律"></textarea>
+              </div>
+              <div class="form-row">
+                <label for="mistakeToAvoid">🚫 我下周要避免的1个错误</label>
+                <textarea id="mistakeToAvoid" name="mistakeToAvoid" rows="2" placeholder="例如：避免追涨杀跌"></textarea>
+              </div>
+              <div class="form-row">
+                <label for="specificActions">📝 具体执行动作</label>
+                <textarea id="specificActions" name="specificActions" rows="3" placeholder="例如：开盘前写好计划，再下单"></textarea>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h3>5. 本周自我肯定</h3>
+              <div class="form-row">
+                <label for="weeklyAffirmation">🌟 本周最值得肯定的一件事</label>
+                <textarea id="weeklyAffirmation" name="weeklyAffirmation" rows="3" placeholder="记录本周最值得肯定的事情..."></textarea>
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-actions">
+            <button type="button" id="deleteLogBtn" class="danger hidden">删除</button>
+            <button type="submit" id="saveLogBtn" class="primary">保存</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Log Sidebar -->
+    <aside id="logSidebar" class="log-sidebar hidden">
+      <div class="log-sidebar-header">
+        <h3>日志</h3>
+        <button id="closeLogSidebar" class="icon-btn" title="关闭">×</button>
+      </div>
+      <div id="logSidebarList" class="log-list"></div>
+      <div id="logSidebarLoading" class="log-loading hidden">加载中...</div>
+    </aside>
 </body>
 </html>

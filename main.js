@@ -24,6 +24,8 @@ import {
     updateStatistics,
     chartInstances
 } from './stats.js';
+import { loadLogs } from './logs.js';
+import { initLogUI } from './log-ui.js';
 
 // DOM Elements
 let showDateRangeBtn, clearDataBtn, handleImportBtn, showImportModalBtn, configR2Btn, csvFile;
@@ -33,9 +35,17 @@ async function init() {
     // 初始化DOM元素引用
     initDOMElements();
     await loadTrades();
-    setupEventListeners();
+    await loadLogs();
+
+    // 初始化日志UI绑定
+    initLogUI();
+
     renderCalendar();
+    setupEventListeners();
     updateStatistics();
+
+    // 暴露给全局，供log-ui调用
+    window.renderCalendar = renderCalendar;
 }
 
 // 初始化DOM元素引用
@@ -152,6 +162,7 @@ function setupEventListeners() {
 function handleConfigR2() {
     r2Sync.createConfigDialog(() => {
         loadTrades();
+        loadLogs();
         renderCalendar();
         updateStatistics();
     });

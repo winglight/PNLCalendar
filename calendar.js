@@ -1,6 +1,7 @@
 // calendar.js - 处理日历和交易详情相关功能
 import { allTrades, filteredTrades, TOTAL_ACCOUNT_VALUE, formatPnL, calculateDuration } from './data.js';
 import { getDailyStats, getMonthlyStats, getWeeklyStats } from './stats.js';
+import { addLogButtonToCalendarDay, displayLogInTradeModal } from './log-ui.js';
 
 // 当前日期
 export let currentDate = new Date();
@@ -43,21 +44,15 @@ export function renderCalendar() {
 
     // 填充月初空白
     let i = isMobile?1:0;
-    for (i; i < firstDay.getDay(); i++) {
+    for (; i < firstDay.getDay(); i++) {
         calendar.appendChild(document.createElement('div'));
     }
 
-    // 填充日期
-    for (let day = 1; day <= lastDay.getDate(); day++) {
-        const date = new Date(Date.UTC(year, month, day));
-        const dayOfWeek = date.getDay();
-        
-        // 在移动设备上跳过周六日
-        if (isMobile && (dayOfWeek === 0 || dayOfWeek === 6)) continue;
-        
+    for (let date = new Date(firstDay); date <= lastDay; date.setDate(date.getDate() + 1)) {
         const dayDiv = document.createElement('div');
         dayDiv.className = 'calendar-day';
-        dayDiv.setAttribute('data-date', date.toISOString().split('T')[0]);
+        dayDiv.dataset.date = date.toISOString().split('T')[0];
+        const day = date.getDate();
 
         const stats = getDailyStats(date);
         if (stats) {
@@ -71,18 +66,24 @@ export function renderCalendar() {
                     ${stats.winRate.toFixed(1)}% WR
                 </div>
             `;
-            dayDiv.addEventListener('click', () => showTradeDetails(date));
+            // 使用当次迭代的日期拷贝，避免闭包中引用被后续迭代修改
+            const dateCopy = new Date(date);
+            dayDiv.addEventListener('click', () => showTradeDetails(dateCopy));
+            // 在日期单元格右上角添加日志按钮
+            addLogButtonToCalendarDay(dayDiv, date);
             
             currentWeekPnL += stats.pnl;
             currentWeekDays++;
         } else {
-            dayDiv.textContent = day;
+            dayDiv.textContent = date.getDate();
+            // 无交易的日期也需要日志按钮
+            addLogButtonToCalendarDay(dayDiv, date);
         }
 
         calendar.appendChild(dayDiv);
 
         // 处理周末或月末
-        if ((!isMobile) && (date.getDay() === 6 || day === lastDay.getDate())) {
+        if ((!isMobile) && (date.getDay() === 6 || date.getDate() === lastDay.getDate())) {
             const weekSummary = document.createElement('div');
             weekSummary.className = 'week-summary';
             
@@ -96,7 +97,7 @@ export function renderCalendar() {
             }
             
             // 如果是月末，填充到周六的空白单元格
-            if (day === lastDay.getDate()) {
+            if (date.getDate() === lastDay.getDate()) {
                 const lastDayOfWeek = date.getDay();
                 // 如果不是周六(6)，则需要填充
                 if (lastDayOfWeek < 6) {
@@ -211,6 +212,9 @@ export function showTradeDetails(date) {
         tableBody.appendChild(row);
     });
 
+    // 在交易详情中渲染日志内容
+    displayLogInTradeModal(date);
+
     modal.style.display = 'block';
 
     // 添加点击外部关闭功能
@@ -226,58 +230,23 @@ export function closeTradeModal() {
     const modal = document.getElementById('tradeModal');
     if (modal) {
         modal.style.display = 'none';
-        // 重置但不移除模态框内容
-        const modalContent = modal.querySelector('.trade-modal-content');
-        if (modalContent) {
-            modalContent.innerHTML = `
-                <div class="modal-header">
-                    <h2 id="modalDate"></h2>
-                    <h2 id="modalNetPnL"></h2>
-                </div>
-                <div class="trade-stats">
-                    <div>
-                        <span>Total Trades: </span><span id="modalTotalTrades"></span>
-                        <span>Winners: </span><span id="modalWinners"></span>
-                        <span>Winrate: </span><span id="modalWinrate"></span>
-                    </div>
-                    <div>
-                        <span>Losers: </span><span id="modalLosers"></span>
-                        <span>Volume: </span><span id="modalVolume"></span>
-                        <span>Profit Factor: </span><span id="modalProfitFactor"></span>
-                    </div>
-                </div>
-                <table class="trades-table">
-                    <thead>
-                        <tr>
-                            <th>Open Time</th>
-                            <th>Ticker</th>
-                            <th>Side</th>
-                            <th>Instrument</th>
-                            <th>Net P&L</th>
-                            <th>Net ROI</th>
-                            <th>Trade Times</th>
-                            <th>Playbook</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tradesTableBody">
-                    </tbody>
-                </table>
-                <div class="button-group">
-                    <button class="cancel-button" id="closeTradeModalBtn">Cancel</button>
-                    <button class="details-button" id="viewDetailsBtn">View Details</button>
-                </div>
-            `;
-            
-            // 重新绑定按钮事件监听器
-            const viewDetailsBtn = document.getElementById('viewDetailsBtn');
-            if (viewDetailsBtn) {
-                viewDetailsBtn.addEventListener('click', viewTradeDetails);
-            }
-            
-            const closeTradeModalBtn = document.getElementById('closeTradeModalBtn');
-            if (closeTradeModalBtn) {
-                closeTradeModalBtn.addEventListener('click', closeTradeModal);
-            }
+        // 清空数据但保留结构，避免破坏已加载的内容
+        document.getElementById('modalDate').textContent = '';
+        document.getElementById('modalNetPnL').innerHTML = '';
+        document.getElementById('modalTotalTrades').textContent = '';
+        document.getElementById('modalWinners').textContent = '';
+        document.getElementById('modalWinrate').textContent = '';
+        document.getElementById('modalLosers').textContent = '';
+        
+        const tableBody = document.getElementById('tradesTableBody');
+        if (tableBody) {
+            tableBody.innerHTML = '';
+        }
+        
+        // 移除日志部分（如果存在）
+        const logSection = modal.querySelector('.log-section');
+        if (logSection) {
+            logSection.remove();
         }
     }
 }

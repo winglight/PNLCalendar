@@ -68,7 +68,14 @@ export class R2Sync {
                 }
             });
             
-            if (!response.ok) return null;
+            // 静默处理404错误，避免控制台报错
+            if (!response.ok) {
+                if (response.status === 404) {
+                    // 文件不存在是正常情况，静默返回null
+                    return null;
+                }
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
             
             // Get zip file blob
             const zipBlob = await response.blob();
@@ -89,7 +96,10 @@ export class R2Sync {
             
             return JSON.parse(files[0].content);
         } catch (error) {
-            console.error('Download failed:', error);
+            // 只在非404错误时输出日志
+            if (!error.message.includes('404')) {
+                console.error('Download failed:', error);
+            }
             return null;
         }
     }
