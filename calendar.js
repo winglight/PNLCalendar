@@ -6,6 +6,9 @@ import { addLogButtonToCalendarDay, displayLogInTradeModal } from './log-ui.js';
 // 当前日期
 export let currentDate = new Date();
 
+// 保存交易弹窗的原始内容，用于详情视图切换后恢复
+let originalTradeModalContent = '';
+
 // 渲染日历
 export function renderCalendar() {
     const year = currentDate.getFullYear();
@@ -131,7 +134,13 @@ export function navigateMonth(direction) {
 // 显示交易详情
 export function showTradeDetails(date) {
     const modal = document.getElementById('tradeModal');
+    const modalContent = modal ? modal.querySelector('.trade-modal-content') : null;
     const dateStr = date.toISOString().split('T')[0];
+
+    // 首次调用时记录原始内容，方便详情视图关闭后恢复
+    if (modalContent && !originalTradeModalContent) {
+        originalTradeModalContent = modalContent.innerHTML;
+    }
 
     // 获取当日已关闭的交易
     const dayTrades = allTrades.filter(trade =>
@@ -215,34 +224,55 @@ export function showTradeDetails(date) {
     // 在交易详情中渲染日志内容
     displayLogInTradeModal(date);
 
-    modal.style.display = 'block';
+    if (modal) {
+        modal.style.display = 'block';
 
-    // 添加点击外部关闭功能
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            closeTradeModal();
-        }
-    });
+        // 确保按钮事件绑定（每次打开都重新绑定以避免丢失）
+        const viewBtn = document.getElementById('viewDetailsBtn');
+        if (viewBtn) viewBtn.onclick = viewTradeDetails;
+        const closeBtn = document.getElementById('closeTradeModalBtn');
+        if (closeBtn) closeBtn.onclick = closeTradeModal;
+
+        // 添加点击外部关闭功能（使用onclick避免重复绑定）
+        modal.onclick = (e) => {
+            if (e.target === modal) {
+                closeTradeModal();
+            }
+        };
+    }
 }
 
 // 关闭交易详情弹窗
 export function closeTradeModal() {
     const modal = document.getElementById('tradeModal');
     if (modal) {
+        // 如果详情视图替换了内容，先恢复原始结构
+        const modalContent = modal.querySelector('.trade-modal-content');
+        if (modalContent && originalTradeModalContent) {
+            modalContent.innerHTML = originalTradeModalContent;
+        }
+
         modal.style.display = 'none';
+
         // 清空数据但保留结构，避免破坏已加载的内容
-        document.getElementById('modalDate').textContent = '';
-        document.getElementById('modalNetPnL').innerHTML = '';
-        document.getElementById('modalTotalTrades').textContent = '';
-        document.getElementById('modalWinners').textContent = '';
-        document.getElementById('modalWinrate').textContent = '';
-        document.getElementById('modalLosers').textContent = '';
-        
+        const dateEl = document.getElementById('modalDate');
+        if (dateEl) dateEl.textContent = '';
+        const netEl = document.getElementById('modalNetPnL');
+        if (netEl) netEl.innerHTML = '';
+        const totalEl = document.getElementById('modalTotalTrades');
+        if (totalEl) totalEl.textContent = '';
+        const winEl = document.getElementById('modalWinners');
+        if (winEl) winEl.textContent = '';
+        const loseEl = document.getElementById('modalLosers');
+        if (loseEl) loseEl.textContent = '';
+        const winrateEl = document.getElementById('modalWinrate');
+        if (winrateEl) winrateEl.textContent = '';
+
         const tableBody = document.getElementById('tradesTableBody');
         if (tableBody) {
             tableBody.innerHTML = '';
         }
-        
+
         // 移除日志部分（如果存在）
         const logSection = modal.querySelector('.log-section');
         if (logSection) {

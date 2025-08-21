@@ -507,6 +507,66 @@ button svg {
     transform: scale(1.02);
 }
 
+/* 交易弹窗中的日志区域样式 */
+.log-section {
+    margin-top: 20px;
+    padding: 15px;
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 8px;
+}
+
+.log-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.log-section-header h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #333;
+}
+
+.add-log-btn,
+.edit-log-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #fff;
+    background: #1976d2;
+}
+
+.edit-log-btn {
+    background: #ff9800;
+}
+
+.add-log-btn:hover {
+    background: #145ca7;
+}
+
+.edit-log-btn:hover {
+    background: #fb8c00;
+}
+
+.log-section-content {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #555;
+}
+
+.log-field {
+    margin-bottom: 8px;
+}
+
+.no-log {
+    color: #999;
+    font-style: italic;
+}
+
 /* 日历头部样式 */
 .chart-header {
     display: flex;
