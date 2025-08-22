@@ -283,7 +283,13 @@ export function closeTradeModal() {
 
 // 查看详细交易信息
 export function viewTradeDetails() {
-    const dateStr = document.getElementById('modalDate').textContent;
+    const dateEl = document.getElementById('modalDate');
+    const modalContent = document.querySelector('.trade-modal-content');
+    if (!dateEl || !modalContent) return;
+
+    const dateStr = dateEl.textContent;
+    if (!dateStr) return;
+
     const localDate = new Date(dateStr);
     const date = new Date(Date.UTC(
         localDate.getFullYear(),
@@ -291,7 +297,6 @@ export function viewTradeDetails() {
         localDate.getDate()
     ));
     const today = date.toISOString().split('T')[0]
-    const modalContent = document.querySelector('.trade-modal-content');
     
     // 获取选定日期的详细交易
     const detailedTrades = allTrades.filter(trade => 
