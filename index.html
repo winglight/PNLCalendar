@@ -374,43 +374,45 @@
             <label for="logDate">日期</label>
             <input type="date" id="logDate" name="date" required />
           </div>
-          <div class="form-row">
-            <label for="logType">类型</label>
-            <select id="logType" name="type">
-              <option value="daily">每日复盘</option>
-              <option value="weekly">每周复盘</option>
-            </select>
-          </div>
-          <div class="form-row two-cols">
-            <div>
-              <label for="tradeCount">今天/本周做了几笔交易</label>
-              <input type="number" id="tradeCount" name="quickReview.count" min="0" />
+            <div class="form-row">
+              <label for="logType">类型</label>
+              <select id="logType" name="type">
+                <option value="daily">每日复盘</option>
+                <option value="weekly">每周复盘</option>
+              </select>
             </div>
-            <div>
-              <label for="feelScore">整体感觉如何（1-5）</label>
-              <input type="number" id="feelScore" name="quickReview.feel" min="1" max="5" />
+            <div id="dailyFields" class="daily-fields">
+              <div class="form-row two-cols">
+                <div>
+                  <label for="tradeCount">今天/本周做了几笔交易</label>
+                  <input type="number" id="tradeCount" name="quickReview.count" min="0" />
+                </div>
+                <div>
+                  <label for="feelScore">整体感觉如何（1-5）</label>
+                  <input type="number" id="feelScore" name="quickReview.feel" min="1" max="5" />
+                </div>
+              </div>
+              <div class="form-row">
+                <label for="facts">记录事实</label>
+                <textarea id="facts" name="facts" rows="4" placeholder="只写发生了什么，不带情绪"></textarea>
+              </div>
+              <div class="form-row">
+                <label for="learnings">提炼学习点</label>
+                <textarea id="learnings" name="learnings" rows="4" placeholder="从市场走势、操作、情绪管理中提炼1–2个收获"></textarea>
+              </div>
+              <div class="form-row">
+                <label for="improvements">优化方向</label>
+                <textarea id="improvements" name="improvements" rows="3" placeholder="下次可以改进的一个小动作"></textarea>
+              </div>
+              <div class="form-row">
+                <label for="affirmations">自我肯定</label>
+                <textarea id="affirmations" name="affirmations" rows="3" placeholder="哪怕亏钱，也找一条做得对的地方"></textarea>
+              </div>
+              <div class="form-row">
+                <label for="linkedTrades">关联交易ID（逗号分隔，可选）</label>
+                <input type="text" id="linkedTrades" name="linkedTradeIds" placeholder="例如：t123,t124" />
+              </div>
             </div>
-          </div>
-          <div class="form-row">
-            <label for="facts">记录事实</label>
-            <textarea id="facts" name="facts" rows="4" placeholder="只写发生了什么，不带情绪"></textarea>
-          </div>
-          <div class="form-row">
-            <label for="learnings">提炼学习点</label>
-            <textarea id="learnings" name="learnings" rows="4" placeholder="从市场走势、操作、情绪管理中提炼1–2个收获"></textarea>
-          </div>
-          <div class="form-row">
-            <label for="improvements">优化方向</label>
-            <textarea id="improvements" name="improvements" rows="3" placeholder="下次可以改进的一个小动作"></textarea>
-          </div>
-          <div class="form-row">
-            <label for="affirmations">自我肯定</label>
-            <textarea id="affirmations" name="affirmations" rows="3" placeholder="哪怕亏钱，也找一条做得对的地方"></textarea>
-          </div>
-          <div class="form-row">
-            <label for="linkedTrades">关联交易ID（逗号分隔，可选）</label>
-            <input type="text" id="linkedTrades" name="linkedTradeIds" placeholder="例如：t123,t124" />
-          </div>
           
           <!-- 每周复盘专用字段 -->
           <div id="weeklyFields" class="weekly-fields hidden">
