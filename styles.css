@@ -1574,7 +1574,7 @@ button svg {
 
 /* Utility */
 .badge { display: inline-block; font-size: 12px; padding: 3px 8px; border-radius: 999px; background: #eee; color: #333; }
-.toast { position: fixed; bottom: 20px; right: 20px; background: #333; color: #fff; padding: 10px 14px; border-radius: 6px; opacity: 0.95; }
+.toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 10px 14px; border-radius: 6px; opacity: 0.95; display: inline-block; z-index: 10000; }
 
 .close-button {
     background: transparent;

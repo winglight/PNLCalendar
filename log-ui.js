@@ -723,12 +723,13 @@ function showToast(message, type = 'success') {
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
     toast.textContent = message;
-    
+
     // 添加样式
     toast.style.cssText = `
         position: fixed;
         top: 20px;
-        right: 20px;
+        left: 50%;
+        transform: translate(-50%, -20px);
         padding: 12px 24px;
         border-radius: 4px;
         color: white;
@@ -737,22 +738,22 @@ function showToast(message, type = 'success') {
         background: ${type === 'error' ? '#e74c3c' : '#27ae60'};
         box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         opacity: 0;
-        transform: translateX(100%);
+        display: inline-block;
         transition: all 0.3s ease;
     `;
-    
+
     document.body.appendChild(toast);
-    
+
     // 显示动画
     setTimeout(() => {
         toast.style.opacity = '1';
-        toast.style.transform = 'translateX(0)';
+        toast.style.transform = 'translate(-50%, 0)';
     }, 100);
-    
+
     // 自动隐藏
     setTimeout(() => {
         toast.style.opacity = '0';
-        toast.style.transform = 'translateX(100%)';
+        toast.style.transform = 'translate(-50%, -20px)';
         setTimeout(() => {
             document.body.removeChild(toast);
         }, 300);
