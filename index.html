@@ -129,42 +129,46 @@
 <!-- 添加交易详情弹窗 -->
 <div id="tradeModal" class="trade-modal">
     <div class="trade-modal-content">
+        <span class="close-button" id="closeTradeModalBtn">&times;</span>
         <div class="modal-header">
-            <h2 id="modalDate"></h2>
-            <h2 id="modalNetPnL"></h2>
+            <span id="modalDate" class="modal-date"></span>
+            <span id="modalNetPnL" class="modal-pnl"></span>
         </div>
         <div class="trade-stats">
-            <div>
-                <span>Total Trades: </span><span id="modalTotalTrades"></span>
-                <span>Winners: </span><span id="modalWinners"></span>
-                <span>Winrate: </span><span id="modalWinrate"></span>
+            <div class="stats-row">
+                <span class="stat-label">Total Trades:</span><span id="modalTotalTrades" class="stat-value"></span>
+                <span class="stat-label">Winners:</span><span id="modalWinners" class="stat-value"></span>
+                <span class="stat-label">Winrate:</span><span id="modalWinrate" class="stat-value"></span>
             </div>
-            <div>
-                <span>Losers: </span><span id="modalLosers"></span>
-                <span>Volume: </span><span id="modalVolume"></span>
-                <span>Profit Factor: </span><span id="modalProfitFactor"></span>
+            <div class="stats-row">
+                <span class="stat-label">Losers:</span><span id="modalLosers" class="stat-value"></span>
+                <span class="stat-label">Volume:</span><span id="modalVolume" class="stat-value"></span>
+                <span class="stat-label">Profit Factor:</span><span id="modalProfitFactor" class="stat-value"></span>
             </div>
         </div>
-        <table class="trades-table">
-            <thead>
-                <tr>
-                    <th>Open Time</th>
-                    <th>Ticker</th>
-                    <th>Side</th>
-                    <th>Instrument</th>
-                    <th>Net P&L</th>
-                    <th>Net ROI</th>
-                    <th>Trade Times</th>
-                    <th>Playbook</th>
-                </tr>
-            </thead>
-            <tbody id="tradesTableBody">
-            </tbody>
-        </table>
-        <div class="button-group">
-            <button class="cancel-button" id="closeTradeModalBtn">Cancel</button>
-            <button class="details-button" id="viewDetailsBtn">View Details</button>
+        <div class="table-wrapper">
+            <div class="table-controls">
+                <button class="details-button" id="viewDetailsBtn">View Details</button>
+            </div>
+            <table class="trades-table">
+                <thead>
+                    <tr>
+                        <th>Open Time</th>
+                        <th>Ticker</th>
+                        <th>Side</th>
+                        <th>Instrument</th>
+                        <th>Net P&L</th>
+                        <th>Net ROI</th>
+                        <th>Trade Times</th>
+                        <th>Playbook</th>
+                    </tr>
+                </thead>
+                <tbody id="tradesTableBody">
+                </tbody>
+            </table>
         </div>
+        <button class="nav-arrow left" id="prevTradeDay">&larr;</button>
+        <button class="nav-arrow right" id="nextTradeDay">&rarr;</button>
     </div>
 </div>
 <div class="stats-container">

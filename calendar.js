@@ -183,7 +183,9 @@ export function showTradeDetails(date) {
     });
 
     // 设置模态框标题和统计信息
-    document.getElementById('modalDate').textContent = date.toLocaleDateString();
+    const dateEl = document.getElementById('modalDate');
+    dateEl.textContent = date.toLocaleDateString();
+    dateEl.dataset.date = dateStr;
 
     // 计算统计数据
     const consolidatedArray = Array.from(consolidatedTrades.values());
@@ -223,6 +225,31 @@ export function showTradeDetails(date) {
 
     // 在交易详情中渲染日志内容
     displayLogInTradeModal(date);
+
+    // 设置前后交易日导航
+    const tradeDates = Array.from(new Set(allTrades
+        .filter(t => t['Open/CloseIndicator'] === 'C')
+        .map(t => t.TradeDate)
+    )).sort();
+    const currentIndex = tradeDates.indexOf(dateStr);
+    const prevBtn = document.getElementById('prevTradeDay');
+    const nextBtn = document.getElementById('nextTradeDay');
+    if (prevBtn) {
+        prevBtn.style.display = currentIndex > 0 ? 'block' : 'none';
+        prevBtn.onclick = () => {
+            if (currentIndex > 0) {
+                showTradeDetails(new Date(tradeDates[currentIndex - 1]));
+            }
+        };
+    }
+    if (nextBtn) {
+        nextBtn.style.display = currentIndex < tradeDates.length - 1 ? 'block' : 'none';
+        nextBtn.onclick = () => {
+            if (currentIndex < tradeDates.length - 1) {
+                showTradeDetails(new Date(tradeDates[currentIndex + 1]));
+            }
+        };
+    }
 
     if (modal) {
         modal.style.display = 'block';

@@ -2174,6 +2174,85 @@ button svg {
     background: #2980b9;
 }
 
+.trade-modal-content {
+    position: relative;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+}
+
+.modal-date {
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+}
+
+.modal-pnl {
+    font-size: 20px;
+}
+
+.profit { color: #2e7d32; }
+.fail { color: #c62828; }
+
+.trade-stats {
+    margin: 10px 0 20px;
+}
+
+.trade-stats .stats-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 5px;
+}
+
+.trade-stats .stat-label {
+    color: #666;
+    margin-right: 4px;
+}
+
+.trade-stats .stat-value {
+    font-weight: 600;
+    color: #333;
+}
+
+.table-wrapper {
+    margin-top: 10px;
+}
+
+.table-controls {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 5px;
+}
+
+.trades-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.trades-table th,
+.trades-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.nav-arrow {
+    position: absolute;
+    bottom: 10px;
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.nav-arrow.left { left: 10px; }
+.nav-arrow.right { right: 10px; }
+
 .close-button {
     background: transparent;
     color: #333;
