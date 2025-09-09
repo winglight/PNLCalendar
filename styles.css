@@ -2232,6 +2232,7 @@ button svg {
 .trades-table {
     width: 100%;
     border-collapse: collapse;
+    border: 1px solid #ddd;
 }
 
 .trades-table th,
@@ -2241,17 +2242,18 @@ button svg {
     text-align: left;
 }
 
+.trade-nav {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
 .nav-arrow {
-    position: absolute;
-    bottom: 10px;
     background: transparent;
     border: none;
     font-size: 24px;
     cursor: pointer;
 }
-
-.nav-arrow.left { left: 10px; }
-.nav-arrow.right { right: 10px; }
 
 .close-button {
     background: transparent;

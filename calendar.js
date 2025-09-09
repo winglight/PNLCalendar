@@ -194,7 +194,13 @@ export function showTradeDetails(date) {
     const winrate = consolidatedArray.length ? (winners / consolidatedArray.length * 100).toFixed(2) : '0.00';
 
     // 更新统计信息显示
-    document.getElementById('modalNetPnL').innerHTML = `Net P&L ${formatPnL(totalPnL)}`;
+    const netPnLEl = document.getElementById('modalNetPnL');
+    if (netPnLEl) {
+        netPnLEl.classList.remove('profit', 'fail');
+        netPnLEl.classList.add(totalPnL >= 0 ? 'profit' : 'fail');
+        const prefix = totalPnL >= 0 ? '+' : '';
+        netPnLEl.textContent = `Net P&L ${prefix}$${totalPnL.toFixed(2)}`;
+    }
     document.getElementById('modalTotalTrades').textContent = consolidatedArray.length;
     document.getElementById('modalWinners').textContent = winners;
     document.getElementById('modalLosers').textContent = consolidatedArray.length - winners;
@@ -285,7 +291,10 @@ export function closeTradeModal() {
         const dateEl = document.getElementById('modalDate');
         if (dateEl) dateEl.textContent = '';
         const netEl = document.getElementById('modalNetPnL');
-        if (netEl) netEl.innerHTML = '';
+        if (netEl) {
+            netEl.textContent = '';
+            netEl.classList.remove('profit', 'fail');
+        }
         const totalEl = document.getElementById('modalTotalTrades');
         if (totalEl) totalEl.textContent = '';
         const winEl = document.getElementById('modalWinners');
