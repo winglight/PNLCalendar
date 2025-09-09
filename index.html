@@ -131,7 +131,11 @@
     <div class="trade-modal-content">
         <span class="close-button" id="closeTradeModalBtn">&times;</span>
         <div class="modal-header">
-            <span id="modalDate" class="modal-date"></span>
+            <div class="date-nav">
+                <button class="nav-arrow left" id="prevTradeDay">&larr;</button>
+                <span id="modalDate" class="modal-date"></span>
+                <button class="nav-arrow right" id="nextTradeDay">&rarr;</button>
+            </div>
             <span id="modalNetPnL" class="modal-pnl"></span>
         </div>
         <div class="trade-stats">
@@ -139,8 +143,6 @@
                 <span class="stat-label">Total Trades:</span><span id="modalTotalTrades" class="stat-value"></span>
                 <span class="stat-label">Winners:</span><span id="modalWinners" class="stat-value"></span>
                 <span class="stat-label">Winrate:</span><span id="modalWinrate" class="stat-value"></span>
-            </div>
-            <div class="stats-row">
                 <span class="stat-label">Losers:</span><span id="modalLosers" class="stat-value"></span>
                 <span class="stat-label">Volume:</span><span id="modalVolume" class="stat-value"></span>
                 <span class="stat-label">Profit Factor:</span><span id="modalProfitFactor" class="stat-value"></span>
@@ -166,10 +168,6 @@
                 <tbody id="tradesTableBody">
                 </tbody>
             </table>
-        </div>
-        <div class="trade-nav">
-            <button class="nav-arrow left" id="prevTradeDay">&larr;</button>
-            <button class="nav-arrow right" id="nextTradeDay">&rarr;</button>
         </div>
     </div>
 </div>
