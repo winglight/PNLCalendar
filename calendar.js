@@ -192,6 +192,10 @@ export function showTradeDetails(date) {
     const totalPnL = consolidatedArray.reduce((sum, trade) => sum + trade.FifoPnlRealized, 0);
     const winners = consolidatedArray.filter(trade => trade.FifoPnlRealized > 0).length;
     const winrate = consolidatedArray.length ? (winners / consolidatedArray.length * 100).toFixed(2) : '0.00';
+    const totalVolume = consolidatedArray.reduce((sum, trade) => sum + trade.Quantity, 0);
+    const totalProfits = consolidatedArray.reduce((sum, t) => t.FifoPnlRealized > 0 ? sum + t.FifoPnlRealized : sum, 0);
+    const totalLosses = consolidatedArray.reduce((sum, t) => t.FifoPnlRealized < 0 ? sum + Math.abs(t.FifoPnlRealized) : sum, 0);
+    const profitFactor = totalLosses === 0 ? totalProfits : totalProfits / totalLosses;
 
     // 更新统计信息显示
     const netPnLEl = document.getElementById('modalNetPnL');
@@ -205,6 +209,8 @@ export function showTradeDetails(date) {
     document.getElementById('modalWinners').textContent = winners;
     document.getElementById('modalLosers').textContent = consolidatedArray.length - winners;
     document.getElementById('modalWinrate').textContent = `${winrate}%`;
+    document.getElementById('modalVolume').textContent = totalVolume;
+    document.getElementById('modalProfitFactor').textContent = profitFactor.toFixed(2);
 
     // 填充交易表格
     const tableBody = document.getElementById('tradesTableBody');
@@ -241,7 +247,7 @@ export function showTradeDetails(date) {
     const prevBtn = document.getElementById('prevTradeDay');
     const nextBtn = document.getElementById('nextTradeDay');
     if (prevBtn) {
-        prevBtn.style.display = currentIndex > 0 ? 'block' : 'none';
+        prevBtn.style.display = currentIndex > 0 ? 'inline-block' : 'none';
         prevBtn.onclick = () => {
             if (currentIndex > 0) {
                 showTradeDetails(new Date(tradeDates[currentIndex - 1]));
@@ -249,7 +255,7 @@ export function showTradeDetails(date) {
         };
     }
     if (nextBtn) {
-        nextBtn.style.display = currentIndex < tradeDates.length - 1 ? 'block' : 'none';
+        nextBtn.style.display = currentIndex < tradeDates.length - 1 ? 'inline-block' : 'none';
         nextBtn.onclick = () => {
             if (currentIndex < tradeDates.length - 1) {
                 showTradeDetails(new Date(tradeDates[currentIndex + 1]));
@@ -303,6 +309,10 @@ export function closeTradeModal() {
         if (loseEl) loseEl.textContent = '';
         const winrateEl = document.getElementById('modalWinrate');
         if (winrateEl) winrateEl.textContent = '';
+        const volumeEl = document.getElementById('modalVolume');
+        if (volumeEl) volumeEl.textContent = '';
+        const pfEl = document.getElementById('modalProfitFactor');
+        if (pfEl) pfEl.textContent = '';
 
         const tableBody = document.getElementById('tradesTableBody');
         if (tableBody) {

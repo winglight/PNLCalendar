@@ -1029,7 +1029,7 @@ button svg {
     font-size: 24px;
     position: absolute;
     right: 10px;
-    top: 10px;
+    top: 5px;
     padding: 0;
     width: 30px;
     height: 30px;
@@ -1582,7 +1582,7 @@ button svg {
     font-size: 24px;
     position: absolute;
     right: 10px;
-    top: 10px;
+    top: 5px;
     padding: 0;
     width: 30px;
     height: 30px;
@@ -2185,6 +2185,12 @@ button svg {
     margin-bottom: 10px;
 }
 
+.modal-header .date-nav {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
 .modal-date {
     font-size: 24px;
     font-weight: 600;
@@ -2204,9 +2210,9 @@ button svg {
 
 .trade-stats .stats-row {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 15px;
-    margin-bottom: 5px;
+    align-items: flex-end;
 }
 
 .trade-stats .stat-label {
@@ -2242,11 +2248,7 @@ button svg {
     text-align: left;
 }
 
-.trade-nav {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 10px;
-}
+/* Removed .trade-nav since navigation arrows moved to header */
 
 .nav-arrow {
     background: transparent;
@@ -2261,7 +2263,7 @@ button svg {
     font-size: 24px;
     position: absolute;
     right: 10px;
-    top: 10px;
+    top: 5px;
     padding: 0;
     width: 30px;
     height: 30px;
