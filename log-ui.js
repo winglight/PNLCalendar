@@ -8,6 +8,7 @@ import {
     LOG_TEMPLATE
 } from './logs.js';
 import { allTrades } from './data.js';
+import { getDailyStats } from './stats.js';
 
 // 日志UI状态
 let currentEditingLog = null;
@@ -509,13 +510,30 @@ function createLogListItem(log) {
     item.className = 'log-item';
     item.dataset.logId = log.id;
     item.dataset.logDate = log.date;
-    
+
     const previewText = getLogPreviewText(log);
     const typeText = log.type === 'weekly' ? '周复盘' : '日复盘';
-    
+
+    const dateObj = new Date(log.date);
+    const weekdayMap = ['日','一','二','三','四','五','六'];
+    const weekday = weekdayMap[dateObj.getDay()];
+
+    let pnlClass = '';
+    if (log.type === 'weekly') {
+        const pnl = log.weeklyData?.pnlResult;
+        if (typeof pnl === 'number') {
+            pnlClass = pnl >= 0 ? 'profit' : 'fail';
+        }
+    } else {
+        const stats = getDailyStats(dateObj);
+        if (stats) {
+            pnlClass = stats.pnl >= 0 ? 'profit' : 'fail';
+        }
+    }
+
     item.innerHTML = `
         <div class="log-item-header">
-            <div class="log-item-date">${log.date}</div>
+            <div class="log-item-date ${pnlClass}">${log.date} 周${weekday}</div>
             <div class="log-item-type ${log.type}">${typeText}</div>
         </div>
         <div class="log-item-preview">${previewText}</div>
