@@ -154,39 +154,48 @@ export function openLogModal(date, logType = null) {
     modal.classList.remove('hidden');
 }
 
+// 获取指定日期及类型对应的交易信息
+function getTradesForLog(date, logType) {
+    if (!date) {
+        return { trades: [], tradeIds: [] };
+    }
+
+    if (logType === 'weekly') {
+        const { weekStartStr, weekEndStr } = getWeekRange(date);
+        const trades = allTrades.filter(trade => {
+            const tradeDateStr = (new Date(trade.TradeDate)).toISOString().split('T')[0];
+            return tradeDateStr >= weekStartStr && tradeDateStr <= weekEndStr;
+        });
+        const tradeIds = trades.map(trade => trade.TransactionID).filter(id => id);
+        return { trades, tradeIds };
+    }
+
+    const trades = allTrades.filter(trade => {
+        const tradeDate = new Date(trade.TradeDate).toISOString().split('T')[0];
+        return tradeDate === date;
+    });
+    const tradeIds = trades.map(trade => trade.TransactionID).filter(id => id);
+    return { trades, tradeIds };
+}
+
 // 自动填充交易信息
 function autoFillTradeInfo(date, logType) {
-    if (logType === 'daily') {
-        // 每日复盘：计算当日交易
-        const dayTrades = allTrades.filter(trade => {
-            const tradeDate = new Date(trade.TradeDate).toISOString().split('T')[0];
-            return tradeDate === date;
-        });
+    const { trades, tradeIds } = getTradesForLog(date, logType);
 
+    if (logType === 'daily') {
         // 填充交易次数
-        document.getElementById('tradeCount').value = dayTrades.length;
+        document.getElementById('tradeCount').value = trades.length;
 
         // 填充关联交易ID
-        const tradeIds = dayTrades.map(trade => trade.TransactionID).filter(id => id);
         document.getElementById('linkedTrades').value = tradeIds.join(',');
 
         toggleWeeklyFields(false);
         toggleDailyFields(true);
     } else if (logType === 'weekly') {
-        // 计算本周范围（周一~周五）
-        const { weekStartStr, weekEndStr } = getWeekRange(date);
-
-        // 筛选本周的交易
-        const weekTrades = allTrades.filter(trade => {
-            const tradeDateStr = (new Date(trade.TradeDate)).toISOString().split('T')[0];
-            return tradeDateStr >= weekStartStr && tradeDateStr <= weekEndStr;
-        });
-
         // 填充交易次数
-        document.getElementById('tradeCount').value = weekTrades.length;
+        document.getElementById('tradeCount').value = trades.length;
 
         // 填充关联交易ID
-        const tradeIds = weekTrades.map(trade => trade.TransactionID).filter(id => id);
         document.getElementById('linkedTrades').value = tradeIds.join(',');
 
         // 计算并填充每周自动统计
@@ -302,7 +311,10 @@ function populateLogForm(log) {
     document.getElementById('learnings').value = log.learningPoints || '';
     document.getElementById('improvements').value = log.improvementDirection || '';
     document.getElementById('affirmations').value = log.selfAffirmation || '';
-    document.getElementById('linkedTrades').value = log.associatedTrades?.join(',') || '';
+    const linkedTradesInput = document.getElementById('linkedTrades');
+    if (linkedTradesInput) {
+        linkedTradesInput.value = log.associatedTrades?.join(',') || '';
+    }
 
     if (log.type === 'weekly') {
         // 周自动字段
@@ -333,6 +345,14 @@ function populateLogForm(log) {
     } else {
         toggleWeeklyFields(false);
         toggleDailyFields(true);
+    }
+
+    // 如果日志中未记录关联交易ID，但交易数据已存在，则自动补全
+    if (linkedTradesInput && !linkedTradesInput.value.trim()) {
+        const { tradeIds } = getTradesForLog(log.date, log.type);
+        if (tradeIds.length > 0) {
+            linkedTradesInput.value = tradeIds.join(',');
+        }
     }
 }
 
