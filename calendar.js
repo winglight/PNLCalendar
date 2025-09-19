@@ -333,20 +333,21 @@ export function viewTradeDetails() {
     const modalContent = document.querySelector('.trade-modal-content');
     if (!dateEl || !modalContent) return;
 
-    const dateStr = dateEl.textContent;
-    if (!dateStr) return;
+    const displayDate = dateEl.textContent || '';
+    let isoDate = dateEl.dataset.date || '';
 
-    const localDate = new Date(dateStr);
-    const date = new Date(Date.UTC(
-        localDate.getFullYear(),
-        localDate.getMonth(),
-        localDate.getDate()
-    ));
-    const today = date.toISOString().split('T')[0]
+    if (!isoDate && displayDate) {
+        const parsedDate = new Date(displayDate);
+        if (!isNaN(parsedDate)) {
+            isoDate = parsedDate.toISOString().split('T')[0];
+        }
+    }
+
+    if (!isoDate) return;
     
     // 获取选定日期的详细交易
     const detailedTrades = allTrades.filter(trade => 
-        trade.TradeDate === today &&
+        trade.TradeDate === isoDate &&
         trade['Open/CloseIndicator'] === 'C'
     ).sort((a, b) => {
         const timeA = new Date(a.DateTime).getTime();
@@ -357,7 +358,7 @@ export function viewTradeDetails() {
     // 创建详细视图
     const detailedView = `
         <div class="modal-header">
-            <h2>${dateStr} - Detailed Trades</h2>
+            <h2>${displayDate || isoDate} - Detailed Trades</h2>
             <button class="close-button" id="closeDetailModalBtn">&times;</button>
         </div>
         <div class="trades-details">
