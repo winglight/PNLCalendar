@@ -3,13 +3,15 @@ import {
     loadTrades, 
     saveTrades, 
     clearData, 
-    handleFileSelect, 
-    r2Sync, 
-    setDateRange, 
+    handleFileSelect,
+    r2Sync,
+    setDateRange,
     filterTradesByDateRange,
     filterTradesBySymbol,
     processTradeData,
-    mergeTrades
+    mergeTrades,
+    saveDateRangeSelection,
+    getSavedDateRangeSelection
 } from './data.js';
 import { 
     renderCalendar, 
@@ -39,6 +41,8 @@ async function init() {
 
     // 初始化日志UI绑定
     initLogUI();
+
+    applySavedDateRange();
 
     renderCalendar();
     setupEventListeners();
@@ -117,9 +121,15 @@ function setupEventListeners() {
     if (applyDateRangeBtn && startDateInput && endDateInput) {
         applyDateRangeBtn.addEventListener('click', (e) => {
             e.stopPropagation(); // 阻止事件冒泡，防止触发外部点击事件
+            if (!startDateInput.value || !endDateInput.value) return;
+
             const startDate = new Date(startDateInput.value);
             const endDate = new Date(endDateInput.value);
+
+            if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) return;
+
             filterTradesByDateRange(startDate, endDate);
+            saveDateRangeSelection(startDate, endDate);
             renderCalendar();
             updateStatistics();
             toggleDatePicker(); // 隐藏日期选择器
@@ -156,6 +166,28 @@ function setupEventListeners() {
             symbolDropdown.classList.remove('active');
         }
     });
+}
+
+function applySavedDateRange() {
+    const savedRange = getSavedDateRangeSelection();
+    if (!savedRange) return;
+
+    if (savedRange.range) {
+        setDateRange(savedRange.range);
+        return;
+    }
+
+    const { startDate, endDate } = savedRange;
+    if (!startDate || !endDate) return;
+    if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) return;
+
+    const startDateInput = document.getElementById('startDate');
+    const endDateInput = document.getElementById('endDate');
+
+    if (startDateInput) startDateInput.value = startDate.toISOString().split('T')[0];
+    if (endDateInput) endDateInput.value = endDate.toISOString().split('T')[0];
+
+    filterTradesByDateRange(startDate, endDate);
 }
 
 // Handle R2 Config
