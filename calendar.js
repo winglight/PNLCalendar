@@ -6,6 +6,9 @@ import { addLogButtonToCalendarDay, displayLogInTradeModal } from './log-ui.js';
 // 当前日期
 export let currentDate = new Date();
 
+// 保存交易弹窗的原始内容，用于详情视图切换后恢复
+let originalTradeModalContent = '';
+
 // 渲染日历
 export function renderCalendar() {
     const year = currentDate.getFullYear();
@@ -131,7 +134,13 @@ export function navigateMonth(direction) {
 // 显示交易详情
 export function showTradeDetails(date) {
     const modal = document.getElementById('tradeModal');
+    const modalContent = modal ? modal.querySelector('.trade-modal-content') : null;
     const dateStr = date.toISOString().split('T')[0];
+
+    // 首次调用时记录原始内容，方便详情视图关闭后恢复
+    if (modalContent && !originalTradeModalContent) {
+        originalTradeModalContent = modalContent.innerHTML;
+    }
 
     // 获取当日已关闭的交易
     const dayTrades = allTrades.filter(trade =>
@@ -174,20 +183,34 @@ export function showTradeDetails(date) {
     });
 
     // 设置模态框标题和统计信息
-    document.getElementById('modalDate').textContent = date.toLocaleDateString();
+    const dateEl = document.getElementById('modalDate');
+    dateEl.textContent = date.toLocaleDateString();
+    dateEl.dataset.date = dateStr;
 
     // 计算统计数据
     const consolidatedArray = Array.from(consolidatedTrades.values());
     const totalPnL = consolidatedArray.reduce((sum, trade) => sum + trade.FifoPnlRealized, 0);
     const winners = consolidatedArray.filter(trade => trade.FifoPnlRealized > 0).length;
     const winrate = consolidatedArray.length ? (winners / consolidatedArray.length * 100).toFixed(2) : '0.00';
+    const totalVolume = consolidatedArray.reduce((sum, trade) => sum + trade.Quantity, 0);
+    const totalProfits = consolidatedArray.reduce((sum, t) => t.FifoPnlRealized > 0 ? sum + t.FifoPnlRealized : sum, 0);
+    const totalLosses = consolidatedArray.reduce((sum, t) => t.FifoPnlRealized < 0 ? sum + Math.abs(t.FifoPnlRealized) : sum, 0);
+    const profitFactor = totalLosses === 0 ? totalProfits : totalProfits / totalLosses;
 
     // 更新统计信息显示
-    document.getElementById('modalNetPnL').innerHTML = `Net P&L ${formatPnL(totalPnL)}`;
+    const netPnLEl = document.getElementById('modalNetPnL');
+    if (netPnLEl) {
+        netPnLEl.classList.remove('profit', 'fail');
+        netPnLEl.classList.add(totalPnL >= 0 ? 'profit' : 'fail');
+        const prefix = totalPnL >= 0 ? '+' : '';
+        netPnLEl.textContent = `Net P&L ${prefix}$${totalPnL.toFixed(2)}`;
+    }
     document.getElementById('modalTotalTrades').textContent = consolidatedArray.length;
     document.getElementById('modalWinners').textContent = winners;
     document.getElementById('modalLosers').textContent = consolidatedArray.length - winners;
     document.getElementById('modalWinrate').textContent = `${winrate}%`;
+    document.getElementById('modalVolume').textContent = totalVolume;
+    document.getElementById('modalProfitFactor').textContent = profitFactor.toFixed(2);
 
     // 填充交易表格
     const tableBody = document.getElementById('tradesTableBody');
@@ -215,34 +238,87 @@ export function showTradeDetails(date) {
     // 在交易详情中渲染日志内容
     displayLogInTradeModal(date);
 
-    modal.style.display = 'block';
+    // 设置前后交易日导航
+    const tradeDates = Array.from(new Set(allTrades
+        .filter(t => t['Open/CloseIndicator'] === 'C')
+        .map(t => t.TradeDate)
+    )).sort();
+    const currentIndex = tradeDates.indexOf(dateStr);
+    const prevBtn = document.getElementById('prevTradeDay');
+    const nextBtn = document.getElementById('nextTradeDay');
+    if (prevBtn) {
+        prevBtn.style.display = currentIndex > 0 ? 'inline-block' : 'none';
+        prevBtn.onclick = () => {
+            if (currentIndex > 0) {
+                showTradeDetails(new Date(tradeDates[currentIndex - 1]));
+            }
+        };
+    }
+    if (nextBtn) {
+        nextBtn.style.display = currentIndex < tradeDates.length - 1 ? 'inline-block' : 'none';
+        nextBtn.onclick = () => {
+            if (currentIndex < tradeDates.length - 1) {
+                showTradeDetails(new Date(tradeDates[currentIndex + 1]));
+            }
+        };
+    }
 
-    // 添加点击外部关闭功能
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            closeTradeModal();
-        }
-    });
+    if (modal) {
+        modal.style.display = 'block';
+
+        // 确保按钮事件绑定（每次打开都重新绑定以避免丢失）
+        const viewBtn = document.getElementById('viewDetailsBtn');
+        if (viewBtn) viewBtn.onclick = viewTradeDetails;
+        const closeBtn = document.getElementById('closeTradeModalBtn');
+        if (closeBtn) closeBtn.onclick = closeTradeModal;
+
+        // 添加点击外部关闭功能（使用onclick避免重复绑定）
+        modal.onclick = (e) => {
+            if (e.target === modal) {
+                closeTradeModal();
+            }
+        };
+    }
 }
 
 // 关闭交易详情弹窗
 export function closeTradeModal() {
     const modal = document.getElementById('tradeModal');
     if (modal) {
+        // 如果详情视图替换了内容，先恢复原始结构
+        const modalContent = modal.querySelector('.trade-modal-content');
+        if (modalContent && originalTradeModalContent) {
+            modalContent.innerHTML = originalTradeModalContent;
+        }
+
         modal.style.display = 'none';
+
         // 清空数据但保留结构，避免破坏已加载的内容
-        document.getElementById('modalDate').textContent = '';
-        document.getElementById('modalNetPnL').innerHTML = '';
-        document.getElementById('modalTotalTrades').textContent = '';
-        document.getElementById('modalWinners').textContent = '';
-        document.getElementById('modalWinrate').textContent = '';
-        document.getElementById('modalLosers').textContent = '';
-        
+        const dateEl = document.getElementById('modalDate');
+        if (dateEl) dateEl.textContent = '';
+        const netEl = document.getElementById('modalNetPnL');
+        if (netEl) {
+            netEl.textContent = '';
+            netEl.classList.remove('profit', 'fail');
+        }
+        const totalEl = document.getElementById('modalTotalTrades');
+        if (totalEl) totalEl.textContent = '';
+        const winEl = document.getElementById('modalWinners');
+        if (winEl) winEl.textContent = '';
+        const loseEl = document.getElementById('modalLosers');
+        if (loseEl) loseEl.textContent = '';
+        const winrateEl = document.getElementById('modalWinrate');
+        if (winrateEl) winrateEl.textContent = '';
+        const volumeEl = document.getElementById('modalVolume');
+        if (volumeEl) volumeEl.textContent = '';
+        const pfEl = document.getElementById('modalProfitFactor');
+        if (pfEl) pfEl.textContent = '';
+
         const tableBody = document.getElementById('tradesTableBody');
         if (tableBody) {
             tableBody.innerHTML = '';
         }
-        
+
         // 移除日志部分（如果存在）
         const logSection = modal.querySelector('.log-section');
         if (logSection) {
@@ -253,19 +329,25 @@ export function closeTradeModal() {
 
 // 查看详细交易信息
 export function viewTradeDetails() {
-    const dateStr = document.getElementById('modalDate').textContent;
-    const localDate = new Date(dateStr);
-    const date = new Date(Date.UTC(
-        localDate.getFullYear(),
-        localDate.getMonth(),
-        localDate.getDate()
-    ));
-    const today = date.toISOString().split('T')[0]
+    const dateEl = document.getElementById('modalDate');
     const modalContent = document.querySelector('.trade-modal-content');
+    if (!dateEl || !modalContent) return;
+
+    const displayDate = dateEl.textContent || '';
+    let isoDate = dateEl.dataset.date || '';
+
+    if (!isoDate && displayDate) {
+        const parsedDate = new Date(displayDate);
+        if (!isNaN(parsedDate)) {
+            isoDate = parsedDate.toISOString().split('T')[0];
+        }
+    }
+
+    if (!isoDate) return;
     
     // 获取选定日期的详细交易
     const detailedTrades = allTrades.filter(trade => 
-        trade.TradeDate === today &&
+        trade.TradeDate === isoDate &&
         trade['Open/CloseIndicator'] === 'C'
     ).sort((a, b) => {
         const timeA = new Date(a.DateTime).getTime();
@@ -276,7 +358,7 @@ export function viewTradeDetails() {
     // 创建详细视图
     const detailedView = `
         <div class="modal-header">
-            <h2>${dateStr} - Detailed Trades</h2>
+            <h2>${displayDate || isoDate} - Detailed Trades</h2>
             <button class="close-button" id="closeDetailModalBtn">&times;</button>
         </div>
         <div class="trades-details">

@@ -8,6 +8,7 @@ import {
     LOG_TEMPLATE
 } from './logs.js';
 import { allTrades } from './data.js';
+import { getDailyStats } from './stats.js';
 
 // 日志UI状态
 let currentEditingLog = null;
@@ -72,8 +73,9 @@ export function initLogUI() {
             if (!date) return;
             // 自动填充对应类型数据
             autoFillTradeInfo(date, type);
-            // 互斥显示：weekly 显示周区块，daily 隐藏
+            // 互斥显示：weekly 显示周区块，daily 显示日区块
             toggleWeeklyFields(type === 'weekly');
+            toggleDailyFields(type === 'daily');
         };
         typeSel.addEventListener('change', recalc);
         dateInput.addEventListener('change', recalc);
@@ -134,14 +136,16 @@ export function openLogModal(date, logType = null) {
         // 自动填充交易信息
         autoFillTradeInfo(formattedDate, logType);
         
-        // 根据类型显示相应区域
-        if (logType === 'weekly') {
-            const weeklyData = computeWeeklyAutoStats(formattedDate);
-            populateWeeklyAutoFields(weeklyData);
-            toggleWeeklyFields(true);
-        } else {
-            toggleWeeklyFields(false);
-        }
+            // 根据类型显示相应区域
+            if (logType === 'weekly') {
+                const weeklyData = computeWeeklyAutoStats(formattedDate);
+                populateWeeklyAutoFields(weeklyData);
+                toggleWeeklyFields(true);
+                toggleDailyFields(false);
+            } else {
+                toggleWeeklyFields(false);
+                toggleDailyFields(true);
+            }
         
         document.getElementById('deleteLogBtn').classList.add('hidden');
         document.getElementById('logModalTitle').textContent = '新增复盘日志';
@@ -150,44 +154,55 @@ export function openLogModal(date, logType = null) {
     modal.classList.remove('hidden');
 }
 
-// 自动填充交易信息
-function autoFillTradeInfo(date, logType) {
-    if (logType === 'daily') {
-        // 每日复盘：计算当日交易
-        const dayTrades = allTrades.filter(trade => {
-            const tradeDate = new Date(trade.TradeDate).toISOString().split('T')[0];
-            return tradeDate === date;
-        });
-        
-        // 填充交易次数
-        document.getElementById('tradeCount').value = dayTrades.length;
-        
-        // 填充关联交易ID
-        const tradeIds = dayTrades.map(trade => trade.TransactionID).filter(id => id);
-        document.getElementById('linkedTrades').value = tradeIds.join(',');
-        
-        toggleWeeklyFields(false);
-    } else if (logType === 'weekly') {
-        // 计算本周范围（周一~周五）
+// 获取指定日期及类型对应的交易信息
+function getTradesForLog(date, logType) {
+    if (!date) {
+        return { trades: [], tradeIds: [] };
+    }
+
+    if (logType === 'weekly') {
         const { weekStartStr, weekEndStr } = getWeekRange(date);
-        
-        // 筛选本周的交易
-        const weekTrades = allTrades.filter(trade => {
+        const trades = allTrades.filter(trade => {
             const tradeDateStr = (new Date(trade.TradeDate)).toISOString().split('T')[0];
             return tradeDateStr >= weekStartStr && tradeDateStr <= weekEndStr;
         });
-        
+        const tradeIds = trades.map(trade => trade.TransactionID).filter(id => id);
+        return { trades, tradeIds };
+    }
+
+    const trades = allTrades.filter(trade => {
+        const tradeDate = new Date(trade.TradeDate).toISOString().split('T')[0];
+        return tradeDate === date;
+    });
+    const tradeIds = trades.map(trade => trade.TransactionID).filter(id => id);
+    return { trades, tradeIds };
+}
+
+// 自动填充交易信息
+function autoFillTradeInfo(date, logType) {
+    const { trades, tradeIds } = getTradesForLog(date, logType);
+
+    if (logType === 'daily') {
         // 填充交易次数
-        document.getElementById('tradeCount').value = weekTrades.length;
-        
+        document.getElementById('tradeCount').value = trades.length;
+
         // 填充关联交易ID
-        const tradeIds = weekTrades.map(trade => trade.TransactionID).filter(id => id);
         document.getElementById('linkedTrades').value = tradeIds.join(',');
-        
+
+        toggleWeeklyFields(false);
+        toggleDailyFields(true);
+    } else if (logType === 'weekly') {
+        // 填充交易次数
+        document.getElementById('tradeCount').value = trades.length;
+
+        // 填充关联交易ID
+        document.getElementById('linkedTrades').value = tradeIds.join(',');
+
         // 计算并填充每周自动统计
         const weeklyData = computeWeeklyAutoStats(date);
         populateWeeklyAutoFields(weeklyData);
         toggleWeeklyFields(true);
+        toggleDailyFields(false);
     }
 }
 
@@ -270,6 +285,13 @@ function toggleWeeklyFields(show) {
     else weeklyFields.classList.add('hidden');
 }
 
+function toggleDailyFields(show) {
+    const dailyFields = document.getElementById('dailyFields');
+    if (!dailyFields) return;
+    if (show) dailyFields.classList.remove('hidden');
+    else dailyFields.classList.add('hidden');
+}
+
 // 关闭日志模态框
 export function closeLogModal() {
     const modal = document.getElementById('logModal');
@@ -289,7 +311,10 @@ function populateLogForm(log) {
     document.getElementById('learnings').value = log.learningPoints || '';
     document.getElementById('improvements').value = log.improvementDirection || '';
     document.getElementById('affirmations').value = log.selfAffirmation || '';
-    document.getElementById('linkedTrades').value = log.associatedTrades?.join(',') || '';
+    const linkedTradesInput = document.getElementById('linkedTrades');
+    if (linkedTradesInput) {
+        linkedTradesInput.value = log.associatedTrades?.join(',') || '';
+    }
 
     if (log.type === 'weekly') {
         // 周自动字段
@@ -316,8 +341,18 @@ function populateLogForm(log) {
         document.getElementById('specificActions').value = log.nextWeekOptimization?.specificActions || '';
         document.getElementById('weeklyAffirmation').value = log.weeklyAffirmation || '';
         toggleWeeklyFields(true);
+        toggleDailyFields(false);
     } else {
         toggleWeeklyFields(false);
+        toggleDailyFields(true);
+    }
+
+    // 如果日志中未记录关联交易ID，但交易数据已存在，则自动补全
+    if (linkedTradesInput && !linkedTradesInput.value.trim()) {
+        const { tradeIds } = getTradesForLog(log.date, log.type);
+        if (tradeIds.length > 0) {
+            linkedTradesInput.value = tradeIds.join(',');
+        }
     }
 }
 
@@ -330,6 +365,7 @@ function resetLogForm() {
         document.getElementById('feelScore').value = '3';
     }
     toggleWeeklyFields(false);
+    toggleDailyFields(true);
 }
 
 // 处理日志表单提交
@@ -494,13 +530,30 @@ function createLogListItem(log) {
     item.className = 'log-item';
     item.dataset.logId = log.id;
     item.dataset.logDate = log.date;
-    
+
     const previewText = getLogPreviewText(log);
     const typeText = log.type === 'weekly' ? '周复盘' : '日复盘';
-    
+
+    const dateObj = new Date(log.date);
+    const weekdayMap = ['日','一','二','三','四','五','六'];
+    const weekday = weekdayMap[dateObj.getDay()];
+
+    let pnlClass = '';
+    if (log.type === 'weekly') {
+        const pnl = log.weeklyData?.pnlResult;
+        if (typeof pnl === 'number') {
+            pnlClass = pnl >= 0 ? 'profit' : 'fail';
+        }
+    } else {
+        const stats = getDailyStats(dateObj);
+        if (stats) {
+            pnlClass = stats.pnl >= 0 ? 'profit' : 'fail';
+        }
+    }
+
     item.innerHTML = `
         <div class="log-item-header">
-            <div class="log-item-date">${log.date}</div>
+            <div class="log-item-date ${pnlClass}">${log.date} 周${weekday}</div>
             <div class="log-item-type ${log.type}">${typeText}</div>
         </div>
         <div class="log-item-preview">${previewText}</div>
@@ -708,12 +761,13 @@ function showToast(message, type = 'success') {
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
     toast.textContent = message;
-    
+
     // 添加样式
     toast.style.cssText = `
         position: fixed;
         top: 20px;
-        right: 20px;
+        left: 50%;
+        transform: translate(-50%, -20px);
         padding: 12px 24px;
         border-radius: 4px;
         color: white;
@@ -722,22 +776,22 @@ function showToast(message, type = 'success') {
         background: ${type === 'error' ? '#e74c3c' : '#27ae60'};
         box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         opacity: 0;
-        transform: translateX(100%);
+        display: inline-block;
         transition: all 0.3s ease;
     `;
-    
+
     document.body.appendChild(toast);
-    
+
     // 显示动画
     setTimeout(() => {
         toast.style.opacity = '1';
-        toast.style.transform = 'translateX(0)';
+        toast.style.transform = 'translate(-50%, 0)';
     }, 100);
-    
+
     // 自动隐藏
     setTimeout(() => {
         toast.style.opacity = '0';
-        toast.style.transform = 'translateX(100%)';
+        toast.style.transform = 'translate(-50%, -20px)';
         setTimeout(() => {
             document.body.removeChild(toast);
         }, 300);

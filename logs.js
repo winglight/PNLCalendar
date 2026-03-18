@@ -73,9 +73,9 @@ export function saveLogsToStorage() {
 // 从R2或本地存储加载日志数据
 export async function loadLogs() {
     allLogs = loadLogsFromStorage();
-    
-    // 异步从R2加载，避免阻塞界面
-    setTimeout(async () => {
+
+    // 异步从 R2 加载，使用 requestIdleCallback 避免阻塞其他请求
+    const fetchLogs = async () => {
         try {
             const logs = await r2Sync.loadFromR2('logs');
             if (logs && logs.length > 0) {
@@ -85,8 +85,14 @@ export async function loadLogs() {
         } catch (error) {
             console.error('Failed to load logs from R2:', error);
         }
-    }, 100);
-    
+    };
+
+    if (typeof requestIdleCallback === 'function') {
+        requestIdleCallback(fetchLogs);
+    } else {
+        setTimeout(fetchLogs, 100);
+    }
+
     return allLogs;
 }
 

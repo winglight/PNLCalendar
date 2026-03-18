@@ -8,6 +8,7 @@ export const r2Sync = new R2Sync();
 export let allTrades = [];
 export let filteredTrades = [];
 export const TOTAL_ACCOUNT_VALUE = 100000;
+const DATE_RANGE_STORAGE_KEY = 'pnlSelectedDateRange';
 
 // 从本地存储加载交易数据
 export function loadTradesFromStorage() {
@@ -57,6 +58,50 @@ export async function loadTrades() {
 export async function saveTrades() {
     localStorage.setItem('trades', JSON.stringify(allTrades));
     await r2Sync.syncToR2(allTrades, 'trades');
+}
+
+export function saveDateRangeSelection(startDate, endDate, range = null) {
+    if (!(startDate instanceof Date) || Number.isNaN(startDate.getTime()) ||
+        !(endDate instanceof Date) || Number.isNaN(endDate.getTime())) {
+        return;
+    }
+
+    try {
+        const payload = {
+            startDate: startDate.toISOString(),
+            endDate: endDate.toISOString(),
+            range: range
+        };
+        localStorage.setItem(DATE_RANGE_STORAGE_KEY, JSON.stringify(payload));
+    } catch (error) {
+        console.error('Failed to save date range to localStorage:', error);
+    }
+}
+
+export function getSavedDateRangeSelection() {
+    const storedRange = localStorage.getItem(DATE_RANGE_STORAGE_KEY);
+    if (!storedRange) return null;
+
+    try {
+        const parsed = JSON.parse(storedRange);
+        if (!parsed.startDate || !parsed.endDate) return null;
+
+        const startDate = new Date(parsed.startDate);
+        const endDate = new Date(parsed.endDate);
+
+        if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+            return null;
+        }
+
+        return {
+            startDate,
+            endDate,
+            range: parsed.range || null
+        };
+    } catch (error) {
+        console.error('Failed to parse saved date range from localStorage:', error);
+        return null;
+    }
 }
 
 // 清除数据
@@ -235,8 +280,9 @@ export function setDateRange(range) {
 
     document.getElementById('startDate').value = start.toISOString().split('T')[0];
     document.getElementById('endDate').value = end.toISOString().split('T')[0];
-    
+
     filterTradesByDateRange(start, end);
+    saveDateRangeSelection(start, end, range);
 }
 
 // 根据日期范围过滤交易
