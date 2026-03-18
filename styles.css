@@ -1019,80 +1019,6 @@ button svg {
         font-size: 12px;
     }
     
-    .stats-cards {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .stat-card {
-        padding: 10px;
-    }
-    
-    .stat-header {
-        font-size: 12px;
-    }
-    
-    .stat-value {
-        font-size: 18px;
-    }
-}
-
-@media (max-width: 480px) {
-    .stats-cards {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* 日历样式 */
-#calendar {
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    gap: 10px;
-    margin-top: 20px;
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.calendar-header {
-    font-weight: bold;
-    text-align: center;
-    padding: 10px;
-    background: #f8f9fa;
-    border-radius: 4px;
-}
-
-.calendar-day { position: relative; }
-.log-button {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  background: transparent;
-  border: none;
-  padding: 10px;
-  line-height: 1;
-  border-radius: 6px;
-  cursor: pointer;
-}
-.log-button:hover { background: rgba(0,0,0,0.06); }
-.log-button.has-log { color: #1e80ff; }
-.calendar-day {
-    min-height: 100px;
-    padding: 10px;
-    background: #f8f9fa;
-    border-radius: 4px;
-    position: relative;
-    cursor: pointer;
-    transition: transform 0.2s;
-}
-
-.calendar-day:hover {
-    transform: scale(1.02);
-}
-
-/* 日历头部样式 */
-.chart-header {
-    display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 15px;
@@ -1639,6 +1565,59 @@ button svg {
     transition: transform 0.2s;
 }
 
+/* 工具栏样式 */
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.toolbar-left, .toolbar-right {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 767px) {
+    .toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .toolbar-right {
+        margin-top: 10px;
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    button {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+    
+    .stats-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .stat-card {
+        padding: 10px;
+    }
+    
+    .stat-header {
+        font-size: 12px;
+    }
+    
+    .stat-value {
+        font-size: 18px;
+    }
+}
 .calendar-day:hover {
     transform: scale(1.02);
 }
@@ -2193,6 +2172,27 @@ button svg {
     }
 }
 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.toolbar-left, .toolbar-right {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 767px) {
+    .toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .toolbar-right {
+        margin-top: 10px;
+        width:
 /* 日历样式 */
 #calendar {
     display: grid;
