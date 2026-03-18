@@ -507,6 +507,246 @@ button svg {
     transform: scale(1.02);
 }
 
+#aiConfigBtn {
+    background: linear-gradient(135deg, #2563eb, #4f46e5);
+    color: #fff;
+    border: none;
+    height: 38px;
+    padding: 0 16px;
+    border-radius: 10px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+}
+
+#aiConfigBtn:hover {
+    filter: brightness(1.06);
+}
+
+#aiConfigModal {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(2px);
+    z-index: 2100;
+}
+
+#aiConfigModal.hidden {
+    display: none;
+}
+
+#aiConfigModal .modal-content.ai-config-modal {
+    width: min(900px, 94vw);
+    max-height: 90vh;
+    overflow-y: auto;
+    background: #ffffff;
+    border: 1px solid #e8ecf3;
+    border-radius: 14px;
+    box-shadow: 0 24px 48px rgba(15, 23, 42, 0.24);
+    padding: 22px;
+}
+
+#aiConfigModal h2 {
+    margin: 0 0 16px;
+    font-size: 20px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+#aiConfigModal .close {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    color: #64748b;
+    cursor: pointer;
+}
+
+#aiConfigModal .close:hover {
+    background: #eef2ff;
+    color: #334155;
+}
+
+#aiConfigModal #aiConfigForm {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    align-items: start;
+}
+
+#aiConfigModal #aiConfigForm,
+#aiConfigModal #aiConfigForm * {
+    box-sizing: border-box;
+}
+
+#aiConfigModal .form-row {
+    margin-bottom: 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+#aiConfigModal .form-row label {
+    display: block;
+    margin-bottom: 0;
+    color: #334155;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+#aiConfigModal .form-row input[type="text"],
+#aiConfigModal .form-row textarea {
+    width: 100%;
+    border: 1px solid #d8e0ea;
+    border-radius: 10px;
+    background: #f8fafc;
+    padding: 11px 12px;
+    font-size: 14px;
+    display: block;
+    max-width: 100%;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+#aiConfigModal .form-row input[type="text"]:focus,
+#aiConfigModal .form-row textarea:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.14);
+    background: #fff;
+}
+
+#aiConfigModal .checkbox-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    border: 1px solid #d8e0ea;
+    border-radius: 10px;
+    background: #f8fafc;
+    padding: 10px 12px;
+}
+
+#aiConfigModal .checkbox-row label {
+    margin: 0;
+}
+
+#aiConfigModal .checkbox-row input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+}
+
+#aiConfigModal #aiConfigForm .form-row.full-width {
+    grid-column: 1 / -1;
+}
+
+#aiConfigModal textarea {
+    min-height: 180px;
+    line-height: 1.5;
+    resize: vertical;
+}
+
+#aiConfigModal .ai-config-status {
+    grid-column: 1 / -1;
+    margin-top: 2px;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 13px;
+}
+
+#aiConfigModal .ai-config-status.success {
+    background: #e6f6ea;
+    color: #1f7a3f;
+}
+
+#aiConfigModal .ai-config-status.error {
+    background: #fdecea;
+    color: #b42318;
+}
+
+#logModal .form-actions,
+#aiConfigModal .form-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+#aiConfigModal .form-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+    margin-top: 2px;
+}
+
+#logModal .form-actions #generateAiLogBtn {
+    margin-right: auto;
+}
+
+#logModal .form-actions .primary,
+#logModal .form-actions .secondary,
+#logModal .form-actions .danger,
+#aiConfigModal .form-actions .primary,
+#aiConfigModal .form-actions .secondary {
+    height: 38px;
+    padding: 0 16px;
+    border-radius: 10px;
+    border: none;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#logModal .form-actions .secondary,
+#aiConfigModal .form-actions .secondary {
+    background: #475569;
+    color: #fff;
+}
+
+#logModal .form-actions .secondary:hover,
+#aiConfigModal .form-actions .secondary:hover {
+    background: #334155;
+}
+
+#aiGenerateError {
+    margin-top: 8px;
+    margin-bottom: 2px;
+    color: #b42318;
+    font-size: 13px;
+    background: #fdecea;
+    border: 1px solid #f9d3ce;
+    border-radius: 10px;
+    padding: 10px 12px;
+}
+
+@media (max-width: 700px) {
+    #aiConfigModal .modal-content.ai-config-modal {
+        width: 96vw;
+        padding: 16px;
+    }
+
+    #aiConfigModal #aiConfigForm {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    #logModal .form-actions #generateAiLogBtn {
+        margin-right: 0;
+    }
+
+    #logModal .form-actions {
+        justify-content: flex-start;
+    }
+}
+
 /* 交易弹窗中的日志区域样式 */
 .log-section {
     margin-top: 20px;
@@ -2314,28 +2554,6 @@ button svg {
         grid-template-columns: 1fr;
     }
 }
-
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-.toolbar-left, .toolbar-right {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-@media (max-width: 767px) {
-    .toolbar {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    
-    .toolbar-right {
-        margin-top: 10px;
-        width:
 /* 日历样式 */
 #calendar {
     display: grid;

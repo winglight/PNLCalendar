@@ -28,6 +28,7 @@ import {
 } from './stats.js';
 import { loadLogs } from './logs.js';
 import { initLogUI } from './log-ui.js';
+import { initAIReviewUI } from './ai-review.js';
 
 // DOM Elements
 let showDateRangeBtn, clearDataBtn, handleImportBtn, showImportModalBtn, configR2Btn, csvFile;
@@ -41,6 +42,7 @@ async function init() {
 
     // 初始化日志UI绑定
     initLogUI();
+    initAIReviewUI();
 
     applySavedDateRange();
 

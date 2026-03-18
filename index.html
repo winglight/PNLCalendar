@@ -74,6 +74,7 @@
                 </svg>
                 Import IB Data
             </button>
+            <button id="aiConfigBtn">AI Config</button>
             <button id="configR2Btn">Configure R2</button>
         </div>
     </div>    
@@ -107,6 +108,43 @@
         </form>
     </div>
 </div>    
+<div id="aiConfigModal" class="modal hidden">
+    <div class="modal-content ai-config-modal">
+        <span class="close" id="closeAiConfigModal">&times;</span>
+        <h2>AI Config</h2>
+        <form id="aiConfigForm">
+            <div class="form-row">
+                <label for="aiUrl">AI URL</label>
+                <input type="text" id="aiUrl" name="url" placeholder="http://localhost:8000" required />
+            </div>
+            <div class="form-row">
+                <label for="aiToken">Token</label>
+                <input type="text" id="aiToken" name="token" />
+            </div>
+            <div class="form-row">
+                <label for="aiModel">Model</label>
+                <input type="text" id="aiModel" name="model" placeholder="gpt-4" />
+            </div>
+            <div class="form-row checkbox-row">
+                <label for="aiNewSession">每次新会话</label>
+                <input type="checkbox" id="aiNewSession" name="isNewSession" checked />
+            </div>
+            <div class="form-row full-width">
+                <label for="aiDailyTemplate">每日提示词模板</label>
+                <textarea id="aiDailyTemplate" name="dailyTemplate" rows="10"></textarea>
+            </div>
+            <div class="form-row full-width">
+                <label for="aiWeeklyTemplate">每周提示词模板</label>
+                <textarea id="aiWeeklyTemplate" name="weeklyTemplate" rows="12"></textarea>
+            </div>
+            <div id="aiConfigStatus" class="ai-config-status hidden"></div>
+            <div class="form-actions">
+                <button type="button" id="saveAiConfigBtn" class="primary">保存</button>
+                <button type="button" id="testAiConfigBtn" class="secondary">AI测试</button>
+            </div>
+        </form>
+    </div>
+</div>
 <div class="container">
     <!-- <div class="file-controls">
         <input type="file" id="csvFile" accept=".csv" class="file-input">
@@ -506,8 +544,10 @@
               </div>
             </div>
           </div>
+          <div id="aiGenerateError" class="form-error hidden"></div>
           
           <div class="form-actions">
+            <button type="button" id="generateAiLogBtn" class="secondary">AI生成</button>
             <button type="button" id="deleteLogBtn" class="danger hidden">删除</button>
             <button type="submit" id="saveLogBtn" class="primary">保存</button>
           </div>
