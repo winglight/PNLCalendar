@@ -27,7 +27,10 @@ const WEEKLY_DEFAULT_TEMPLATE = `你是资深交易复盘教练。请仅返回 J
 订单表结构: {{orders_schema}}
 复盘表结构: {{trade_logs_schema}}
 已有复盘(可为空): {{current_log}}
-输出字段必须兼容 trade_logs，至少包含: overall_feeling,fact_record,learning_points,improvement_direction,self_affirmation,planned_trades,emotional_stability,violated_plans,emotional_factors,good_habit_to_keep,mistake_to_avoid,specific_actions,weekly_affirmation`;
+可选违背计划标签(必须从中选择): {{violated_plan_options}}
+可选情绪标签(必须从中选择): {{emotional_factor_options}}
+输出字段必须兼容 trade_logs，至少包含: overall_feeling,fact_record,learning_points,improvement_direction,self_affirmation,planned_trades,emotional_stability,violated_plans,emotional_factors,good_habit_to_keep,mistake_to_avoid,specific_actions,weekly_affirmation
+其中 violated_plans 与 emotional_factors 请返回字符串数组，且元素必须来自上述可选标签；specific_actions 请返回字符串数组，或返回按换行分隔的字符串。`;
 
 function getDefaultConfig() {
     return {
@@ -287,10 +290,20 @@ function getOrdersSchemaString() {
     }, null, 2);
 }
 
+function getSelectOptions(id) {
+    const select = document.getElementById(id);
+    if (!select) return [];
+    return Array.from(select.options)
+        .map(option => option.value?.trim())
+        .filter(Boolean);
+}
+
 function buildPrompt(config, type, selectedDate, startDate, endDate, ordersCsv, fileName, tradesCount) {
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
     const template = type === 'weekly' ? config.weeklyTemplate : config.dailyTemplate;
     const currentLog = formatCurrentLog(type, selectedDate);
+    const violatedPlanOptions = getSelectOptions('violatedPlans');
+    const emotionalFactorOptions = getSelectOptions('emotionalFactors');
     const values = {
         period_type: type,
         start_date: startDate,
@@ -302,9 +315,17 @@ function buildPrompt(config, type, selectedDate, startDate, endDate, ordersCsv, 
         orders_schema: getOrdersSchemaString(),
         trade_logs_schema: getTradeLogsSchemaString(),
         current_log: currentLog,
+        violated_plan_options: violatedPlanOptions.join('、'),
+        emotional_factor_options: emotionalFactorOptions.join('、'),
         orders_csv: ordersCsv
     };
-    return template.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_, key) => values[key] ?? '');
+    const templatePrompt = template.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_, key) => values[key] ?? '');
+    if (type !== 'weekly') return templatePrompt;
+    return `${templatePrompt}
+补充约束:
+- violated_plans 仅可从以下选项中选择: ${violatedPlanOptions.join('、')}
+- emotional_factors 仅可从以下选项中选择: ${emotionalFactorOptions.join('、')}
+- specific_actions 建议返回数组；若返回字符串，请按每条动作单独换行。`;
 }
 
 async function streamChat(config, prompt, attachment) {
@@ -420,11 +441,60 @@ function setInputValue(id, value) {
 
 function setMultiSelectValue(id, values) {
     const el = document.getElementById(id);
-    if (!el || !Array.isArray(values)) return;
-    const valueSet = new Set(values.map(item => String(item)));
+    if (!el) return;
+    const candidates = splitToItems(values, { splitComma: true });
+    const options = Array.from(el.options).map(opt => opt.value);
+    const valueSet = new Set();
+    candidates.forEach(candidate => {
+        if (!candidate) return;
+        const normalized = normalizeOptionText(candidate);
+        let matched = options.find(option => option === candidate);
+        if (!matched) {
+            matched = options.find(option => normalizeOptionText(option) === normalized);
+        }
+        if (!matched) {
+            matched = options.find(option => {
+                const optionNormalized = normalizeOptionText(option);
+                return optionNormalized.includes(normalized) || normalized.includes(optionNormalized);
+            });
+        }
+        if (matched) valueSet.add(matched);
+    });
     Array.from(el.options).forEach(option => {
         option.selected = valueSet.has(option.value);
     });
+}
+
+function normalizeOptionText(text) {
+    return String(text || '')
+        .trim()
+        .toLowerCase()
+        .replace(/[\s，,。；;、/\\\-()（）【】\[\]:"'`]/g, '');
+}
+
+function splitToItems(value, { splitComma = false } = {}) {
+    if (value === undefined || value === null) return [];
+    if (Array.isArray(value)) {
+        return value.flatMap(item => splitToItems(item, { splitComma })).filter(Boolean);
+    }
+    const text = String(value).trim();
+    if (!text) return [];
+    const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    let segments = normalized.split(/\n|；|;|\|/);
+    if (segments.length <= 1 && /(?:^|\s)\d+[\.、\)]/.test(normalized)) {
+        segments = normalized.split(/(?=(?:^|\s)\d+[\.、\)])/);
+    }
+    if (segments.length <= 1 && splitComma && /,|，/.test(normalized)) {
+        segments = normalized.split(/,|，/);
+    }
+    return segments
+        .map(item => item
+            .trim()
+            .replace(/^[\-*•]\s*/, '')
+            .replace(/^\d+[\.、\)]\s*/, '')
+            .trim()
+        )
+        .filter(Boolean);
 }
 
 function applyAiResultToForm(result, type) {
@@ -449,10 +519,16 @@ function applyAiResultToForm(result, type) {
     setInputValue('emotionalStability', getField(result, ['emotional_stability', 'emotionalStability']));
     setInputValue('goodHabitToKeep', getField(result, ['good_habit_to_keep', 'goodHabitToKeep']));
     setInputValue('mistakeToAvoid', getField(result, ['mistake_to_avoid', 'mistakeToAvoid']));
-    setInputValue('specificActions', getField(result, ['specific_actions', 'specificActions']));
+    const specificActionsRaw = getField(result, ['specific_actions', 'specificActions']);
+    const specificActionItems = splitToItems(specificActionsRaw);
+    if (specificActionItems.length > 0) {
+        setInputValue('specificActions', specificActionItems.join('\n'));
+    } else {
+        setInputValue('specificActions', specificActionsRaw);
+    }
     setInputValue('weeklyAffirmation', getField(result, ['weekly_affirmation', 'weeklyAffirmation']));
-    setMultiSelectValue('violatedPlans', getField(result, ['violated_plans', 'violatedPlans']) || []);
-    setMultiSelectValue('emotionalFactors', getField(result, ['emotional_factors', 'emotionalFactors']) || []);
+    setMultiSelectValue('violatedPlans', getField(result, ['violated_plans', 'violatedPlans']));
+    setMultiSelectValue('emotionalFactors', getField(result, ['emotional_factors', 'emotionalFactors']));
 }
 
 async function handleGenerateAiLog() {
