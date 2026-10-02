@@ -1,3 +1,4 @@
+import { localizedError, t } from './i18n.js';
 // data.js - 处理交易数据相关功能
 import { R2Sync } from './r2-sync.js';
 
@@ -114,7 +115,7 @@ export function getSavedDateRangeSelection() {
 
 // 清除数据
 export function clearData() {
-    if (confirm('Are you sure you want to clear all trade data?')) {
+    if (confirm(t("Are you sure you want to clear all trade data?"))) {
         localStorage.removeItem('trades');
         allTrades = [];
         filteredTrades = [];
@@ -138,7 +139,7 @@ export function handleFileSelect(event) {
                 resolve(true);
             } catch (error) { reject(error); }
         };
-        reader.onerror = () => reject(reader.error || new Error('无法读取 CSV 文件'));
+        reader.onerror = () => reject(reader.error || localizedError("无法读取 CSV 文件"));
         reader.readAsText(file);
     });
 }
@@ -321,8 +322,7 @@ export function applyTradeFilters() {
         return inDate && matchesSymbol;
     });
     if (typeof document !== 'undefined') {
-        const scope = document.getElementById('filterScope');
-        if (scope) scope.textContent = `汇总与分析：${activeSymbol || '全部代码'} · ${activeStartDate ? `${activeStartDate} 至 ${activeEndDate}` : '全部日期'}`;
+        refreshFilterScope();
     }
     return filteredTrades;
 }
@@ -357,4 +357,14 @@ export function formatPnL(pnl) {
     const prefix = pnl >= 0 ? '+' : '';
     const className = pnl >= 0 ? 'profit' : 'fail';
     return `<span class="${className}">${prefix}$${parseFloat(pnl).toFixed(2)}</span>`;
+}
+// A presentation refresh only. It never changes the active filter or stored range.
+export function refreshFilterScope() {
+    const scope = document.getElementById('filterScope');
+    if (!scope) return;
+    scope.removeAttribute('data-i18n');
+    scope.textContent = t('汇总与分析：{symbol} · {range}', {
+        symbol: activeSymbol || t('全部代码'),
+        range: activeStartDate ? t('{start} 至 {end}', { start: activeStartDate, end: activeEndDate }) : t('全部日期')
+    });
 }

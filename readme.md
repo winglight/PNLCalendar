@@ -158,3 +158,7 @@ Enjoy analyzing your trades and making better-informed decisions with this tool!
 
 ## License
 This project is licensed under the Creative Commons Attribution-NonCommercial-NoDerivs 4.0 International License - see the [LICENSE](LICENSE) file for details.
+
+## Native Chinese / English interface
+
+[Usage, state-preservation guarantees and test commands](I18N.md).

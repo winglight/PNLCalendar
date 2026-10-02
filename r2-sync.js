@@ -1,3 +1,4 @@
+import { escapeHTML, localeControlsHTML, bindLocaleControls, messageHTML } from './i18n.js';
 // r2-sync.js
 
 export class R2Sync {
@@ -109,28 +110,30 @@ export class R2Sync {
         const configDialog = document.createElement("div");
         configDialog.className = "config-dialog";
         configDialog.innerHTML = `
-            <h2>R2 Config</h2>
+            <div class="modal-language">${localeControlsHTML()}</div>
+            <h2>${messageHTML("R2 Config")}</h2>
             <label>
-                Enable R2 sync
+                ${messageHTML("Enable R2 sync")}
                 <input type="checkbox" id="r2-enabled" ${this.config.enabled ? 'checked' : ''}>
             </label>
             <label>
-                App
-                <input type="text" id="app" value="${this.config.app}">
+                ${messageHTML("App")}
+                <input type="text" id="app" value="${escapeHTML(this.config.app)}">
             </label>
             <label>
-                URL
-                <input type="text" id="url" value="${this.config.url}">
+                ${messageHTML("URL")}
+                <input type="text" id="url" value="${escapeHTML(this.config.url)}">
             </label>
             <label>
-                Token
-                <input type="text" id="token" value="${this.config.token}">
+                ${messageHTML("Token")}
+                <input type="text" id="token" value="${escapeHTML(this.config.token)}">
             </label>
-            <button id="save-config">Save</button>
-            <button id="close-config">Close</button>
+            <button id="save-config">${messageHTML("Save")}</button>
+            <button id="close-config">${messageHTML("Close")}</button>
         `;
 
         document.body.appendChild(configDialog);
+        bindLocaleControls(configDialog);
 
         document.getElementById("save-config").addEventListener("click", () => {
             const newConfig = {

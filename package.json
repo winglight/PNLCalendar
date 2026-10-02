@@ -3,10 +3,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --experimental-vm-modules --no-warnings tests/run.mjs",
+    "test": "node --experimental-vm-modules --no-warnings tests/run.mjs && npm run test:i18n",
     "test:baseline": "node --experimental-vm-modules --no-warnings tests/run.mjs --baseline",
     "test:strict": "node --experimental-vm-modules --no-warnings tests/run.mjs --strict",
-    "test:timezones": "node --experimental-vm-modules --no-warnings tests/run.mjs --timezones"
+    "test:timezones": "node --experimental-vm-modules --no-warnings tests/run.mjs --timezones",
+    "test:i18n": "node --experimental-vm-modules --no-warnings tests/i18n.mjs",
+    "test:i18n:timezones": "node --experimental-vm-modules --no-warnings tests/i18n.mjs --timezones",
+    "check": "node --check i18n.js && node --check messages.js && node --check main.js && node --check calendar.js && node --check stats.js && node --check log-ui.js && node --check ai-review.js && node --check data.js && node --check r2-sync.js && node --check ui-shell.js"
   },
-  "engines": { "node": ">=20" }
+  "engines": {
+    "node": ">=20"
+  }
 }

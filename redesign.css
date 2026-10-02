@@ -27,3 +27,28 @@ dialog{padding:0;border:1px solid var(--line);border-radius:16px;background:var(
 /* Keep full financial values readable instead of clipping long imported amounts. */
 .stats-cards .stat-value{max-width:100%}.stats-cards .stat-card{flex-wrap:wrap}.calendar-day .trade-info>.profit,.calendar-day .trade-info>.fail,.week-summary .profit,.week-summary .fail{word-break:normal;overflow-wrap:anywhere}.preview-pnl{overflow-wrap:anywhere}
 @media(max-width:700px){.stats-cards .stat-card{flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;min-height:55px;padding:7px 11px}.stats-cards .stat-header{width:100%;justify-content:space-between;line-height:1.2}.stats-cards .stat-value{font-size:21px;line-height:1.2;white-space:normal;overflow-wrap:anywhere}.metrics-expanded .stats-cards #avg-win-loss{flex-direction:row;align-items:center}.metrics-expanded .stats-cards #avg-win-loss .stat-header{width:auto}.calendar-day .log-button{min-width:24px;min-height:24px;width:24px;height:24px}.log-modal .form-row.two-cols>div{min-width:0}}
+
+/* Locale labels update in place: no form, modal, chart or selection is remounted. */
+.locale-switch { display: inline-flex; align-items: center; flex-shrink: 0; gap: 2px; padding: 2px; border: 1px solid var(--line); border-radius: 8px; }
+.locale-switch button { min-width: 30px; min-height: 30px; padding: 3px 6px; border: 0; border-radius: 5px; background: transparent; color: var(--muted); font: inherit; font-size: 12px; cursor: pointer; }
+.locale-switch button[aria-pressed="true"] { background: var(--primary-soft); color: var(--primary); font-weight: 700; }
+.locale-switch button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.settings-language { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.settings-language h3 { margin: 0; }
+html[lang="en-US"] .calendar-day .day-secondary { font-size: 9px; }
+@media (max-width: 700px) {
+    .app-actions .locale-switch button { min-width: 26px; padding: 3px 4px; }
+}
+.locale-toggle { flex-shrink: 0; min-width: 34px; min-height: 32px; padding: 5px 7px; background: var(--surface); color: var(--primary); border: 1px solid var(--line); border-radius: 7px; font: inherit; font-size: 12px; cursor: pointer; }
+.locale-toggle:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.modal-language { display: flex; justify-content: flex-end; margin: 0 30px 6px 0; }
+@media (max-width: 1180px) and (min-width: 1051px) {
+    html[lang="en-US"] .app-topbar { grid-template-columns: auto 1fr; padding-block: 8px; gap: 8px; }
+    html[lang="en-US"] .app-nav { justify-content: flex-end; }
+    html[lang="en-US"] .app-actions { grid-column: 1/-1; justify-content: flex-end; }
+}
+@media (max-width: 700px) {
+    .app-actions { grid-template-columns: minmax(0,1fr) 34px 34px 34px; }
+    html[lang="en-US"] .app-nav { gap: 10px; }
+    html[lang="en-US"] .app-nav button { padding-inline: 0; font-size: 11px; }
+}

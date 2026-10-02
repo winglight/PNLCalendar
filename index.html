@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN" data-theme="forest"><!-- 在head部分添加或修改viewport元数据 --><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PNLCalendar · 交易复盘</title>
+    <title data-i18n="PNLCalendar · 交易复盘">PNLCalendar · 交易复盘</title>
     <link rel="stylesheet" href="r2-config.css">
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
@@ -9,10 +9,10 @@
 <link rel="stylesheet" href="theme-tokens.css"><link rel="stylesheet" href="redesign.css"><script src="theme-init.js"></script></head>
 <body>
 
-    <header class="app-topbar"><a class="app-brand" href="#calendar" aria-label="PNLCalendar 首页"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M6 10h20M10 6v7M22 6v7M7 23l7-6 5 3 7-7"></path></svg></span><span>PNL<span class="brand-light">Calendar</span></span></a><nav class="app-nav" aria-label="主导航"><button id="tab-calendar" data-view="calendar" class="active" aria-controls="calendarView" aria-current="page">交易日历</button><button id="tab-analytics" data-view="analytics" aria-controls="analyticsView">数据分析</button><button id="tab-journal" data-view="journal" aria-controls="journalView">复盘日志</button></nav><div class="app-actions"><div class="global-filters" aria-label="交易筛选"><div class="symbol-filter-container">
+    <header class="app-topbar"><a class="app-brand" href="#calendar" aria-label="PNLCalendar 首页" data-i18n-aria-label="PNLCalendar 首页"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M6 10h20M10 6v7M22 6v7M7 23l7-6 5 3 7-7"></path></svg></span><span>PNL<span class="brand-light">Calendar</span></span></a><nav class="app-nav" aria-label="主导航" data-i18n-aria-label="主导航"><button id="tab-calendar" data-view="calendar" class="active" aria-controls="calendarView" aria-current="page" data-i18n="交易日历">交易日历</button><button id="tab-analytics" data-view="analytics" aria-controls="analyticsView" data-i18n="数据分析">数据分析</button><button id="tab-journal" data-view="journal" aria-controls="journalView" data-i18n="复盘日志">复盘日志</button></nav><div class="app-actions"><div class="global-filters" aria-label="交易筛选" data-i18n-aria-label="交易筛选"><div class="symbol-filter-container">
                 <div class="combobox-wrapper">
-                    <input type="text" id="symbolFilter" class="symbol-input" placeholder="搜索代码，支持 AAPL*" aria-label="按交易代码筛选，末尾星号匹配前缀">
-                    <button class="dropdown-toggle" id="symbolDropdownBtn" aria-label="选择交易代码">
+                    <input type="text" id="symbolFilter" class="symbol-input" placeholder="搜索代码，支持 AAPL*" aria-label="按交易代码筛选，末尾星号匹配前缀" data-i18n-placeholder="搜索代码，支持 AAPL*" data-i18n-aria-label="按交易代码筛选，末尾星号匹配前缀">
+                    <button class="dropdown-toggle" id="symbolDropdownBtn" aria-label="选择交易代码" data-i18n-aria-label="选择交易代码">
                         <svg width="10" height="10" viewBox="0 0 10 10">
                             <path d="M1 3L5 7L9 3" fill="none" stroke="currentColor" stroke-width="2"></path>
                         </svg>
@@ -20,36 +20,36 @@
                 </div>
                 <div id="symbolDropdown" class="symbol-dropdown"></div>
             </div><div class="date-picker-container">
-                <button id="showDateRangeBtn" aria-controls="dateRangePicker"><span aria-hidden="true">▦</span><span>日期范围</span></button>
+                <button id="showDateRangeBtn" aria-controls="dateRangePicker"><span aria-hidden="true">▦</span><span data-i18n="日期范围">日期范围</span></button>
 
                 <div id="dateRangePicker" class="date-range-picker">
                     <div class="date-range">
                         <div class="date-picker-group">
-                            <span>Start Date</span>
-                            <input type="date" id="startDate">
+                            <span data-i18n="Start Date">Start Date</span>
+                            <input type="date" id="startDate" aria-label="开始日期" data-i18n-aria-label="开始日期">
                             <span>→</span>
-                            <span>End Date</span>
-                            <input type="date" id="endDate">
-                            <button id="applyDateRange" class="go-button">Go</button>
+                            <span data-i18n="End Date">End Date</span>
+                            <input type="date" id="endDate" aria-label="结束日期" data-i18n-aria-label="结束日期">
+                            <button id="applyDateRange" class="go-button" data-i18n="Go">Go</button>
                         </div>
                         <div class="preset-dates">
-                            <button data-range="today">Today</button>
-                            <button data-range="thisWeek">This Week</button>
-                            <button data-range="thisMonth">This Month</button>
-                            <button data-range="last30Days">Last 30 Days</button>
-                            <button data-range="lastMonth">Last Month</button>
-                            <button data-range="thisQuarter">This Quarter</button>
-                            <button data-range="ytd">YTD</button>
+                            <button data-range="today" data-i18n="Today">Today</button>
+                            <button data-range="thisWeek" data-i18n="This Week">This Week</button>
+                            <button data-range="thisMonth" data-i18n="This Month">This Month</button>
+                            <button data-range="last30Days" data-i18n="Last 30 Days">Last 30 Days</button>
+                            <button data-range="lastMonth" data-i18n="Last Month">Last Month</button>
+                            <button data-range="thisQuarter" data-i18n="This Quarter">This Quarter</button>
+                            <button data-range="ytd" data-i18n="YTD">YTD</button>
                         </div>
                     </div>
                 </div>
-            </div><button id="resetFiltersBtn" class="icon-button" title="清除交易筛选" aria-label="清除交易筛选">×</button></div><button id="settingsBtn" class="icon-button" aria-label="设置" aria-haspopup="dialog">⚙</button><button id="showImportModalBtn" aria-label="导入交易" class="primary"><span aria-hidden="true">↓</span><span class="import-label">导入交易</span></button></div></header><main id="workspace"><section id="summaryStrip" aria-label="已实现盈亏汇总"><div class="stats-cards">
+            </div><button id="resetFiltersBtn" class="icon-button" title="清除交易筛选" aria-label="清除交易筛选" data-i18n-title="清除交易筛选" data-i18n-aria-label="清除交易筛选">×</button></div><button type="button" class="locale-toggle" data-locale-toggle="" aria-label="切换到英文">EN</button><button id="settingsBtn" class="icon-button" aria-label="设置" aria-haspopup="dialog" data-i18n-aria-label="设置">⚙</button><button id="showImportModalBtn" aria-label="导入交易" class="primary" data-i18n-aria-label="导入交易"><span aria-hidden="true">↓</span><span class="import-label" data-i18n="导入交易">导入交易</span></button></div></header><main id="workspace"><section id="summaryStrip" aria-label="已实现盈亏汇总" data-i18n-aria-label="已实现盈亏汇总"><div class="stats-cards">
         <div class="stat-card">
             <div class="stat-header">
-                <span>净盈亏</span>
+                <span data-i18n="净盈亏">净盈亏</span>
                 <div class="header-controls">
                     <span class="trade-count">0</span>
-                    <span class="fullscreen-btn" data-card="net-pnl" role="button" tabindex="0" aria-label="展开Net P&amp;L">⛶</span>
+                    <span class="fullscreen-btn" data-card="net-pnl" role="button" tabindex="0" aria-label="展开Net P&amp;L" data-i18n-aria-label="展开Net P&amp;L">⛶</span>
                 </div>
             </div>
             <div class="stat-value positive">—</div>
@@ -57,10 +57,10 @@
 
         <div class="stat-card" id="win-rate">
             <div class="stat-header">
-                <span>交易胜率</span>
+                <span data-i18n="交易胜率">交易胜率</span>
                 <div class="header-controls">
                     <span class="info-icon">ⓘ</span>
-                    <span class="fullscreen-btn" data-card="win-rate" role="button" tabindex="0" aria-label="展开Trade Win %">⛶</span>
+                    <span class="fullscreen-btn" data-card="win-rate" role="button" tabindex="0" aria-label="展开Trade Win %" data-i18n-aria-label="展开Trade Win %">⛶</span>
                 </div>
             </div>
             <div class="stat-value">—</div>
@@ -73,10 +73,10 @@
 
         <div class="stat-card" id="profit-factor">
             <div class="stat-header">
-                <span>盈利因子</span>
+                <span data-i18n="盈利因子">盈利因子</span>
                 <div class="header-controls">
                     <span class="info-icon">ⓘ</span>
-                    <span class="fullscreen-btn" data-card="profit-factor" role="button" tabindex="0" aria-label="展开Profit Factor">⛶</span>
+                    <span class="fullscreen-btn" data-card="profit-factor" role="button" tabindex="0" aria-label="展开Profit Factor" data-i18n-aria-label="展开Profit Factor">⛶</span>
                 </div>
             </div>
             <div class="stat-value">—</div>
@@ -85,10 +85,10 @@
 
         <div class="stat-card" id="day-win-rate">
             <div class="stat-header">
-                <span>盈利日占比</span>
+                <span data-i18n="盈利日占比">盈利日占比</span>
                 <div class="header-controls">
                     <span class="info-icon">ⓘ</span>
-                    <span class="fullscreen-btn" data-card="day-win-rate" role="button" tabindex="0" aria-label="展开Day Win %">⛶</span>
+                    <span class="fullscreen-btn" data-card="day-win-rate" role="button" tabindex="0" aria-label="展开Day Win %" data-i18n-aria-label="展开Day Win %">⛶</span>
                 </div>
             </div>
             <div class="stat-value">—</div>
@@ -100,10 +100,10 @@
         </div>
         <div class="stat-card" id="avg-win-loss">
             <div class="stat-header">
-                <span>平均盈亏比</span>
+                <span data-i18n="平均盈亏比">平均盈亏比</span>
                 <div class="header-controls">
                     <span class="info-icon">ⓘ</span>
-                    <span class="fullscreen-btn" data-card="avg-win-loss" role="button" tabindex="0" aria-label="展开Avg win/loss trade">⛶</span>
+                    <span class="fullscreen-btn" data-card="avg-win-loss" role="button" tabindex="0" aria-label="展开Avg win/loss trade" data-i18n-aria-label="展开Avg win/loss trade">⛶</span>
                 </div>
             </div>
             <div class="stat-value">—</div>
@@ -112,25 +112,25 @@
                 <div class="loss">0</div>
             </div>
         </div>
-    </div><div class="summary-caption"><span id="filterScope">汇总与分析：全部已导入的平仓记录</span><button id="expandMetricsBtn" aria-expanded="false">展开辅助信息</button></div></section><div class="view-panel calendar-layout" id="calendarView" aria-labelledby="tab-calendar"><section class="calendar-panel">
+    </div><div class="summary-caption"><span id="filterScope" data-i18n="汇总与分析：全部已导入的平仓记录">汇总与分析：全部已导入的平仓记录</span><button id="expandMetricsBtn" aria-expanded="false" data-i18n="展开辅助信息">展开辅助信息</button></div></section><div class="view-panel calendar-layout" id="calendarView" aria-labelledby="tab-calendar"><section class="calendar-panel">
     <!-- <div class="file-controls">
         <input type="file" id="csvFile" accept=".csv" class="file-input">
         <button onclick="clearData()">Clear Data</button>
     </div> -->
     <div class="header">
         <div class="month-navigation">
-            <button data-direction="-1">←</button>
+            <button data-direction="-1" aria-label="上个月" data-i18n-aria-label="上个月">←</button>
             <h2 id="currentMonth"></h2>
-            <button data-direction="1">→</button>
+            <button data-direction="1" aria-label="下个月" data-i18n-aria-label="下个月">→</button>
         </div>
         <div class="month-stats">
-            <span>Monthly stats:</span>
+            <span data-i18n="Monthly stats:">Monthly stats:</span>
             <span id="monthlyPnL"></span>
             <span id="tradingDays"></span>
         </div>
     </div>
     <div class="calendar" id="calendar"></div>
-<div class="calendar-footnote"><span class="mobile-only">仅隐藏周六、周日显示，交易、日志与统计仍保留</span><span>日历：当月全部已导入交易 · ROI 使用固定 100,000 基准，并非账户余额</span></div></section><aside id="dayPreview" class="day-preview" aria-label="当日交易快览" aria-live="polite"></aside></div><div class="stats-container view-panel" id="analyticsView" aria-labelledby="tab-analytics" hidden=""><div class="scope-note">分析按当前交易筛选显示 · 盈亏采用已导入的 FifoPnlRealized · 原有指标口径保持不变</div><div id="chartStatus" class="scope-note" role="status" hidden=""></div>
+<div class="calendar-footnote"><span class="mobile-only" data-i18n="仅隐藏周六、周日显示，交易、日志与统计仍保留">仅隐藏周六、周日显示，交易、日志与统计仍保留</span><span data-i18n="日历：当月全部已导入交易 · ROI 使用固定 100,000 基准，并非账户余额">日历：当月全部已导入交易 · ROI 使用固定 100,000 基准，并非账户余额</span></div></section><aside id="dayPreview" class="day-preview" aria-label="当日交易快览" aria-live="polite" data-i18n-aria-label="当日交易快览"></aside></div><div class="stats-container view-panel" id="analyticsView" aria-labelledby="tab-analytics" hidden=""><div class="scope-note" data-i18n="分析按当前交易筛选显示 · 盈亏采用已导入的 FifoPnlRealized · 原有指标口径保持不变">分析按当前交易筛选显示 · 盈亏采用已导入的 FifoPnlRealized · 原有指标口径保持不变</div><div id="chartStatus" class="scope-note" role="status" hidden=""></div>
     <!-- 统计指标卡片行 -->
 
 
@@ -138,8 +138,8 @@
     <div class="charts-section">
         <div class="chart-container" style="width:100%; max-width:100%;">
             <div class="chart-header">
-                <h3>Daily Net Cumulative P&amp;L</h3>
-                <span class="fullscreen-btn" data-chart="cumulativePnLChart" role="button" tabindex="0" aria-label="展开Daily Net Cumulative P&amp;L">⛶</span>
+                <h3 data-i18n="Daily Net Cumulative P&amp;L">Daily Net Cumulative P&amp;L</h3>
+                <span class="fullscreen-btn" data-chart="cumulativePnLChart" role="button" tabindex="0" aria-label="展开Daily Net Cumulative P&amp;L" data-i18n-aria-label="展开Daily Net Cumulative P&amp;L">⛶</span>
             </div>
             <div class="chart-wrapper">
                 <canvas id="cumulativePnLChart"></canvas>
@@ -147,8 +147,8 @@
         </div>
         <div class="chart-container" style="width:100%; max-width:100%;">
             <div class="chart-header">
-                <h3>Net Daily P&amp;L</h3>
-                <span class="fullscreen-btn" data-chart="dailyPnLChart" role="button" tabindex="0" aria-label="展开Net Daily P&amp;L">⛶</span>
+                <h3 data-i18n="Net Daily P&amp;L">Net Daily P&amp;L</h3>
+                <span class="fullscreen-btn" data-chart="dailyPnLChart" role="button" tabindex="0" aria-label="展开Net Daily P&amp;L" data-i18n-aria-label="展开Net Daily P&amp;L">⛶</span>
             </div>
             <div class="chart-wrapper">
                 <canvas id="dailyPnLChart"></canvas>
@@ -158,39 +158,39 @@
     <div class="charts-container">
         <div class="chart-item">
             <div class="chart-header">
-                <h3>Trade Duration Performance</h3>
-                <span class="fullscreen-btn" data-chart="durationPerformanceChart" role="button" tabindex="0" aria-label="展开Trade Duration Performance">⛶</span>
+                <h3 data-i18n="Trade Duration Performance">Trade Duration Performance</h3>
+                <span class="fullscreen-btn" data-chart="durationPerformanceChart" role="button" tabindex="0" aria-label="展开Trade Duration Performance" data-i18n-aria-label="展开Trade Duration Performance">⛶</span>
             </div>
             <canvas id="durationPerformanceChart"></canvas>
         </div>
         <div class="chart-item">
             <div class="chart-header">
-                <h3>Trade Time Performance</h3>
-                <span class="fullscreen-btn" data-chart="timePerformanceChart" role="button" tabindex="0" aria-label="展开Trade Time Performance">⛶</span>
+                <h3 data-i18n="Trade Time Performance">Trade Time Performance</h3>
+                <span class="fullscreen-btn" data-chart="timePerformanceChart" role="button" tabindex="0" aria-label="展开Trade Time Performance" data-i18n-aria-label="展开Trade Time Performance">⛶</span>
             </div>
             <canvas id="timePerformanceChart"></canvas>
         </div>
         <div class="chart-item">
             <div class="chart-header">
-                <h3>Drawdown</h3>
-                <span class="fullscreen-btn" data-chart="drawdownChart" role="button" tabindex="0" aria-label="展开Drawdown">⛶</span>
+                <h3 data-i18n="Drawdown">Drawdown</h3>
+                <span class="fullscreen-btn" data-chart="drawdownChart" role="button" tabindex="0" aria-label="展开Drawdown" data-i18n-aria-label="展开Drawdown">⛶</span>
             </div>
             <canvas id="drawdownChart"></canvas>
         </div>
         <div class="chart-item stock-stats-container">
             <div class="chart-header">
-                <h3>Stock Statistics</h3>
-                <span class="fullscreen-btn" data-chart="stockStats" role="button" tabindex="0" aria-label="展开Stock Statistics">⛶</span>
+                <h3 data-i18n="Stock Statistics">Stock Statistics</h3>
+                <span class="fullscreen-btn" data-chart="stockStats" role="button" tabindex="0" aria-label="展开Stock Statistics" data-i18n-aria-label="展开Stock Statistics">⛶</span>
             </div>
             <div class="stats-section">
-                <h4>Top Profitable Stocks</h4>
+                <h4 data-i18n="Top Profitable Stocks">Top Profitable Stocks</h4>
                 <table class="stock-stats-table">
                     <thead>
                         <tr>
-                            <th>Symbol</th>
-                            <th>Profit</th>
-                            <th>Loss</th>
-                            <th>Trades</th>
+                            <th data-i18n="Symbol">Symbol</th>
+                            <th data-i18n="Profit">Profit</th>
+                            <th data-i18n="Loss">Loss</th>
+                            <th data-i18n="Trades">Trades</th>
                         </tr>
                     </thead>
                     <tbody id="topProfitableStocks">
@@ -199,14 +199,14 @@
                 </table>
             </div>
             <div class="stats-section">
-                <h4>Most Loss Stocks</h4>
+                <h4 data-i18n="Most Loss Stocks">Most Loss Stocks</h4>
                 <table class="stock-stats-table">
                     <thead>
                         <tr>
-                            <th>Symbol</th>
-                            <th>Profit</th>
-                            <th>Loss</th>
-                            <th>Trades</th>
+                            <th data-i18n="Symbol">Symbol</th>
+                            <th data-i18n="Profit">Profit</th>
+                            <th data-i18n="Loss">Loss</th>
+                            <th data-i18n="Trades">Trades</th>
                         </tr>
                     </thead>
                     <tbody id="topLossStocks">
@@ -219,90 +219,90 @@
     <div class="charts-section">
         <div class="chart-item">
             <div class="chart-header">
-                <h3>Weekly Statistics</h3>
-                <span class="fullscreen-btn" data-chart="weeklyStatsChart" role="button" tabindex="0" aria-label="展开Weekly Statistics">⛶</span>
+                <h3 data-i18n="Weekly Statistics">Weekly Statistics</h3>
+                <span class="fullscreen-btn" data-chart="weeklyStatsChart" role="button" tabindex="0" aria-label="展开Weekly Statistics" data-i18n-aria-label="展开Weekly Statistics">⛶</span>
             </div>
             <canvas id="weeklyStatsChart"></canvas>
         </div>
         <div class="chart-item">
             <div class="chart-header">
-                <h3>Weekly Win/Loss Trade Analysis</h3>
-                <span class="fullscreen-btn" data-chart="weeklyTradeAnalysisChart" role="button" tabindex="0" aria-label="展开Weekly Win/Loss Trade Analysis">⛶</span>
+                <h3 data-i18n="Weekly Win/Loss Trade Analysis">Weekly Win/Loss Trade Analysis</h3>
+                <span class="fullscreen-btn" data-chart="weeklyTradeAnalysisChart" role="button" tabindex="0" aria-label="展开Weekly Win/Loss Trade Analysis" data-i18n-aria-label="展开Weekly Win/Loss Trade Analysis">⛶</span>
             </div>
             <canvas id="weeklyTradeAnalysisChart"></canvas>
         </div>
     </div>
 </div><section id="journalView" class="view-panel" aria-labelledby="tab-journal" hidden=""><aside id="logSidebar" class="log-sidebar hidden">
       <div class="log-sidebar-header">
-        <h3>日志</h3>
-        <button id="closeLogSidebar" class="icon-btn" title="返回交易日历">返回日历</button>
-      <div class="journal-actions"><button id="newDailyLogBtn" class="primary">＋ 每日复盘</button><button id="newWeeklyLogBtn">每周复盘</button></div></div>
+        <h3 data-i18n="日志">日志</h3>
+        <button id="closeLogSidebar" class="icon-btn" title="返回交易日历" data-i18n-title="返回交易日历" data-i18n="返回日历">返回日历</button>
+      <div class="journal-actions"><button id="newDailyLogBtn" class="primary" data-i18n="＋ 每日复盘">＋ 每日复盘</button><button id="newWeeklyLogBtn" data-i18n="每周复盘">每周复盘</button></div></div>
       <div id="logSidebarList" class="log-list"></div>
-      <div id="logSidebarLoading" class="log-loading hidden">加载中...</div>
-    </aside></section></main><footer class="app-footer"><span>PNLCalendar <span class="quiet">/</span> 把每次交易，变成下一次进步</span><a href="https://github.com/winglight/PNLCalendar" target="_blank" rel="noopener noreferrer">源代码</a></footer>
+      <div id="logSidebarLoading" class="log-loading hidden" data-i18n="加载中...">加载中...</div>
+    </aside></section></main><footer class="app-footer"><span>PNLCalendar <span class="quiet">/</span> <span data-i18n="把每次交易，变成下一次进步">把每次交易，变成下一次进步</span></span><a href="https://github.com/winglight/PNLCalendar" target="_blank" rel="noopener noreferrer" data-i18n="源代码">源代码</a></footer>
 
 <!-- 导入弹窗 -->
 <div id="importModal" class="import-modal">
-    <div class="import-modal-content"><button id="closeImportModalBtn" class="close-button" aria-label="关闭导入">×</button>
-        <h2>Import Trades</h2>
-        <p>Auto import your trades from your broker or platform.</p>
+    <div class="import-modal-content"><button id="closeImportModalBtn" class="close-button" aria-label="关闭导入" data-i18n-aria-label="关闭导入">×</button>
+        <div class="modal-language"><button type="button" class="locale-toggle" data-locale-toggle="" aria-label="切换到英文">EN</button></div><h2 data-i18n="Import Trades">Import Trades</h2>
+        <p data-i18n="Auto import your trades from your broker or platform.">Auto import your trades from your broker or platform.</p>
         <form id="handleImportForm" class="import-form">
             <div class="form-group">
-                <label>Broker</label>
+                <label data-i18n="Broker">Broker</label>
                 <select class="broker-select">
-                    <option value="ib">Interactive Brokers</option>
+                    <option value="ib" data-i18n="Interactive Brokers">Interactive Brokers</option>
                 </select>
             </div>
             <div class="form-group">
-                <label>Flex Token <span style="color: red;">required</span></label>
+                <label><span data-i18n="Flex Token">Flex Token</span> <span style="color: red;" data-i18n="required">required</span></label>
                 <input type="password" id="flexToken" required="">
             </div>
             <div class="form-group">
-                <label>Report Id <span style="color: red;">required</span></label>
+                <label><span data-i18n="Report Id">Report Id</span> <span style="color: red;" data-i18n="required">required</span></label>
                 <input type="text" id="reportId" required="">
             </div>
             <div class="form-group">
                 <a target="_blank" href="https://intercom.help/tradezella-4066d388d93c/en/articles/6063403-interactive-broker-how-to-sync-your-interactive-broker-ibkr-account-with-tradezella">
-                <label>How to get Token and Id</label>
+                <label data-i18n="How to get Token and Id">How to get Token and Id</label>
                 </a>
             </div>
-            <button type="submit" class="connect-button">Connect</button>
+            <button type="submit" class="connect-button" data-i18n="Connect">Connect</button>
         </form>
-    <div class="csv-import"><label for="csvFile">或从本地导入 IB CSV</label><input type="file" id="csvFile" accept=".csv,text/csv"><p class="settings-note">Flex 在线导入沿用现有 ib.broyustudio.com 代理，Token 和报告请求会经过该服务。请只使用你信任的代理。</p></div></div>
+    <div class="csv-import"><label for="csvFile" data-i18n="或从本地导入 IB CSV">或从本地导入 IB CSV</label><input type="file" id="csvFile" accept=".csv,text/csv"><p class="settings-note" data-i18n="Flex 在线导入沿用现有 ib.broyustudio.com 代理，Token 和报告请求会经过该服务。请只使用你信任的代理。">Flex 在线导入沿用现有 ib.broyustudio.com 代理，Token 和报告请求会经过该服务。请只使用你信任的代理。</p></div></div>
 </div>
 <div id="aiConfigModal" class="modal hidden">
     <div class="modal-content ai-config-modal">
         <span class="close" id="closeAiConfigModal">×</span>
-        <h2>AI Config</h2>
+        <div class="modal-language"><button type="button" class="locale-toggle" data-locale-toggle="" aria-label="切换到英文">EN</button></div><h2 data-i18n="AI Config">AI Config</h2>
         <form id="aiConfigForm">
             <div class="form-row">
-                <label for="aiUrl">AI URL</label>
+                <label for="aiUrl" data-i18n="AI URL">AI URL</label>
                 <input type="text" id="aiUrl" name="url" placeholder="http://localhost:8000" required="">
             </div>
             <div class="form-row">
-                <label for="aiToken">Token</label>
+                <label for="aiToken" data-i18n="Token">Token</label>
                 <input type="password" id="aiToken" name="token">
             </div>
             <div class="form-row">
-                <label for="aiModel">Model</label>
+                <label for="aiModel" data-i18n="Model">Model</label>
                 <input type="text" id="aiModel" name="model" placeholder="gpt-4">
             </div>
             <div class="form-row checkbox-row">
-                <label for="aiNewSession">每次新会话</label>
+                <label for="aiNewSession" data-i18n="每次新会话">每次新会话</label>
                 <input type="checkbox" id="aiNewSession" name="isNewSession" checked="">
             </div>
             <div class="form-row full-width">
-                <label for="aiDailyTemplate">每日提示词模板</label>
+                <label for="aiDailyTemplate" data-i18n="每日提示词模板">每日提示词模板</label>
                 <textarea id="aiDailyTemplate" name="dailyTemplate" rows="10"></textarea>
             </div>
             <div class="form-row full-width">
-                <label for="aiWeeklyTemplate">每周提示词模板</label>
+                <label for="aiWeeklyTemplate" data-i18n="每周提示词模板">每周提示词模板</label>
                 <textarea id="aiWeeklyTemplate" name="weeklyTemplate" rows="12"></textarea>
             </div>
-            <div id="aiConfigStatus" class="ai-config-status hidden"></div>
+            <p class="settings-note" data-i18n="提示词保持原文，切换界面语言不会修改提示词或已保存的复盘。">提示词保持原文，切换界面语言不会修改提示词或已保存的复盘。</p><div id="aiConfigStatus" class="ai-config-status hidden"></div>
             <div class="form-actions">
-                <button type="button" id="saveAiConfigBtn" class="primary">保存</button>
-                <button type="button" id="testAiConfigBtn" class="secondary">AI测试</button>
+                <button type="button" id="saveAiConfigBtn" class="primary" data-i18n="保存">保存</button>
+                <button type="button" id="testAiConfigBtn" class="secondary" data-i18n="AI测试">AI测试</button>
             </div>
         </form>
     </div>
@@ -313,38 +313,38 @@
     <div class="trade-modal-content">
         <span class="close-button" id="closeTradeModalBtn">×</span>
         <div class="modal-header">
-            <div class="date-nav">
-                <button class="nav-arrow left" id="prevTradeDay">←</button>
+            <div class="modal-language"><button type="button" class="locale-toggle" data-locale-toggle="" aria-label="切换到英文">EN</button></div><div class="date-nav">
+                <button class="nav-arrow left" id="prevTradeDay" aria-label="上一交易日" data-i18n-aria-label="上一交易日">←</button>
                 <span id="modalDate" class="modal-date"></span>
-                <button class="nav-arrow right" id="nextTradeDay">→</button>
+                <button class="nav-arrow right" id="nextTradeDay" aria-label="下一交易日" data-i18n-aria-label="下一交易日">→</button>
             </div>
             <span id="modalNetPnL" class="modal-pnl"></span>
         </div>
         <div class="trade-stats">
             <div class="stats-row">
-                <span class="stat-label">Total Trades:</span><span id="modalTotalTrades" class="stat-value"></span>
-                <span class="stat-label">Winners:</span><span id="modalWinners" class="stat-value"></span>
-                <span class="stat-label">Winrate:</span><span id="modalWinrate" class="stat-value"></span>
-                <span class="stat-label">Losers:</span><span id="modalLosers" class="stat-value"></span>
-                <span class="stat-label">Volume:</span><span id="modalVolume" class="stat-value"></span>
-                <span class="stat-label">Profit Factor:</span><span id="modalProfitFactor" class="stat-value"></span>
+                <span class="stat-label" data-i18n="Total Trades:">Total Trades:</span><span id="modalTotalTrades" class="stat-value"></span>
+                <span class="stat-label" data-i18n="Winners:">Winners:</span><span id="modalWinners" class="stat-value"></span>
+                <span class="stat-label" data-i18n="Winrate:">Winrate:</span><span id="modalWinrate" class="stat-value"></span>
+                <span class="stat-label" data-i18n="Losers:">Losers:</span><span id="modalLosers" class="stat-value"></span>
+                <span class="stat-label" data-i18n="Volume:">Volume:</span><span id="modalVolume" class="stat-value"></span>
+                <span class="stat-label" data-i18n="Profit Factor:">Profit Factor:</span><span id="modalProfitFactor" class="stat-value"></span>
             </div>
         </div>
         <div class="table-wrapper">
             <div class="table-controls">
-                <button class="details-button" id="viewDetailsBtn">View Details</button>
+                <button class="details-button" id="viewDetailsBtn" data-i18n="View Details">View Details</button>
             </div>
             <table class="trades-table">
                 <thead>
                     <tr>
-                        <th>Open Time</th>
-                        <th>Ticker</th>
-                        <th>Side</th>
-                        <th>Instrument</th>
-                        <th>Net P&amp;L</th>
-                        <th>Net ROI</th>
-                        <th>Trade Times</th>
-                        <th>Playbook</th>
+                        <th data-i18n="Open Time">Open Time</th>
+                        <th data-i18n="Ticker">Ticker</th>
+                        <th data-i18n="Side">Side</th>
+                        <th data-i18n="Instrument">Instrument</th>
+                        <th data-i18n="Net P&amp;L">Net P&amp;L</th>
+                        <th data-i18n="Net ROI">Net ROI</th>
+                        <th data-i18n="Trade Times">Trade Times</th>
+                        <th data-i18n="Playbook">Playbook</th>
                     </tr>
                 </thead>
                 <tbody id="tradesTableBody">
@@ -366,7 +366,7 @@
     <div id="statModal" class="stat-modal">
         <div class="stat-modal-content">
             <button class="close-button">×</button>
-            <h2 id="statModalTitle"></h2>
+            <div class="modal-language"><button type="button" class="locale-toggle" data-locale-toggle="" aria-label="切换到英文">EN</button></div><h2 id="statModalTitle"></h2>
             <div id="statModalContent"></div>
         </div>
     </div>
@@ -375,7 +375,7 @@
     <div id="chartModal" class="chart-modal">
         <div class="chart-modal-content">
             <button class="close-button">×</button>
-            <h2 id="chartModalTitle"></h2>
+            <div class="modal-language"><button type="button" class="locale-toggle" data-locale-toggle="" aria-label="切换到英文">EN</button></div><h2 id="chartModalTitle"></h2>
             <div id="chartModalContent"></div>
         </div>
     </div>
@@ -383,146 +383,146 @@
     <div id="logModal" class="modal hidden">
       <div class="modal-content log-modal">
         <span class="close" id="closeLogModal">×</span>
-        <h2 id="logModalTitle">复盘日志</h2>
+        <div class="modal-language"><button type="button" class="locale-toggle" data-locale-toggle="" aria-label="切换到英文">EN</button></div><h2 id="logModalTitle" data-i18n="复盘日志">复盘日志</h2>
         <form id="logForm">
           <div class="form-row">
-            <label for="logDate">日期</label>
+            <label for="logDate" data-i18n="日期">日期</label>
             <input type="date" id="logDate" name="date" required="">
           </div>
             <div class="form-row">
-              <label for="logType">类型</label>
+              <label for="logType" data-i18n="类型">类型</label>
               <select id="logType" name="type">
-                <option value="daily">每日复盘</option>
-                <option value="weekly">每周复盘</option>
+                <option value="daily" data-i18n="每日复盘">每日复盘</option>
+                <option value="weekly" data-i18n="每周复盘">每周复盘</option>
               </select>
             </div>
             <div id="dailyFields" class="daily-fields">
               <div class="form-row two-cols">
                 <div>
-                  <label for="tradeCount">今天/本周做了几笔交易</label>
+                  <label for="tradeCount" data-i18n="今天/本周做了几笔交易">今天/本周做了几笔交易</label>
                   <input type="number" id="tradeCount" name="quickReview.count" min="0">
                 </div>
                 <div>
-                  <label for="feelScore">整体感觉如何（1-5）</label>
+                  <label for="feelScore" data-i18n="整体感觉如何（1-5）">整体感觉如何（1-5）</label>
                   <input type="number" id="feelScore" name="quickReview.feel" min="1" max="5">
                 </div>
               </div>
               <div class="form-row">
-                <label for="facts">记录事实</label>
-                <textarea id="facts" name="facts" rows="4" placeholder="只写发生了什么，不带情绪"></textarea>
+                <label for="facts" data-i18n="记录事实">记录事实</label>
+                <textarea id="facts" name="facts" rows="4" placeholder="只写发生了什么，不带情绪" data-i18n-placeholder="只写发生了什么，不带情绪"></textarea>
               </div>
               <div class="form-row">
-                <label for="learnings">提炼学习点</label>
-                <textarea id="learnings" name="learnings" rows="4" placeholder="从市场走势、操作、情绪管理中提炼1–2个收获"></textarea>
+                <label for="learnings" data-i18n="提炼学习点">提炼学习点</label>
+                <textarea id="learnings" name="learnings" rows="4" placeholder="从市场走势、操作、情绪管理中提炼1–2个收获" data-i18n-placeholder="从市场走势、操作、情绪管理中提炼1–2个收获"></textarea>
               </div>
               <div class="form-row">
-                <label for="improvements">优化方向</label>
-                <textarea id="improvements" name="improvements" rows="3" placeholder="下次可以改进的一个小动作"></textarea>
+                <label for="improvements" data-i18n="优化方向">优化方向</label>
+                <textarea id="improvements" name="improvements" rows="3" placeholder="下次可以改进的一个小动作" data-i18n-placeholder="下次可以改进的一个小动作"></textarea>
               </div>
               <div class="form-row">
-                <label for="affirmations">自我肯定</label>
-                <textarea id="affirmations" name="affirmations" rows="3" placeholder="哪怕亏钱，也找一条做得对的地方"></textarea>
+                <label for="affirmations" data-i18n="自我肯定">自我肯定</label>
+                <textarea id="affirmations" name="affirmations" rows="3" placeholder="哪怕亏钱，也找一条做得对的地方" data-i18n-placeholder="哪怕亏钱，也找一条做得对的地方"></textarea>
               </div>
               <div class="form-row">
-                <label for="linkedTrades">关联交易ID（逗号分隔，可选）</label>
-                <input type="text" id="linkedTrades" name="linkedTradeIds" placeholder="例如：t123,t124">
+                <label for="linkedTrades" data-i18n="关联交易ID（逗号分隔，可选）">关联交易ID（逗号分隔，可选）</label>
+                <input type="text" id="linkedTrades" name="linkedTradeIds" placeholder="例如：t123,t124" data-i18n-placeholder="例如：t123,t124">
               </div>
             </div>
 
           <!-- 每周复盘专用字段 -->
           <div id="weeklyFields" class="weekly-fields hidden">
             <div class="form-section">
-              <h3>1. 本周数据</h3>
+              <h3 data-i18n="1. 本周数据">1. 本周数据</h3>
               <div class="form-row readonly-row">
-                <label>总交易笔数（自动计算）</label>
+                <label data-i18n="总交易笔数（自动计算）">总交易笔数（自动计算）</label>
                 <input type="number" id="weeklyTotalTrades" readonly="">
               </div>
               <div class="form-row readonly-row">
-                <label>盈亏结果（自动计算）</label>
+                <label data-i18n="盈亏结果（自动计算）">盈亏结果（自动计算）</label>
                 <input type="text" id="weeklyPnlResult" readonly="">
               </div>
               <div class="form-row readonly-row">
-                <label>最大单笔盈利/亏损（自动计算）</label>
+                <label data-i18n="最大单笔盈利/亏损（自动计算）">最大单笔盈利/亏损（自动计算）</label>
                 <input type="text" id="weeklyMaxWinLoss" readonly="">
               </div>
               <div class="form-row readonly-row">
-                <label>胜率（自动计算）</label>
+                <label data-i18n="胜率（自动计算）">胜率（自动计算）</label>
                 <input type="text" id="weeklyWinRate" readonly="">
               </div>
               <div class="form-row readonly-row">
-                <label>是否遵守"每日最多3笔交易"规则（自动计算）</label>
+                <label data-i18n="是否遵守&quot;每日最多3笔交易&quot;规则（自动计算）">是否遵守"每日最多3笔交易"规则（自动计算）</label>
                 <input type="text" id="weeklyDailyLimit" readonly="">
               </div>
             </div>
 
             <div class="form-section">
-              <h3>2. 成功经验</h3>
+              <h3 data-i18n="2. 成功经验">2. 成功经验</h3>
               <div class="form-row">
-                <label for="plannedTrades">✅ 哪些交易符合计划，带来了预期结果？</label>
-                <textarea id="plannedTrades" name="plannedTrades" rows="3" placeholder="描述符合计划的交易..."></textarea>
+                <label for="plannedTrades" data-i18n="✅ 哪些交易符合计划，带来了预期结果？">✅ 哪些交易符合计划，带来了预期结果？</label>
+                <textarea id="plannedTrades" name="plannedTrades" rows="3" placeholder="描述符合计划的交易..." data-i18n-placeholder="描述符合计划的交易..."></textarea>
               </div>
               <div class="form-row">
-                <label for="emotionalStability">✅ 哪些行为让我情绪稳定？</label>
-                <textarea id="emotionalStability" name="emotionalStability" rows="3" placeholder="描述让你保持情绪稳定的行为..."></textarea>
+                <label for="emotionalStability" data-i18n="✅ 哪些行为让我情绪稳定？">✅ 哪些行为让我情绪稳定？</label>
+                <textarea id="emotionalStability" name="emotionalStability" rows="3" placeholder="描述让你保持情绪稳定的行为..." data-i18n-placeholder="描述让你保持情绪稳定的行为..."></textarea>
               </div>
             </div>
 
             <div class="form-section">
-              <h3>3. 失误总结</h3>
+              <h3 data-i18n="3. 失误总结">3. 失误总结</h3>
               <div class="form-row">
-                <label for="violatedPlans">❌ 哪些交易违背了计划？（下拉框多选）</label>
+                <label for="violatedPlans" data-i18n="❌ 哪些交易违背了计划？（下拉框多选）">❌ 哪些交易违背了计划？（下拉框多选）</label>
                 <select id="violatedPlans" name="violatedPlans" multiple="">
-                  <option value="超量交易">超量交易</option>
-                  <option value="未设止损">未设止损</option>
-                  <option value="追涨杀跌">追涨杀跌</option>
-                  <option value="持仓过夜">持仓过夜</option>
-                  <option value="违反策略">违反策略</option>
-                  <option value="情绪化操作">情绪化操作</option>
+                  <option value="超量交易" data-i18n="超量交易">超量交易</option>
+                  <option value="未设止损" data-i18n="未设止损">未设止损</option>
+                  <option value="追涨杀跌" data-i18n="追涨杀跌">追涨杀跌</option>
+                  <option value="持仓过夜" data-i18n="持仓过夜">持仓过夜</option>
+                  <option value="违反策略" data-i18n="违反策略">违反策略</option>
+                  <option value="情绪化操作" data-i18n="情绪化操作">情绪化操作</option>
                 </select>
               </div>
               <div class="form-row">
-                <label for="emotionalFactors">❌ 哪些情绪（贪婪/恐惧/犹豫）影响了操作？（下拉框多选）</label>
+                <label for="emotionalFactors" data-i18n="❌ 哪些情绪（贪婪/恐惧/犹豫）影响了操作？（下拉框多选）">❌ 哪些情绪（贪婪/恐惧/犹豫）影响了操作？（下拉框多选）</label>
                 <select id="emotionalFactors" name="emotionalFactors" multiple="">
-                  <option value="贪婪">贪婪</option>
-                  <option value="恐惧">恐惧</option>
-                  <option value="犹豫">犹豫</option>
-                  <option value="焦虑">焦虑</option>
-                  <option value="后悔">后悔</option>
-                  <option value="兴奋">兴奋</option>
+                  <option value="贪婪" data-i18n="贪婪">贪婪</option>
+                  <option value="恐惧" data-i18n="恐惧">恐惧</option>
+                  <option value="犹豫" data-i18n="犹豫">犹豫</option>
+                  <option value="焦虑" data-i18n="焦虑">焦虑</option>
+                  <option value="后悔" data-i18n="后悔">后悔</option>
+                  <option value="兴奋" data-i18n="兴奋">兴奋</option>
                 </select>
               </div>
             </div>
 
             <div class="form-section">
-              <h3>4. 下周优化</h3>
+              <h3 data-i18n="4. 下周优化">4. 下周优化</h3>
               <div class="form-row">
-                <label for="goodHabitToKeep">🎯 我下周要保持的1个好习惯</label>
-                <textarea id="goodHabitToKeep" name="goodHabitToKeep" rows="2" placeholder="例如：保持止损纪律"></textarea>
+                <label for="goodHabitToKeep" data-i18n="🎯 我下周要保持的1个好习惯">🎯 我下周要保持的1个好习惯</label>
+                <textarea id="goodHabitToKeep" name="goodHabitToKeep" rows="2" placeholder="例如：保持止损纪律" data-i18n-placeholder="例如：保持止损纪律"></textarea>
               </div>
               <div class="form-row">
-                <label for="mistakeToAvoid">🚫 我下周要避免的1个错误</label>
-                <textarea id="mistakeToAvoid" name="mistakeToAvoid" rows="2" placeholder="例如：避免追涨杀跌"></textarea>
+                <label for="mistakeToAvoid" data-i18n="🚫 我下周要避免的1个错误">🚫 我下周要避免的1个错误</label>
+                <textarea id="mistakeToAvoid" name="mistakeToAvoid" rows="2" placeholder="例如：避免追涨杀跌" data-i18n-placeholder="例如：避免追涨杀跌"></textarea>
               </div>
               <div class="form-row">
-                <label for="specificActions">📝 具体执行动作</label>
-                <textarea id="specificActions" name="specificActions" rows="3" placeholder="例如：开盘前写好计划，再下单"></textarea>
+                <label for="specificActions" data-i18n="📝 具体执行动作">📝 具体执行动作</label>
+                <textarea id="specificActions" name="specificActions" rows="3" placeholder="例如：开盘前写好计划，再下单" data-i18n-placeholder="例如：开盘前写好计划，再下单"></textarea>
               </div>
             </div>
 
             <div class="form-section">
-              <h3>5. 本周自我肯定</h3>
+              <h3 data-i18n="5. 本周自我肯定">5. 本周自我肯定</h3>
               <div class="form-row">
-                <label for="weeklyAffirmation">🌟 本周最值得肯定的一件事</label>
-                <textarea id="weeklyAffirmation" name="weeklyAffirmation" rows="3" placeholder="记录本周最值得肯定的事情..."></textarea>
+                <label for="weeklyAffirmation" data-i18n="🌟 本周最值得肯定的一件事">🌟 本周最值得肯定的一件事</label>
+                <textarea id="weeklyAffirmation" name="weeklyAffirmation" rows="3" placeholder="记录本周最值得肯定的事情..." data-i18n-placeholder="记录本周最值得肯定的事情..."></textarea>
               </div>
             </div>
           </div>
-          <p class="ai-draft-notice">AI 生成只填入草稿，你可以修改后再确认保存。生成时会将所选期间的交易和复盘发送到已配置的 AI 服务。</p><div id="aiGenerateError" class="form-error hidden"></div>
+          <p class="ai-draft-notice" data-i18n="AI 生成只填入草稿，你可以修改后再确认保存。生成时会将所选期间的交易和复盘发送到已配置的 AI 服务。">AI 生成只填入草稿，你可以修改后再确认保存。生成时会将所选期间的交易和复盘发送到已配置的 AI 服务。</p><div id="aiGenerateError" class="form-error hidden"></div>
 
           <div class="form-actions">
-            <button type="button" id="generateAiLogBtn" class="secondary">AI 生成可编辑草稿</button>
-            <button type="button" id="deleteLogBtn" class="danger hidden">删除</button>
-            <button type="submit" id="saveLogBtn" class="primary">确认保存</button>
+            <button type="button" id="generateAiLogBtn" class="secondary" data-i18n="AI 生成可编辑草稿">AI 生成可编辑草稿</button>
+            <button type="button" id="deleteLogBtn" class="danger hidden" data-i18n="删除">删除</button>
+            <button type="submit" id="saveLogBtn" class="primary" data-i18n="确认保存">确认保存</button>
           </div>
         </form>
       </div>
@@ -532,4 +532,4 @@
 
 
 
-<dialog id="settingsDialog" aria-labelledby="settingsTitle"><div class="settings-heading"><h2 id="settingsTitle">设置</h2><button id="closeSettingsBtn" class="icon-button" aria-label="关闭设置">×</button></div><div class="settings-body"><h3>颜色主题</h3><div class="theme-options" role="group" aria-label="选择颜色主题"><button data-theme-choice="forest" aria-pressed="false"><i class="theme-swatch swatch-forest" aria-hidden="true"></i>森林绿</button><button data-theme-choice="graphite" aria-pressed="false"><i class="theme-swatch swatch-graphite" aria-hidden="true"></i>石墨</button><button data-theme-choice="plum" aria-pressed="false"><i class="theme-swatch swatch-plum" aria-hidden="true"></i>深梅紫</button><button data-theme-choice="ivory" aria-pressed="false"><i class="theme-swatch swatch-ivory" aria-hidden="true"></i>暖白</button><button data-theme-choice="amber" aria-pressed="false"><i class="theme-swatch swatch-amber" aria-hidden="true"></i>琥珀</button><button data-theme-choice="teal" aria-pressed="false"><i class="theme-swatch swatch-teal" aria-hidden="true"></i>青绿</button></div><h3>连接与存储</h3><div class="connection-actions"><button id="aiConfigBtn">AI 配置与提示词</button><button id="configR2Btn">R2 同步配置</button></div><p class="settings-note">交易和复盘默认保存于此浏览器的 localStorage。启用 R2 后会同步至你配置的服务；AI 生成会将所选期间交易和复盘内容发送到你配置的 AI 服务。</p><p class="settings-note">切换主题只改变外观，不会重置交易、日志、筛选或配置。</p></div></dialog></body></html>
+<dialog id="settingsDialog" aria-labelledby="settingsTitle"><div class="settings-heading"><h2 id="settingsTitle" data-i18n="设置">设置</h2><button id="closeSettingsBtn" class="icon-button" aria-label="关闭设置" data-i18n-aria-label="关闭设置">×</button></div><div class="settings-body"><div class="settings-language"><h3 data-i18n="语言">语言</h3><div class="locale-switch" role="group" aria-label="切换语言" data-i18n-aria-label="切换语言"><button type="button" data-locale-choice="zh-CN" lang="zh-CN">中文</button><button type="button" data-locale-choice="en" lang="en">English</button></div></div><h3 data-i18n="颜色主题">颜色主题</h3><div class="theme-options" role="group" aria-label="选择颜色主题" data-i18n-aria-label="选择颜色主题"><button data-theme-choice="forest" aria-pressed="false"><i class="theme-swatch swatch-forest" aria-hidden="true"></i><span data-i18n="森林绿">森林绿</span></button><button data-theme-choice="graphite" aria-pressed="false"><i class="theme-swatch swatch-graphite" aria-hidden="true"></i><span data-i18n="石墨">石墨</span></button><button data-theme-choice="plum" aria-pressed="false"><i class="theme-swatch swatch-plum" aria-hidden="true"></i><span data-i18n="深梅紫">深梅紫</span></button><button data-theme-choice="ivory" aria-pressed="false"><i class="theme-swatch swatch-ivory" aria-hidden="true"></i><span data-i18n="暖白">暖白</span></button><button data-theme-choice="amber" aria-pressed="false"><i class="theme-swatch swatch-amber" aria-hidden="true"></i><span data-i18n="琥珀">琥珀</span></button><button data-theme-choice="teal" aria-pressed="false"><i class="theme-swatch swatch-teal" aria-hidden="true"></i><span data-i18n="青绿">青绿</span></button></div><h3 data-i18n="连接与存储">连接与存储</h3><div class="connection-actions"><button id="aiConfigBtn" data-i18n="AI 配置与提示词">AI 配置与提示词</button><button id="configR2Btn" data-i18n="R2 同步配置">R2 同步配置</button></div><p class="settings-note" data-i18n="交易和复盘默认保存于此浏览器的 localStorage。启用 R2 后会同步至你配置的服务；AI 生成会将所选期间交易和复盘内容发送到你配置的 AI 服务。">交易和复盘默认保存于此浏览器的 localStorage。启用 R2 后会同步至你配置的服务；AI 生成会将所选期间交易和复盘内容发送到你配置的 AI 服务。</p><p class="settings-note" data-i18n="切换主题只改变外观，不会重置交易、日志、筛选或配置。">切换主题只改变外观，不会重置交易、日志、筛选或配置。</p></div></dialog></body></html>

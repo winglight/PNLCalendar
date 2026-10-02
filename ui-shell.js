@@ -1,3 +1,4 @@
+import { setMessage, setAttributeMessage } from './i18n.js';
 import { initThemes } from './themes.js';
 import { openLogSidebar, closeLogSidebar, openLogModal } from './log-ui.js';
 import { chartInstances, updateStatistics } from './stats.js';
@@ -56,16 +57,17 @@ export function initUIShell() {
     more.addEventListener('click', () => {
         const expanded = more.getAttribute('aria-expanded') !== 'true';
         more.setAttribute('aria-expanded', String(expanded));
-        more.textContent = expanded ? '收起辅助信息' : '展开辅助信息';
+        setMessage(more, expanded ? '收起辅助信息' : '展开辅助信息');
         document.getElementById('summaryStrip').classList.toggle('metrics-expanded', expanded);
     });
     document.querySelectorAll('.fullscreen-btn').forEach(button => button.addEventListener('keydown', event => {
         if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); button.click(); }
     }));
     document.querySelectorAll('.close, .close-button').forEach(button => {
+        if (!button.getAttribute('aria-label')) setAttributeMessage(button, 'aria-label', '关闭');
         if (button.tagName === 'BUTTON') return;
         button.setAttribute('role', 'button'); button.tabIndex = 0;
-        button.setAttribute('aria-label', '关闭');
+        setAttributeMessage(button, 'aria-label', '关闭');
         button.addEventListener('keydown', event => {
             if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); button.click(); }
         });

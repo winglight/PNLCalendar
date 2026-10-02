@@ -1,3 +1,4 @@
+import { escapeHTML, t, messageHTML, setMessage, initI18n } from './i18n.js';
 import { 
     allTrades,
     loadTrades, 
@@ -14,7 +15,8 @@ import {
     getSavedDateRangeSelection,
     applyTradeFilters,
     clearTradeFilters,
-    toDateInputValue
+    toDateInputValue,
+    refreshFilterScope
 } from './data.js';
 import { 
     renderCalendar, 
@@ -27,7 +29,8 @@ import {
 } from './calendar.js';
 import { 
     updateStatistics,
-    chartInstances
+    chartInstances,
+    localizeCharts
 } from './stats.js';
 import { loadLogs } from './logs.js';
 import { initLogUI } from './log-ui.js';
@@ -48,6 +51,8 @@ async function init() {
     initLogUI();
     initAIReviewUI();
     initUIShell();
+    document.addEventListener('pnl:localechange', () => { refreshFilterScope(); localizeCharts(); });
+    initI18n();
 
     applySavedDateRange();
 
@@ -85,7 +90,7 @@ function setupEventListeners() {
             updateStatistics();
             closeImportModal();
         } catch (error) {
-            alert(`CSV 导入失败：${error.message}`);
+            alert(t('CSV 导入失败：{error}', { error: error.message }));
         } finally { event.target.value = ''; }
     });
     if (clearDataBtn) clearDataBtn.addEventListener('click', () => {
@@ -150,7 +155,7 @@ function setupEventListeners() {
             const endDate = new Date(`${endDateInput.value}T00:00:00`);
 
             if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) return;
-            if (startDate > endDate) { alert('开始日期不能晚于结束日期'); return; }
+            if (startDate > endDate) { alert(t("开始日期不能晚于结束日期")); return; }
 
             filterTradesByDateRange(startDate, endDate);
             saveDateRangeSelection(startDate, endDate);
@@ -288,8 +293,7 @@ async function handleIBImport(event) {
     // 显示加载状态
     const connectButton = event.submitter;
     if (connectButton) {
-        const originalText = connectButton.textContent;
-        connectButton.textContent = '正在连接...';
+        setMessage(connectButton, "正在连接...");
         connectButton.disabled = true;
     }
 
@@ -324,22 +328,22 @@ async function handleIBImport(event) {
                     updateStatistics();
                     closeImportModal();
                 } else {
-                    alert(`获取CSV失败: ${csvData}`);
+                    alert(t('获取CSV失败: {error}', { error: csvData }));
                 }
             } else {
                 console.error("获取报告失败:", reportResponse.statusText);
-                alert("获取报告失败，请检查您的Token和ReportID");
+                alert(t("获取报告失败，请检查您的Token和ReportID"));
             }
         } else {
             const errorMessage = xmlDoc.querySelector('ErrorMessage')?.textContent;
-            throw new Error(errorMessage || '导入失败');
+            throw new Error(errorMessage || t('导入失败'));
         }
     } catch (error) {
-        alert(`导入失败: ${error.message}`);
+        alert(t('导入失败: {error}', { error: error.message }));
     } finally {
         // 恢复按钮状态
         if (connectButton) {
-            connectButton.textContent = 'Connect';
+            setMessage(connectButton, "Connect");
             connectButton.disabled = false;
         }
     }
@@ -364,14 +368,14 @@ async function fetchWithProxy(url) {
 
         if (!response.ok) {
             const errorText = await response.text();
-            throw new Error(`Proxy request failed: ${response.status} - ${errorText}`);
+            throw new Error(t('代理请求失败: {status} - {error}', { status: response.status, error: errorText }));
         }
 
         console.log("fetch response: " + response);
         return response;
     } catch (error) {
         console.error('Proxy request error:', error);
-        throw new Error(`Failed to fetch through proxy: ${error.message}`);
+        throw new Error(t('无法通过代理获取报告: {error}', { error: error.message }));
     }
 }
 
@@ -439,12 +443,13 @@ function showSymbolDropdown(searchText = '') {
     symbolDropdown.innerHTML = allOptions.map(option => {
         const isWildcard = option.endsWith('*');
         return `
-            <div class="symbol-option ${isWildcard ? 'wildcard-option' : ''}" data-symbol="${option}">
-                ${option} ${isWildcard ? `<span class="wildcard-hint">(通配符)</span>` : ''}
+            <div class="symbol-option ${isWildcard ? 'wildcard-option' : ''}" data-symbol="${escapeHTML(option)}">
+                ${escapeHTML(option)} ${isWildcard ? `<span class="wildcard-hint">${messageHTML("(通配符)")}</span>` : ''}
             </div>
         `;
     }).join('');
     
+    if (!allOptions.length) symbolDropdown.innerHTML = `<div class="empty-state">${messageHTML('没有匹配的交易代码')}</div>`;
     symbolDropdown.classList.add('active');
 }
 
@@ -515,10 +520,10 @@ function initFullscreenButtons() {
             
             // 查找标题元素，增加错误处理
             const titleElement = card.querySelector('.stat-header span');
-            const title = titleElement ? titleElement.textContent : '统计详情';
+            const title = titleElement?.getAttribute('data-i18n') || '统计详情';
             
             // 设置模态框标题
-            statModalTitle.textContent = title;
+            setMessage(statModalTitle, title);
             
             // 根据卡片类型生成内容
             let content = '';
@@ -544,9 +549,9 @@ function initFullscreenButtons() {
                             <div class="loss" style="width: ${calculatePercent(lossCount, winCount, neutralCount)}%">${lossCount}</div>
                         </div>
                         <div style="margin-top: 20px;">
-                            <p>胜利交易: ${winCount} 笔</p>
-                            ${neutralCount !== '0' ? `<p>平局交易: ${neutralCount} 笔</p>` : ''}
-                            <p>亏损交易: ${lossCount} 笔</p>
+                            <p>${messageHTML('胜利交易: {count} 笔', { count: winCount })}</p>
+                            ${neutralCount !== '0' ? `<p>${messageHTML('平局交易: {count} 笔', { count: neutralCount })}</p>` : ''}
+                            <p>${messageHTML('亏损交易: {count} 笔', { count: lossCount })}</p>
                         </div>
                     `;
                     break;
@@ -555,7 +560,7 @@ function initFullscreenButtons() {
                     const pfValue = card.querySelector('.stat-value')?.textContent || '0';
                     content = `
                         <div class="stat-value" style="font-size: 36px;">${pfValue}</div>
-                        <p style="margin-top: 20px;">盈利因子是总盈利除以总亏损的比率。高于1表示盈利，值越高越好。</p>
+                        <p style="margin-top: 20px;">${messageHTML("盈利因子是总盈利除以总亏损的比率。高于1表示盈利，值越高越好。")}</p>
                     `;
                     break;
                     
@@ -571,14 +576,14 @@ function initFullscreenButtons() {
                             <div class="loss" style="width: ${calculatePercent(avgLoss, avgWin, 0)}%">${avgLoss}</div>
                         </div>
                         <div style="margin-top: 20px;">
-                            <p>平均盈利: ${avgWin}</p>
-                            <p>平均亏损: ${avgLoss}</p>
+                            <p>${messageHTML('平均盈利: {value}', { value: avgWin })}</p>
+                            <p>${messageHTML('平均亏损: {value}', { value: avgLoss })}</p>
                         </div>
                     `;
                     break;
                     
                 default:
-                    content = '<p>无法显示此卡片的详细信息</p>';
+                    content = `<p>${messageHTML("无法显示此卡片的详细信息")}</p>`;
             }
             
             // 设置模态框内容
@@ -635,12 +640,12 @@ function initChartFullscreenButtons() {
             if (headerElement) {
                 const titleElement = headerElement.querySelector('h3');
                 if (titleElement) {
-                    chartTitle = titleElement.textContent;
+                    chartTitle = titleElement.getAttribute('data-i18n') || titleElement.textContent;
                 }
             }
             
             // 设置模态框标题
-            chartModalTitle.textContent = chartTitle || '图表详情';
+            setMessage(chartModalTitle, chartTitle || '图表详情');
             
             // 根据图表类型生成内容
             let content = '';
@@ -654,7 +659,7 @@ function initChartFullscreenButtons() {
                     if (header) header.remove(); // 移除标题部分
                     content = `<div class="stock-stats-container" style="height: auto;">${clonedContainer.innerHTML}</div>`;
                 } else {
-                    content = '<div>无法加载股票统计数据</div>';
+                    content = `<div>${messageHTML("无法加载股票统计数据")}</div>`;
                 }
             } else {
                 // 创建新的canvas元素
@@ -724,7 +729,7 @@ function initChartFullscreenButtons() {
                         }
                     } catch (error) {
                         console.error('创建全屏图表时出错:', error);
-                        chartModalContent.innerHTML = '<div>加载图表时出错</div>';
+                        chartModalContent.innerHTML = `<div>${messageHTML("加载图表时出错")}</div>`;
                     }
                 }
             }

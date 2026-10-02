@@ -1,3 +1,4 @@
+import { localizedError, errorCopy, setMessage } from './i18n.js';
 import { allTrades, calculateDuration } from './data.js';
 import { LOG_TEMPLATE, getLogByDate } from './logs.js';
 
@@ -100,10 +101,10 @@ function fillAiConfigForm(config) {
     if (aiWeeklyTemplate) aiWeeklyTemplate.value = merged.weeklyTemplate || WEEKLY_DEFAULT_TEMPLATE;
 }
 
-function showAiConfigStatus(message, type = 'success') {
+function showAiConfigStatus(message, type = 'success', params = {}) {
     const statusEl = document.getElementById('aiConfigStatus');
     if (!statusEl) return;
-    statusEl.textContent = message;
+    setMessage(statusEl, message, params);
     statusEl.classList.remove('hidden', 'success', 'error');
     statusEl.classList.add(type === 'error' ? 'error' : 'success');
 }
@@ -111,6 +112,7 @@ function showAiConfigStatus(message, type = 'success') {
 function clearAiConfigStatus() {
     const statusEl = document.getElementById('aiConfigStatus');
     if (!statusEl) return;
+    statusEl.removeAttribute('data-i18n');
     statusEl.textContent = '';
     statusEl.classList.add('hidden');
     statusEl.classList.remove('success', 'error');
@@ -120,11 +122,12 @@ function showAiGenerateError(message) {
     const errorEl = document.getElementById('aiGenerateError');
     if (!errorEl) return;
     if (!message) {
+        errorEl.removeAttribute('data-i18n');
         errorEl.textContent = '';
         errorEl.classList.add('hidden');
         return;
     }
-    errorEl.textContent = message;
+    setMessage(errorEl, 'AI生成失败: {error}', { error: message });
     errorEl.classList.remove('hidden');
 }
 
@@ -138,7 +141,7 @@ function getHeaders(token, hasJson = true) {
 async function handleSaveAiConfig() {
     const config = getAiConfigFromForm();
     saveAiConfig(config);
-    showAiConfigStatus('配置已保存');
+    showAiConfigStatus("配置已保存");
 }
 
 async function handleTestAiConfig() {
@@ -146,14 +149,13 @@ async function handleTestAiConfig() {
     const config = getAiConfigFromForm();
     saveAiConfig(config);
     if (!config.url) {
-        showAiConfigStatus('AI URL 不能为空', 'error');
+        showAiConfigStatus("AI URL 不能为空", 'error');
         return;
     }
     const testBtn = document.getElementById('testAiConfigBtn');
-    const oldText = testBtn?.textContent || '';
     if (testBtn) {
         testBtn.disabled = true;
-        testBtn.textContent = '测试中...';
+        setMessage(testBtn, "测试中...");
     }
     try {
         const healthUrl = `${normalizeBaseUrl(config.url)}/healthz`;
@@ -167,15 +169,15 @@ async function handleTestAiConfig() {
         }
         const body = await response.json().catch(() => ({}));
         if (body.status && String(body.status).toLowerCase() !== 'ok') {
-            throw new Error(`服务状态异常: ${body.status}`);
+            throw localizedError('服务状态异常: {status}', { status: body.status });
         }
-        showAiConfigStatus('AI服务连接正常');
+        showAiConfigStatus("AI服务连接正常");
     } catch (error) {
-        showAiConfigStatus(`AI测试失败: ${error.message}`, 'error');
+        showAiConfigStatus('AI测试失败: {error}', 'error', { error: errorCopy(error) });
     } finally {
         if (testBtn) {
             testBtn.disabled = false;
-            testBtn.textContent = oldText || 'AI测试';
+            setMessage(testBtn, 'AI测试');
         }
     }
 }
@@ -331,7 +333,7 @@ function buildPrompt(config, type, selectedDate, startDate, endDate, ordersCsv, 
 async function streamChat(config, prompt, attachment) {
     const baseUrl = normalizeBaseUrl(config.url);
     if (!baseUrl) {
-        throw new Error('AI URL 不能为空');
+        throw localizedError("AI URL 不能为空");
     }
     const payload = {
         messages: [{
@@ -359,7 +361,7 @@ async function streamChat(config, prompt, attachment) {
         return data.content || '';
     }
     if (!response.body) {
-        throw new Error('未收到流式响应');
+        throw localizedError("未收到流式响应");
     }
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
@@ -397,7 +399,7 @@ async function streamChat(config, prompt, attachment) {
             if (parsed.content) fullContent += parsed.content;
         } catch (error) {
             if (fullContent.trim()) return fullContent.trim();
-            throw new Error('无法解析流式响应');
+            throw localizedError("无法解析流式响应");
         }
     }
     return fullContent.trim();
@@ -405,7 +407,7 @@ async function streamChat(config, prompt, attachment) {
 
 function extractJsonText(rawText) {
     const text = (rawText || '').trim();
-    if (!text) throw new Error('AI返回为空');
+    if (!text) throw localizedError("AI返回为空");
     try {
         JSON.parse(text);
         return text;
@@ -423,7 +425,7 @@ function extractJsonText(rawText) {
         JSON.parse(candidate);
         return candidate;
     }
-    throw new Error('AI返回不是有效JSON');
+    throw localizedError("AI返回不是有效JSON");
 }
 
 function getField(data, keys) {
@@ -534,17 +536,16 @@ function applyAiResultToForm(result, type) {
 async function handleGenerateAiLog() {
     showAiGenerateError('');
     const generateBtn = document.getElementById('generateAiLogBtn');
-    const oldText = generateBtn?.textContent || '';
     if (generateBtn) {
         generateBtn.disabled = true;
-        generateBtn.textContent = '生成中...';
+        setMessage(generateBtn, "生成中...");
     }
     try {
         const config = loadAiConfig();
         const date = document.getElementById('logDate')?.value || '';
         const type = document.getElementById('logType')?.value || 'daily';
         if (!date) {
-            throw new Error('请先选择复盘日期');
+            throw localizedError("请先选择复盘日期");
         }
         const period = getTradesByPeriod(date, type);
         const ordersCsv = buildOrdersCsv(period.trades);
@@ -559,23 +560,23 @@ async function handleGenerateAiLog() {
         const jsonText = extractJsonText(rawResponse);
         const parsed = JSON.parse(jsonText);
         applyAiResultToForm(parsed, type);
-        showToast('AI内容生成成功，已自动填充');
+        showToast("AI内容生成成功，已自动填充");
     } catch (error) {
-        const message = error?.message || 'AI生成失败';
+        const message = errorCopy(error) || { __pnlMessage: 'AI生成失败', params: {} };
         showAiGenerateError(message);
-        showToast(`AI生成失败: ${message}`, 'error');
+        showToast('AI生成失败: {error}', 'error', { error: message });
     } finally {
         if (generateBtn) {
             generateBtn.disabled = false;
-            generateBtn.textContent = oldText || 'AI生成';
+            setMessage(generateBtn, 'AI 生成可编辑草稿');
         }
     }
 }
 
-function showToast(message, type = 'success') {
+function showToast(message, type = 'success', params = {}) {
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    toast.textContent = message;
+    setMessage(toast, message, params);
     toast.style.cssText = `
         position: fixed;
         top: 20px;

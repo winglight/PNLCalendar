@@ -1,3 +1,4 @@
+import { localeControlsHTML, bindLocaleControls, t, messageHTML, setMessage, setAttributeMessage, translatePage, dateHTML, setDateMessage, escapeHTML } from './i18n.js';
 // calendar.js - 处理日历和交易详情相关功能
 import { allTrades, filteredTrades, TOTAL_ACCOUNT_VALUE, formatPnL, calculateDuration } from './data.js';
 import { getDailyStats, getMonthlyStats, getWeeklyStats } from './stats.js';
@@ -18,17 +19,17 @@ export function renderCalendar() {
     const month = currentDate.getMonth();
     const firstDay = new Date(Date.UTC(year, month, 1));
     const lastDay = new Date(Date.UTC(year, month + 1, 0));
-    document.getElementById('currentMonth').textContent = `${year}年 ${month + 1}月`;
+    setDateMessage(document.getElementById('currentMonth'), `${year}-${String(month + 1).padStart(2, '0')}-01`, { year: 'numeric', month: 'long' });
     const monthlyStats = getMonthlyStats(year, month);
     document.getElementById('monthlyPnL').innerHTML = formatPnL(monthlyStats.pnL);
-    document.getElementById('tradingDays').textContent = `${monthlyStats.days} 个交易日`;
+    setMessage(document.getElementById('tradingDays'), '{count} 个交易日', { count: monthlyStats.days });
     const calendar = document.getElementById('calendar');
     calendar.innerHTML = '';
     const days = ['周日', '周一', '周二', '周三', '周四', '周五', '周六', '周汇总'];
     days.forEach((day, index) => {
         const header = document.createElement('div');
         header.className = `calendar-header${index === 0 || index === 6 ? ' weekend' : ''}${index === 7 ? ' week-heading' : ''}`;
-        header.textContent = day;
+        setMessage(header, day);
         calendar.appendChild(header);
     });
     const gridStart = new Date(firstDay);
@@ -51,13 +52,13 @@ export function renderCalendar() {
             dayDiv.innerHTML = `<span class="day-number">${date.getUTCDate()}</span>`;
             if (stats) {
                 dayDiv.classList.add(stats.pnl >= 0 ? 'trading-day' : 'negative');
-                dayDiv.insertAdjacentHTML('beforeend', `<div class="trade-info">${formatPnL(stats.pnl)}<span class="trade-count-label">${stats.trades} 个代码</span><span class="day-secondary">${stats.pnlPercentage.toFixed(1)}% 基准收益 · ${stats.winRate.toFixed(0)}% 胜率</span></div>`);
+                dayDiv.insertAdjacentHTML('beforeend', `<div class="trade-info">${formatPnL(stats.pnl)}<span class="trade-count-label">${messageHTML('{count} 个代码', { count: stats.trades })}</span><span class="day-secondary">${messageHTML('{roi}% 基准收益 · {winRate}% 胜率', { roi: stats.pnlPercentage.toFixed(1), winRate: stats.winRate.toFixed(0) })}</span></div>`);
                 weekPnL += stats.pnl;
                 weekDays++;
             }
             dayDiv.tabIndex = 0;
             dayDiv.setAttribute('role', 'button');
-            dayDiv.setAttribute('aria-label', `${dateStr}，${stats ? `已实现盈亏 ${stats.pnl.toFixed(2)}` : '无平仓交易'}，查看当日快览`);
+            setAttributeMessage(dayDiv, 'aria-label', stats ? '{date}，已实现盈亏 {pnl}，查看当日快览' : '{date}，无平仓交易，查看当日快览', { date: dateStr, pnl: stats?.pnl.toFixed(2) });
             const select = () => selectCalendarDay(dateStr);
             dayDiv.addEventListener('click', select);
             dayDiv.addEventListener('keydown', event => {
@@ -71,7 +72,7 @@ export function renderCalendar() {
         if (weekday === 6) {
             const summary = document.createElement('div');
             summary.className = 'week-summary';
-            summary.innerHTML = `<span class="week-label">本周</span>${formatPnL(weekPnL)}<small>${weekDays} 个交易日</small>`;
+            summary.innerHTML = `<span class="week-label">${messageHTML("本周")}</span>${formatPnL(weekPnL)}<small>${messageHTML('{count} 个交易日', { count: weekDays })}</small>`;
             calendar.appendChild(summary);
             weekPnL = 0;
             weekDays = 0;
@@ -98,11 +99,11 @@ export function selectCalendarDay(dateStr) {
     const date = new Date(`${dateStr}T00:00:00Z`);
     const stats = getDailyStats(date);
     const trades = allTrades.filter(trade => trade.TradeDate === dateStr && trade['Open/CloseIndicator'] === 'C');
-    preview.innerHTML = `<div class="preview-date">${dateStr}</div><h2>当日快览</h2><div class="preview-pnl">${formatPnL(stats?.pnl || 0)}</div><div class="preview-summary"><span>${trades.length} 条平仓记录</span><span>${stats?.trades || 0} 个代码</span></div><div class="preview-trades"></div><button class="preview-details">查看全部交易</button><div class="preview-journal"><h3>给这一天留一点思考</h3><p>记录事实、收获和下一次可以做得更好的地方。</p><button class="primary preview-log">写每日复盘</button><button class="preview-weekly">写每周复盘</button></div>`;
+    preview.innerHTML = `<div class="preview-date">${dateHTML(dateStr, { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' })}</div><h2>${messageHTML("当日快览")}</h2><div class="preview-pnl">${formatPnL(stats?.pnl || 0)}</div><div class="preview-summary"><span>${messageHTML('{count} 条平仓记录', { count: trades.length })}</span><span>${messageHTML('{count} 个代码', { count: stats?.trades || 0 })}</span></div><div class="preview-trades"></div><button class="preview-details">${messageHTML("查看全部交易")}</button><div class="preview-journal"><h3>${messageHTML("给这一天留一点思考")}</h3><p>${messageHTML("记录事实、收获和下一次可以做得更好的地方。")}</p><button class="primary preview-log">${messageHTML("写每日复盘")}</button><button class="preview-weekly">${messageHTML("写每周复盘")}</button></div>`;
     const list = preview.querySelector('.preview-trades');
     if (!stats) {
         const empty = document.createElement('p');
-        empty.className = 'empty-state'; empty.textContent = '这一天没有已导入的平仓交易。也可以记录观察与复盘。'; list.append(empty);
+        empty.className = 'empty-state'; setMessage(empty, "这一天没有已导入的平仓交易。也可以记录观察与复盘。"); list.append(empty);
     } else {
         stats.symbols.slice(0, 5).forEach(([symbol, trade]) => {
             const row = document.createElement('div'); row.className = 'preview-trade';
@@ -175,7 +176,7 @@ export function showTradeDetails(date) {
 
     // 设置模态框标题和统计信息
     const dateEl = document.getElementById('modalDate');
-    dateEl.textContent = date.toLocaleDateString();
+    setDateMessage(dateEl, dateStr, { year: 'numeric', month: 'short', day: 'numeric' });
     dateEl.dataset.date = dateStr;
 
     // 计算统计数据
@@ -194,7 +195,7 @@ export function showTradeDetails(date) {
         netPnLEl.classList.remove('profit', 'fail');
         netPnLEl.classList.add(totalPnL >= 0 ? 'profit' : 'fail');
         const prefix = totalPnL >= 0 ? '+' : '';
-        netPnLEl.textContent = `Net P&L ${prefix}$${totalPnL.toFixed(2)}`;
+        setMessage(netPnLEl, '净盈亏 {value}', { value: `${prefix}$${totalPnL.toFixed(2)}` });
     }
     document.getElementById('modalTotalTrades').textContent = consolidatedArray.length;
     document.getElementById('modalWinners').textContent = winners;
@@ -214,9 +215,9 @@ export function showTradeDetails(date) {
 
         row.innerHTML = `
             <td>${trade.DateTime}</td>
-            <td>${trade.Symbol}</td>
-            <td>${trade.Side}</td>
-            <td>${trade.Symbol}</td>
+            <td>${escapeHTML(trade.Symbol)}</td>
+            <td>${messageHTML(trade.Side)}</td>
+            <td>${escapeHTML(trade.Symbol)}</td>
             <td class="${pnl >= 0 ? 'profit' : 'fail'}">${formatPnL(pnl)}</td>
             <td class="${pnl >= 0 ? 'profit' : 'fail'}">${roi}%</td>
             <td>${trade.TradeTimes}</td>
@@ -280,6 +281,8 @@ export function closeTradeModal() {
         const modalContent = modal.querySelector('.trade-modal-content');
         if (modalContent && originalTradeModalContent) {
             modalContent.innerHTML = originalTradeModalContent;
+            translatePage(modalContent);
+            bindLocaleControls(modalContent);
         }
 
         modal.style.display = 'none';
@@ -348,23 +351,24 @@ export function viewTradeDetails() {
 
     // 创建详细视图
     const detailedView = `
+        <div class="modal-language">${localeControlsHTML()}</div>
         <div class="modal-header">
-            <h2>${displayDate || isoDate} - Detailed Trades</h2>
-            <button class="close-button" id="closeDetailModalBtn">&times;</button>
+            <h2>${dateHTML(isoDate, { year: 'numeric', month: 'short', day: 'numeric' })} · ${messageHTML('详细交易')}</h2>
+            <button class="close-button" id="closeDetailModalBtn" aria-label="${t('关闭')}" data-i18n-aria-label="关闭">&times;</button>
         </div>
         <div class="trades-details">
             <table class="trades-table">
                 <thead>
                     <tr>
-                        <th>Time</th>
-                        <th>Symbol</th>
-                        <th>Side</th>
-                        <th>Qty</th>
-                        <th>Entry</th>
-                        <th>Exit</th>
-                        <th>Duration</th>
-                        <th>P&L</th>
-                        <th>ROI%</th>
+                        <th>${messageHTML("Time")}</th>
+                        <th>${messageHTML("Symbol")}</th>
+                        <th>${messageHTML("Side")}</th>
+                        <th>${messageHTML("Qty")}</th>
+                        <th>${messageHTML("Entry")}</th>
+                        <th>${messageHTML("Exit")}</th>
+                        <th>${messageHTML("Duration")}</th>
+                        <th>${messageHTML("P&L")}</th>
+                        <th>${messageHTML("ROI%")}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -374,13 +378,13 @@ export function viewTradeDetails() {
                         const duration = calculateDuration(trade.OpenDateTime, trade.DateTime);
                         return `
                             <tr>
-                                <td>${new Date(trade.DateTime).toLocaleTimeString()}</td>
-                                <td class="symbol">${trade.Symbol}</td>
-                                <td>${trade['Buy/Sell']}</td>
+                                <td>${dateHTML(trade.DateTime, { hour: 'numeric', minute: '2-digit', second: '2-digit', timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone })}</td>
+                                <td class="symbol">${escapeHTML(trade.Symbol)}</td>
+                                <td>${messageHTML(String(trade['Buy/Sell']).toUpperCase())}</td>
                                 <td>${Math.abs(trade.Quantity)}</td>
                                 <td>${trade.TradePrice}</td>
                                 <td>${trade.ClosePrice}</td>
-                                <td>${duration}</td>
+                                <td>${durationHTML(duration)}</td>
                                 <td class="${pnl >= 0 ? 'profit' : 'fail'}">${formatPnL(pnl)}</td>
                                 <td class="${pnl >= 0 ? 'profit' : 'fail'}">${roi}%</td>
                             </tr>
@@ -390,11 +394,12 @@ export function viewTradeDetails() {
             </table>
         </div>
         <div class="button-group">
-            <button class="cancel-button" id="closeDetailBtn">Close</button>
+            <button class="cancel-button" id="closeDetailBtn">${messageHTML("Close")}</button>
         </div>
     `;
 
     modalContent.innerHTML = detailedView;
+    bindLocaleControls(modalContent);
     
     // 添加关闭按钮事件监听
     document.getElementById('closeDetailModalBtn').addEventListener('click', closeTradeModal);
@@ -458,4 +463,9 @@ function updateDayCell(cell, trade) {
             </div>
         `;
     }
+}
+function durationHTML(value) {
+    const match = /^(?:(\d+)h )?(\d+)m$/.exec(value);
+    if (!match) return escapeHTML(value);
+    return messageHTML(match[1] ? '{hours}小时 {minutes}分钟' : '{minutes}分钟', { hours: match[1], minutes: match[2] });
 }

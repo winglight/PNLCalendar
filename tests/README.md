@@ -114,3 +114,16 @@ They do not certify screenshots, computed layout, chart canvas rendering, focus
 traps, real IB/R2/AI service connectivity, or authentication. Those require
 separate authorized browser/integration checks. The parser intentionally models
 only the DOM operations exercised by these contracts.
+
+## Native localization regression suite
+
+`npm test` also runs `tests/i18n.mjs`. Run `npm run test:i18n:timezones` to exercise
+its 22 contracts in UTC, America/Los_Angeles and Asia/Shanghai. These test the
+actual locale handlers and UI modules with synthetic records, including switches
+inside open unsaved forms, in-flight AI requests, byte-identical request payloads,
+chart-instance/data preservation, stable enum values, and repeat close/reopen.
+
+The DOM double now models compound selectors, entity decoding, live element
+lookup, innerHTML serialization, cloned elements and handler `this` binding for
+those flows. It remains a test double, not a real browser or layout renderer.
+See `I18N.md` for the display-only localization contract and validation limits.

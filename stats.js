@@ -1,3 +1,4 @@
+import { escapeHTML, t, setMessage, formatDate, getIntlLocale } from './i18n.js';
 // stats.js - 处理统计数据和图表相关功能
 import { allTrades, filteredTrades, TOTAL_ACCOUNT_VALUE, formatPnL } from './data.js';
 
@@ -427,7 +428,7 @@ export function updateStatistics() {
     
     const netPnLEl = document.querySelector('.stat-card .stat-value');
     if (netPnLEl) {
-        netPnLEl.textContent = `$${stats.netPnL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        netPnLEl.textContent = `$${stats.netPnL.toLocaleString(getIntlLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         netPnLEl.classList.toggle('negative', stats.netPnL < 0);
         netPnLEl.classList.toggle('positive', stats.netPnL >= 0);
     }
@@ -522,7 +523,7 @@ export function updateStatistics() {
     // CDN failure must not prevent calendar, journal or import interactions.
     if (typeof Chart === 'undefined') {
         const status = document.getElementById('chartStatus');
-        if (status) { status.hidden = false; status.textContent = '图表库未加载，请检查网络后刷新。汇总、日历和复盘仍可使用。'; }
+        if (status) { status.hidden = false; setMessage(status, "图表库未加载，请检查网络后刷新。汇总、日历和复盘仍可使用。"); }
         return;
     }
     // 更新图表
@@ -552,9 +553,10 @@ export function updateCharts(stats) {
             {
                 type: 'line',
                 data: {
-                    labels: stats.dailyCumulativePnL.map(d => d.date),
+                    _i18nDates: stats.dailyCumulativePnL.map(d => d.date),
+                    labels: stats.dailyCumulativePnL.map(d => formatDate(d.date, { year: 'numeric', month: 'short', day: 'numeric' })),
                     datasets: [{
-                        label: 'Cumulative P&L',
+                        _i18nKey: "Cumulative P&L", label: t("Cumulative P&L"),
                         data: stats.dailyCumulativePnL.map(d => d.value),
                         fill: true,
                         borderColor: chartColor('--gain', '#16734e'),
@@ -572,7 +574,7 @@ export function updateCharts(stats) {
                         y: {
                             beginAtZero: true,
                             ticks: {
-                                callback: value => '$' + value.toLocaleString()
+                                callback: value => '$' + value.toLocaleString(getIntlLocale())
                             }
                         },
                         x: {
@@ -597,9 +599,10 @@ export function updateCharts(stats) {
             {
                 type: 'bar',
                 data: {
-                    labels: stats.dailyPnL.map(d => d.date),
+                    _i18nDates: stats.dailyPnL.map(d => d.date),
+                    labels: stats.dailyPnL.map(d => formatDate(d.date, { year: 'numeric', month: 'short', day: 'numeric' })),
                     datasets: [{
-                        label: 'Daily P&L',
+                        _i18nKey: "Daily P&L", label: t("Daily P&L"),
                         data: stats.dailyPnL.map(d => d.value),
                         backgroundColor: function (context) {
                             const value = context.raw;
@@ -616,7 +619,7 @@ export function updateCharts(stats) {
                     scales: {
                         y: {
                             ticks: {
-                                callback: value => '$' + value.toLocaleString()
+                                callback: value => '$' + value.toLocaleString(getIntlLocale())
                             }
                         }
                     }
@@ -664,16 +667,17 @@ export function updateAdvancedCharts(stats) {
             {
                 type: 'bar',
                 data: {
-                    labels: stats.durationPerformance.labels,
+                    _i18nLabelKeys: stats.durationPerformance.labels,
+                    labels: stats.durationPerformance.labels.map(key => t(key)),
                     datasets: [
                         {
-                            label: 'Average P&L',
+                            _i18nKey: "Average P&L", label: t("Average P&L"),
                             data: stats.durationPerformance.avgPnL,
                             backgroundColor: stats.durationPerformance.avgPnL.map(val => val >= 0 ? chartColor('--gain', '#16734e') : chartColor('--loss', '#ad463e')),
                             yAxisID: 'y'
                         },
                         {
-                            label: 'Win Rate %',
+                            _i18nKey: "Win Rate %", label: t("Win Rate %"),
                             data: stats.durationPerformance.winRate,
                             type: 'line',
                             borderColor: chartColor('--primary', '#165442'),
@@ -690,17 +694,17 @@ export function updateAdvancedCharts(stats) {
                             position: 'left',
                             title: {
                                 display: true,
-                                text: 'Average P&L ($)'
+                                _i18nKey: "Average P&L ($)", text: t("Average P&L ($)")
                             },
                             ticks: {
-                                callback: value => '$' + value.toLocaleString()
+                                callback: value => '$' + value.toLocaleString(getIntlLocale())
                             }
                         },
                         y1: {
                             position: 'right',
                             title: {
                                 display: true,
-                                text: 'Win Rate (%)'
+                                _i18nKey: "Win Rate (%)", text: t("Win Rate (%)")
                             },
                             min: 0,
                             max: 100,
@@ -725,13 +729,13 @@ export function updateAdvancedCharts(stats) {
                     labels: stats.timePerformance.labels,
                     datasets: [
                         {
-                            label: 'Average P&L',
+                            _i18nKey: "Average P&L", label: t("Average P&L"),
                             data: stats.timePerformance.avgPnL,
                             backgroundColor: stats.timePerformance.avgPnL.map(val => val >= 0 ? chartColor('--gain', '#16734e') : chartColor('--loss', '#ad463e')),
                             yAxisID: 'y'
                         },
                         {
-                            label: 'Win Rate %',
+                            _i18nKey: "Win Rate %", label: t("Win Rate %"),
                             data: stats.timePerformance.winRate,
                             type: 'line',
                             borderColor: chartColor('--primary', '#165442'),
@@ -748,17 +752,17 @@ export function updateAdvancedCharts(stats) {
                             position: 'left',
                             title: {
                                 display: true,
-                                text: 'Average P&L ($)'
+                                _i18nKey: "Average P&L ($)", text: t("Average P&L ($)")
                             },
                             ticks: {
-                                callback: value => '$' + value.toLocaleString()
+                                callback: value => '$' + value.toLocaleString(getIntlLocale())
                             }
                         },
                         y1: {
                             position: 'right',
                             title: {
                                 display: true,
-                                text: 'Win Rate (%)'
+                                _i18nKey: "Win Rate (%)", text: t("Win Rate (%)")
                             },
                             min: 0,
                             max: 100,
@@ -781,10 +785,11 @@ export function updateAdvancedCharts(stats) {
                 {
                     type: 'line',
                     data: {
-                        labels: stats.drawdown.drawdownData.map(d => d.date),
+                        _i18nDates: stats.drawdown.drawdownData.map(d => d.date),
+                    labels: stats.drawdown.drawdownData.map(d => formatDate(d.date, { year: 'numeric', month: 'short', day: 'numeric' })),
                         datasets: [
                             {
-                                label: 'Drawdown',
+                                _i18nKey: "Drawdown", label: t("Drawdown"),
                                 data: stats.drawdown.drawdownData.map(d => d.drawdown),
                                 fill: true,
                                 borderColor: chartColor('--loss', '#ad463e'),
@@ -801,7 +806,7 @@ export function updateAdvancedCharts(stats) {
                                 position: 'left',
                                 title: {
                                     display: true,
-                                    text: 'Drawdown ($)'
+                                    _i18nKey: "Drawdown ($)", text: t("Drawdown ($)")
                                 },
                                 ticks: {
                                     callback: value => value + '$'
@@ -820,7 +825,7 @@ export function updateAdvancedCharts(stats) {
     const topProfitList = document.getElementById('topProfitableStocks');
     topProfitList.innerHTML = stats.stockStats.topProfitable.map(stock => `
         <tr>
-            <td class="symbol">${stock.symbol}</td>
+            <td class="symbol">${escapeHTML(stock.symbol)}</td>
             <td class="profit">${formatMoney(stock.totalProfit)}</td>
             <td class="loss">${formatMoney(stock.totalLoss)}</td>
             <td>${stock.tradeCount}</td>
@@ -830,7 +835,7 @@ export function updateAdvancedCharts(stats) {
     const topLossList = document.getElementById('topLossStocks');
     topLossList.innerHTML = stats.stockStats.topLosses.map(stock => `
         <tr>
-            <td class="symbol">${stock.symbol}</td>
+            <td class="symbol">${escapeHTML(stock.symbol)}</td>
             <td class="profit">${formatMoney(stock.totalProfit)}</td>
             <td class="loss">${formatMoney(stock.totalLoss)}</td>
             <td>${stock.tradeCount}</td>
@@ -843,17 +848,18 @@ export function updateAdvancedCharts(stats) {
         {
             type: 'bar',
             data: {
-                labels: stats.weeklyData.map(d => d.week),
+                _i18nWeeks: stats.weeklyData.map(d => d.week),
+                labels: stats.weeklyData.map(d => formatWeekLabel(d.week)),
                 datasets: [
                     {
-                        label: 'Trade Count',
+                        _i18nKey: "Trade Count", label: t("Trade Count"),
                         data: stats.weeklyData.map(d => d.tradeCount),
                         type: 'bar',
                         backgroundColor: chartColor('--gain', '#16734e'),
                         yAxisID: 'y1'
                     },
                     {
-                        label: 'Win Rate %',
+                        _i18nKey: "Win Rate %", label: t("Win Rate %"),
                         data: stats.weeklyData.map(d => d.winRate),
                         type: 'line',
                         borderColor: chartColor('--primary', '#165442'),
@@ -870,7 +876,7 @@ export function updateAdvancedCharts(stats) {
                         beginAtZero: true,
                         title: {
                             display: true,
-                            text: 'Trade Count'
+                            _i18nKey: "Trade Count", text: t("Trade Count")
                         }
                     },
                     y2: {
@@ -879,7 +885,7 @@ export function updateAdvancedCharts(stats) {
                         max: 100,
                         title: {
                             display: true,
-                            text: 'Win Rate %'
+                            _i18nKey: "Win Rate %", text: t("Win Rate %")
                         },
                         ticks: {
                             callback: value => value + '%'
@@ -897,24 +903,25 @@ export function updateAdvancedCharts(stats) {
         {
             type: 'bar',
             data: {
-                labels: stats.weeklyData.map(d => d.week),
+                _i18nWeeks: stats.weeklyData.map(d => d.week),
+                labels: stats.weeklyData.map(d => formatWeekLabel(d.week)),
                 datasets: [
                     {
-                        label: 'Win Profit',
+                        _i18nKey: "Win Profit", label: t("Win Profit"),
                         data: stats.weeklyData.map(d => d.winProfit),
                         type: 'bar',
                         backgroundColor: chartColor('--gain', '#16734e'),
                         stack: 'amount'
                     },
                     {
-                        label: 'Loss Amount',
+                        _i18nKey: "Loss Amount", label: t("Loss Amount"),
                         data: stats.weeklyData.map(d => d.lossAmount),
                         type: 'bar',
                         backgroundColor: chartColor('--loss', '#ad463e'),
                         stack: 'amount'
                     },
                     {
-                        label: 'Avg Win/Loss',
+                        _i18nKey: "Avg Win/Loss", label: t("Avg Win/Loss"),
                         data: stats.weeklyData.map(d => d.avgWinLoss),
                         type: 'line',
                         borderColor: chartColor('--chart-secondary', '#88641e'),
@@ -934,7 +941,7 @@ export function updateAdvancedCharts(stats) {
                         beginAtZero: true,
                         title: {
                             display: true,
-                            text: 'Amount ($)'
+                            _i18nKey: "Amount ($)", text: t("Amount ($)")
                         },
                         ticks: {
                             callback: value => '$' + value.toFixed(2)
@@ -945,7 +952,7 @@ export function updateAdvancedCharts(stats) {
                         beginAtZero: true,
                         title: {
                             display: true,
-                            text: 'Avg Win/Loss (%)'
+                            _i18nKey: "Avg Win/Loss (%)", text: t("Avg Win/Loss (%)")
                         },
                         ticks: {
                             callback: value => value.toFixed(2) + '%'
@@ -976,4 +983,27 @@ export function updateAdvancedCharts(stats) {
             table.style.width = '100%';
         });
     }
+}
+
+// Update chart copy in place, including an open fullscreen chart. Preserve data,
+// visibility, zoom and instance identity; never re-run calculations to switch locale.
+export function localizeCharts() {
+    Object.values(chartInstances).forEach(chart => {
+        if (!chart?.data) return;
+        chart.data.datasets?.forEach(dataset => {
+            if (dataset._i18nKey) dataset.label = t(dataset._i18nKey);
+        });
+        if (chart.data._i18nLabelKeys) chart.data.labels = chart.data._i18nLabelKeys.map(key => t(key));
+        if (chart.data._i18nWeeks) chart.data.labels = chart.data._i18nWeeks.map(formatWeekLabel);
+        if (chart.data._i18nDates) chart.data.labels = chart.data._i18nDates.map(date => formatDate(date, { year: 'numeric', month: 'short', day: 'numeric' }));
+        Object.values(chart.options?.scales || {}).forEach(scale => {
+            if (scale.title?._i18nKey) scale.title.text = t(scale.title._i18nKey);
+        });
+        chart.update('none');
+    });
+}
+
+function formatWeekLabel(value) {
+    const [year, week] = value.split('-W');
+    return t('{year}年第{week}周', { year, week });
 }

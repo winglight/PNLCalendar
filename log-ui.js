@@ -1,3 +1,4 @@
+import { t, messageHTML, setMessage, setAttributeMessage, dateHTML, escapeHTML } from './i18n.js';
 // log-ui.js - 日志UI交互处理
 import { 
     createOrUpdateLog, 
@@ -123,7 +124,7 @@ export function openLogModal(date, logType = null) {
         currentEditingLog = existingLog;
         populateLogForm(existingLog);
         document.getElementById('deleteLogBtn').classList.remove('hidden');
-        document.getElementById('logModalTitle').textContent = '编辑复盘日志';
+        setMessage(document.getElementById('logModalTitle'), "编辑复盘日志");
     } else {
         // 创建新日志
         currentEditingLog = null;
@@ -148,7 +149,7 @@ export function openLogModal(date, logType = null) {
             }
         
         document.getElementById('deleteLogBtn').classList.add('hidden');
-        document.getElementById('logModalTitle').textContent = '新增复盘日志';
+        setMessage(document.getElementById('logModalTitle'), "新增复盘日志");
     }
     
     modal.classList.remove('hidden');
@@ -275,7 +276,11 @@ function populateWeeklyAutoFields(weeklyData) {
     if (weeklyPnlResult) weeklyPnlResult.value = `${pnlResult >= 0 ? '+' : ''}$${pnlResult.toFixed(2)}`;
     if (weeklyMaxWinLoss) weeklyMaxWinLoss.value = `$${Math.max(0, maxWin).toFixed(2)} / $${Math.abs(Math.min(0, maxLoss)).toFixed(2)}`;
     if (weeklyWinRate) weeklyWinRate.value = `${winRate.toFixed(1)}%`;
-    if (weeklyDailyLimit) weeklyDailyLimit.value = followsDailyLimit ? '是' : '否';
+    if (weeklyDailyLimit) {
+        const key = followsDailyLimit ? '是' : '否';
+        weeklyDailyLimit.setAttribute('data-i18n-readonly', key);
+        weeklyDailyLimit.value = t(key);
+    }
 }
 
 function toggleWeeklyFields(show) {
@@ -440,10 +445,10 @@ function handleLogFormSubmit(event) {
             window.renderCalendar();
         }
         
-        showToast('日志保存成功');
+        showToast("日志保存成功");
     } catch (error) {
         console.error('保存日志失败:', error);
-        showToast('保存日志失败', 'error');
+        showToast("保存日志失败", 'error');
     }
 }
 
@@ -451,7 +456,7 @@ function handleLogFormSubmit(event) {
 function handleDeleteLog() {
     if (!currentEditingLog) return;
     
-    if (confirm('确定要删除这条日志吗？')) {
+    if (confirm(t("确定要删除这条日志吗？"))) {
         try {
             deleteLog(currentEditingLog.id);
             closeLogModal();
@@ -467,10 +472,10 @@ function handleDeleteLog() {
                 window.renderCalendar();
             }
             
-            showToast('日志已删除');
+            showToast("日志已删除");
         } catch (error) {
             console.error('删除日志失败:', error);
-            showToast('删除日志失败', 'error');
+            showToast("删除日志失败", 'error');
         }
     }
 }
@@ -516,7 +521,7 @@ function loadLogList() {
         
         if (logListPage === 0 && allLogs.length === 0) {
             const empty = document.createElement('p'); empty.className = 'empty-state';
-            empty.textContent = '还没有复盘日志。记录一次交易，也可以记录没有交易的一天。';
+            setMessage(empty, "还没有复盘日志。记录一次交易，也可以记录没有交易的一天。");
             listContainer.appendChild(empty);
         }
         logsToShow.forEach(log => {
@@ -537,11 +542,9 @@ function createLogListItem(log) {
     item.dataset.logDate = log.date;
 
     const previewText = getLogPreviewText(log);
-    const typeText = log.type === 'weekly' ? '周复盘' : '日复盘';
+    const typeText = messageHTML(log.type === 'weekly' ? '周复盘' : '日复盘');
 
     const dateObj = new Date(log.date);
-    const weekdayMap = ['日','一','二','三','四','五','六'];
-    const weekday = weekdayMap[dateObj.getDay()];
 
     let pnlClass = '';
     if (log.type === 'weekly') {
@@ -558,37 +561,37 @@ function createLogListItem(log) {
 
     item.innerHTML = `
         <div class="log-item-header">
-            <div class="log-item-date ${pnlClass}">${log.date} 周${weekday}</div>
+            <div class="log-item-date ${pnlClass}">${dateHTML(log.date, { year: 'numeric', month: 'short', day: 'numeric', weekday: 'short' })}</div>
             <div class="log-item-type ${log.type}">${typeText}</div>
         </div>
-        <div class="log-item-preview">${previewText}</div>
+        <div class="log-item-preview">${escapeHTML(previewText)}</div>
         <div class="log-item-content">
             <div class="log-content-section">
-                <h5>快速回顾</h5>
-                <div class="log-content-text">交易笔数: ${log.quickReview?.tradesCount || 0}, 感觉评分: ${log.quickReview?.overallFeeling || 0}/5</div>
+                <h5>${messageHTML("快速回顾")}</h5>
+                <div class="log-content-text">${messageHTML('交易笔数: {count}, 感觉评分: {feeling}/5', { count: log.quickReview?.tradesCount || 0, feeling: log.quickReview?.overallFeeling || 0 })}</div>
             </div>
             ${log.factRecord ? `
             <div class="log-content-section">
-                <h5>记录事实</h5>
-                <div class="log-content-text">${log.factRecord}</div>
+                <h5>${messageHTML("记录事实")}</h5>
+                <div class="log-content-text">${escapeHTML(log.factRecord)}</div>
             </div>
             ` : ''}
             ${log.learningPoints ? `
             <div class="log-content-section">
-                <h5>提炼学习点</h5>
-                <div class="log-content-text">${log.learningPoints}</div>
+                <h5>${messageHTML("提炼学习点")}</h5>
+                <div class="log-content-text">${escapeHTML(log.learningPoints)}</div>
             </div>
             ` : ''}
             ${log.improvementDirection ? `
             <div class="log-content-section">
-                <h5>优化方向</h5>
-                <div class="log-content-text">${log.improvementDirection}</div>
+                <h5>${messageHTML("优化方向")}</h5>
+                <div class="log-content-text">${escapeHTML(log.improvementDirection)}</div>
             </div>
             ` : ''}
             ${log.selfAffirmation ? `
             <div class="log-content-section">
-                <h5>自我肯定</h5>
-                <div class="log-content-text">${log.selfAffirmation}</div>
+                <h5>${messageHTML("自我肯定")}</h5>
+                <div class="log-content-text">${escapeHTML(log.selfAffirmation)}</div>
             </div>
             ` : ''}
         </div>
@@ -604,7 +607,7 @@ function createLogListItem(log) {
     });
     
     const editButton = document.createElement('button');
-    editButton.className = 'log-edit-btn'; editButton.textContent = '编辑复盘';
+    editButton.className = 'log-edit-btn'; setMessage(editButton, "编辑复盘");
     editButton.addEventListener('click', () => openLogModal(log.date, log.type));
     item.appendChild(editButton);
 
@@ -664,7 +667,8 @@ export function addLogButtonToCalendarDay(dayElement, date) {
     
     const logButton = document.createElement('button');
     logButton.className = 'log-button';
-    logButton.title = existingLog ? '编辑日志' : '添加日志';
+    setAttributeMessage(logButton, 'title', existingLog ? '编辑日志' : '添加日志');
+    setAttributeMessage(logButton, 'aria-label', existingLog ? '编辑日志' : '添加日志');
     logButton.innerHTML = '📖';
     
     logButton.addEventListener('click', (e) => {
@@ -708,11 +712,11 @@ export function displayLogInTradeModal(date) {
     const header = document.createElement('div');
     header.className = 'log-section-header';
     const h3 = document.createElement('h3');
-    h3.textContent = '复盘日志';
+    setMessage(h3, "复盘日志");
     header.appendChild(h3);
     const actionBtn = document.createElement('button');
     actionBtn.className = log ? 'edit-log-btn' : 'add-log-btn';
-    actionBtn.textContent = log ? '编辑' : '添加日志';
+    setMessage(actionBtn, log ? '编辑' : '添加日志');
     actionBtn.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -727,39 +731,39 @@ export function displayLogInTradeModal(date) {
         const quick = document.createElement('div');
         quick.className = 'log-quick-review';
         quick.innerHTML = `
-            <span>交易笔数: ${log.quickReview?.tradesCount || 0}</span>
-            <span>感觉评分: ${log.quickReview?.overallFeeling || 0}/5</span>
+            <span>${messageHTML('交易笔数: {count}', { count: log.quickReview?.tradesCount || 0 })}</span>
+            <span>${messageHTML('感觉评分: {feeling}/5', { feeling: log.quickReview?.overallFeeling || 0 })}</span>
         `;
         content.appendChild(quick);
         
         if (log.factRecord) {
             const f = document.createElement('div');
             f.className = 'log-field';
-            f.innerHTML = `<strong>记录事实:</strong> ${log.factRecord}`;
+            f.innerHTML = `<strong>${messageHTML("记录事实:")}</strong> ${escapeHTML(log.factRecord)}`;
             content.appendChild(f);
         }
         if (log.learningPoints) {
             const l = document.createElement('div');
             l.className = 'log-field';
-            l.innerHTML = `<strong>提炼学习点:</strong> ${log.learningPoints}`;
+            l.innerHTML = `<strong>${messageHTML("提炼学习点:")}</strong> ${escapeHTML(log.learningPoints)}`;
             content.appendChild(l);
         }
         if (log.improvementDirection) {
             const i = document.createElement('div');
             i.className = 'log-field';
-            i.innerHTML = `<strong>优化方向:</strong> ${log.improvementDirection}`;
+            i.innerHTML = `<strong>${messageHTML("优化方向:")}</strong> ${escapeHTML(log.improvementDirection)}`;
             content.appendChild(i);
         }
         if (log.selfAffirmation) {
             const s = document.createElement('div');
             s.className = 'log-field';
-            s.innerHTML = `<strong>自我肯定:</strong> ${log.selfAffirmation}`;
+            s.innerHTML = `<strong>${messageHTML("自我肯定:")}</strong> ${escapeHTML(log.selfAffirmation)}`;
             content.appendChild(s);
         }
     } else {
         const no = document.createElement('p');
         no.className = 'no-log';
-        no.textContent = '暂无复盘日志';
+        setMessage(no, "暂无复盘日志");
         content.appendChild(no);
     }
     logContainer.appendChild(content);
@@ -770,7 +774,7 @@ function showToast(message, type = 'success') {
     // 创建提示元素
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    toast.textContent = message;
+    setMessage(toast, message);
 
     // 添加样式
     toast.style.cssText = `
