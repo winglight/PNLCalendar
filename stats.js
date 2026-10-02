@@ -4,6 +4,12 @@ import { allTrades, filteredTrades, TOTAL_ACCOUNT_VALUE, formatPnL } from './dat
 // 全局存储Chart实例
 export const chartInstances = {};
 
+// Theme-only palette: imported amounts and financial formulas are not changed.
+function chartColor(name, fallback) {
+    return typeof getComputedStyle === 'function'
+        ? getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback : fallback;
+}
+
 // 获取每日统计数据
 export function getDailyStats(date) {
     const dateStr = date.toISOString().split('T')[0];
@@ -420,11 +426,15 @@ export function updateStatistics() {
     if (tradeCountEl) tradeCountEl.textContent = stats.tradeCount;
     
     const netPnLEl = document.querySelector('.stat-card .stat-value');
-    if (netPnLEl) netPnLEl.textContent = `$${stats.netPnL.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+    if (netPnLEl) {
+        netPnLEl.textContent = `$${stats.netPnL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        netPnLEl.classList.toggle('negative', stats.netPnL < 0);
+        netPnLEl.classList.toggle('positive', stats.netPnL >= 0);
+    }
 
     // 修改胜率统计卡片，使条形图宽度与实际数值成比例
     const winRateEl = document.querySelector('#win-rate .stat-value');
-    if (winRateEl) winRateEl.textContent = `${stats.winRate.percentage.toFixed(2)}%`;
+    if (winRateEl) winRateEl.textContent = Number.isFinite(stats.winRate.percentage) ? `${stats.winRate.percentage.toFixed(2)}%` : '—';
     
     const winEl = document.querySelector('#win-rate .win');
     if (winEl) {
@@ -458,7 +468,7 @@ export function updateStatistics() {
 
     // 修改日胜率统计卡片，使条形图宽度与实际数值成比例
     const dayWinRateEl = document.querySelector('#day-win-rate .stat-value');
-    if (dayWinRateEl) dayWinRateEl.textContent = `${stats.dayWinRate.percentage.toFixed(2)}%`;
+    if (dayWinRateEl) dayWinRateEl.textContent = Number.isFinite(stats.dayWinRate.percentage) ? `${stats.dayWinRate.percentage.toFixed(2)}%` : '—';
     
     const dayWinEl = document.querySelector('#day-win-rate .win');
     if (dayWinEl) {
@@ -489,7 +499,7 @@ export function updateStatistics() {
 
     // 修改平均盈亏统计卡片，使条形图宽度与实际数值成比例
     const avgWinLossEl = document.querySelector('#avg-win-loss .stat-value');
-    if (avgWinLossEl) avgWinLossEl.textContent = `${stats.avgTrade.avgRate.toFixed(2)}%`;
+    if (avgWinLossEl) avgWinLossEl.textContent = Number.isFinite(stats.avgTrade.avgRate) ? `${stats.avgTrade.avgRate.toFixed(2)}%` : '—';
     
     const avgWinEl = document.querySelector('#avg-win-loss .win');
     if (avgWinEl) {
@@ -509,6 +519,12 @@ export function updateStatistics() {
         avgLossEl.style.width = `${avgLossPercent}%`;
     }
 
+    // CDN failure must not prevent calendar, journal or import interactions.
+    if (typeof Chart === 'undefined') {
+        const status = document.getElementById('chartStatus');
+        if (status) { status.hidden = false; status.textContent = '图表库未加载，请检查网络后刷新。汇总、日历和复盘仍可使用。'; }
+        return;
+    }
     // 更新图表
     updateCharts(stats);
     updateAdvancedCharts(stats);
@@ -541,8 +557,8 @@ export function updateCharts(stats) {
                         label: 'Cumulative P&L',
                         data: stats.dailyCumulativePnL.map(d => d.value),
                         fill: true,
-                        borderColor: '#2ecc71',
-                        backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                        borderColor: chartColor('--gain', '#16734e'),
+                        backgroundColor: chartColor('--gain-soft', '#eef7f1'),
                         tension: 0.4
                     }]
                 },
@@ -587,7 +603,7 @@ export function updateCharts(stats) {
                         data: stats.dailyPnL.map(d => d.value),
                         backgroundColor: function (context) {
                             const value = context.raw;
-                            return value >= 0 ? '#2ecc71' : '#e74c3c';
+                            return value >= 0 ? chartColor('--gain', '#16734e') : chartColor('--loss', '#ad463e');
                         }
                     }]
                 },
@@ -653,15 +669,15 @@ export function updateAdvancedCharts(stats) {
                         {
                             label: 'Average P&L',
                             data: stats.durationPerformance.avgPnL,
-                            backgroundColor: stats.durationPerformance.avgPnL.map(val => val >= 0 ? '#2ecc71' : '#e74c3c'),
+                            backgroundColor: stats.durationPerformance.avgPnL.map(val => val >= 0 ? chartColor('--gain', '#16734e') : chartColor('--loss', '#ad463e')),
                             yAxisID: 'y'
                         },
                         {
                             label: 'Win Rate %',
                             data: stats.durationPerformance.winRate,
                             type: 'line',
-                            borderColor: '#3498db',
-                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                            borderColor: chartColor('--primary', '#165442'),
+                            backgroundColor: chartColor('--primary-soft', '#e9f3ee'),
                             yAxisID: 'y1'
                         }
                     ]
@@ -711,15 +727,15 @@ export function updateAdvancedCharts(stats) {
                         {
                             label: 'Average P&L',
                             data: stats.timePerformance.avgPnL,
-                            backgroundColor: stats.timePerformance.avgPnL.map(val => val >= 0 ? '#2ecc71' : '#e74c3c'),
+                            backgroundColor: stats.timePerformance.avgPnL.map(val => val >= 0 ? chartColor('--gain', '#16734e') : chartColor('--loss', '#ad463e')),
                             yAxisID: 'y'
                         },
                         {
                             label: 'Win Rate %',
                             data: stats.timePerformance.winRate,
                             type: 'line',
-                            borderColor: '#3498db',
-                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                            borderColor: chartColor('--primary', '#165442'),
+                            backgroundColor: chartColor('--primary-soft', '#e9f3ee'),
                             yAxisID: 'y1'
                         }
                     ]
@@ -771,8 +787,8 @@ export function updateAdvancedCharts(stats) {
                                 label: 'Drawdown',
                                 data: stats.drawdown.drawdownData.map(d => d.drawdown),
                                 fill: true,
-                                borderColor: '#e74c3c',
-                                backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                                borderColor: chartColor('--loss', '#ad463e'),
+                                backgroundColor: chartColor('--loss-soft', '#fdf1ef'),
                                 yAxisID: 'y'
                             }
                         ]
@@ -833,14 +849,14 @@ export function updateAdvancedCharts(stats) {
                         label: 'Trade Count',
                         data: stats.weeklyData.map(d => d.tradeCount),
                         type: 'bar',
-                        backgroundColor: 'rgba(46, 204, 113, 0.6)',
+                        backgroundColor: chartColor('--gain', '#16734e'),
                         yAxisID: 'y1'
                     },
                     {
                         label: 'Win Rate %',
                         data: stats.weeklyData.map(d => d.winRate),
                         type: 'line',
-                        borderColor: '#3498db',
+                        borderColor: chartColor('--primary', '#165442'),
                         yAxisID: 'y2'
                     }
                 ]
@@ -887,21 +903,21 @@ export function updateAdvancedCharts(stats) {
                         label: 'Win Profit',
                         data: stats.weeklyData.map(d => d.winProfit),
                         type: 'bar',
-                        backgroundColor: 'rgba(46, 204, 113, 0.6)',
+                        backgroundColor: chartColor('--gain', '#16734e'),
                         stack: 'amount'
                     },
                     {
                         label: 'Loss Amount',
                         data: stats.weeklyData.map(d => d.lossAmount),
                         type: 'bar',
-                        backgroundColor: 'rgba(231, 76, 60, 0.6)',
+                        backgroundColor: chartColor('--loss', '#ad463e'),
                         stack: 'amount'
                     },
                     {
                         label: 'Avg Win/Loss',
                         data: stats.weeklyData.map(d => d.avgWinLoss),
                         type: 'line',
-                        borderColor: '#f1c40f',
+                        borderColor: chartColor('--chart-secondary', '#88641e'),
                         borderWidth: 2,
                         fill: false,
                         yAxisID: 'y2'

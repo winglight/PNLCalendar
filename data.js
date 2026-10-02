@@ -9,6 +9,13 @@ export let allTrades = [];
 export let filteredTrades = [];
 export const TOTAL_ACCOUNT_VALUE = 100000;
 const DATE_RANGE_STORAGE_KEY = 'pnlSelectedDateRange';
+let activeStartDate = null;
+let activeEndDate = null;
+let activeSymbol = '';
+
+export function toDateInputValue(date) {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
 
 // 从本地存储加载交易数据
 export function loadTradesFromStorage() {
@@ -46,8 +53,9 @@ export async function loadTrades() {
         const trades = await r2Sync.loadFromR2('trades');
         if (trades && trades.length > 0) {
             allTrades = trades;
-            filteredTrades = [...allTrades];
+            applyTradeFilters();
             localStorage.setItem('trades', JSON.stringify(allTrades));
+            document.dispatchEvent(new CustomEvent('pnl:tradesloaded'));
         }
     }, 100);
     
@@ -117,19 +125,22 @@ export function clearData() {
 
 // 处理文件选择
 export function handleFileSelect(event) {
-    const file = event.target.files[0];
-    const reader = new FileReader();
-
-    reader.onload = function (e) {
-        const text = e.target.result;
-        const newTrades = parseCSV(text);
-        mergeTrades(newTrades);
-        allTrades = loadTradesFromStorage();
-        filteredTrades = [...allTrades];
-        return true;
-    };
-
-    reader.readAsText(file);
+    const file = event.target.files?.[0];
+    if (!file) return Promise.resolve(false);
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            try {
+                const newTrades = parseCSV(e.target.result);
+                mergeTrades(newTrades);
+                allTrades = loadTradesFromStorage();
+                applyTradeFilters();
+                resolve(true);
+            } catch (error) { reject(error); }
+        };
+        reader.onerror = () => reject(reader.error || new Error('无法读取 CSV 文件'));
+        reader.readAsText(file);
+    });
 }
 
 // 解析CSV文件
@@ -236,12 +247,12 @@ export function setDateRange(range) {
         case 'thisWeek':
             start = new Date(today);
             start.setDate(today.getDate() - today.getDay());
-            end = new Date(today);
+            end = new Date(start);
             end.setDate(start.getDate() + 6);
             break;
         case 'thisMonth':
             start = new Date(today.getFullYear(), today.getMonth(), 1);
-            end = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+            end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
             break;
         case 'thisQuarter':
             // 计算当前季度的起始月份 (0-2为第一季度，3-5为第二季度，以此类推)
@@ -249,15 +260,15 @@ export function setDateRange(range) {
             // 设置当前季度的起始日期（季度第一个月的第一天）
             start = new Date(today.getFullYear(), quarterStartMonth, 1);
             // 设置当前季度的结束日期（季度最后一个月的最后一天）
-            end = new Date(today.getFullYear(), quarterStartMonth + 3, 1);
+            end = new Date(today.getFullYear(), quarterStartMonth + 3, 0);
             break;
         case 'last30Days':
-            start = new Date(today.getFullYear(), today.getMonth(), today.getDate()-30);
-            end = new Date(today.getFullYear(), today.getMonth(), today.getDate()+1);
+            start = new Date(today.getFullYear(), today.getMonth(), today.getDate()-29);
+            end = new Date(today);
             break;
         case 'lastMonth':
             start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-            end = new Date(today.getFullYear(), today.getMonth(), 1);
+            end = new Date(today.getFullYear(), today.getMonth(), 0);
             break;
         case 'thisYear':
             start = new Date(today.getFullYear(), 0, 1);
@@ -269,7 +280,7 @@ export function setDateRange(range) {
             break;
         case 'ytd':
             start = new Date(today.getFullYear(), 0, 1);
-            end = new Date(today.getFullYear(), 11, 31);
+            end = new Date(today);
             break;
         case 'all':
             // 设置一个很早的开始日期和今天作为结束日期
@@ -278,8 +289,8 @@ export function setDateRange(range) {
             break;
     }
 
-    document.getElementById('startDate').value = start.toISOString().split('T')[0];
-    document.getElementById('endDate').value = end.toISOString().split('T')[0];
+    document.getElementById('startDate').value = toDateInputValue(start);
+    document.getElementById('endDate').value = toDateInputValue(end);
 
     filterTradesByDateRange(start, end);
     saveDateRangeSelection(start, end, range);
@@ -287,48 +298,41 @@ export function setDateRange(range) {
 
 // 根据日期范围过滤交易
 export function filterTradesByDateRange(startDate, endDate) {
-    if (!startDate || !endDate) return;
-    
-    // 确保日期是UTC日期对象
-    const start = new Date(Date.UTC(
-        startDate.getFullYear(),
-        startDate.getMonth(),
-        startDate.getDate()
-    ));
-    
-    const end = new Date(Date.UTC(
-        endDate.getFullYear(),
-        endDate.getMonth(),
-        endDate.getDate(),
-        23, 59, 59
-    ));
-    
+    if (!(startDate instanceof Date) || !(endDate instanceof Date) ||
+        Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime()) || startDate > endDate) return;
+    activeStartDate = toDateInputValue(startDate);
+    activeEndDate = toDateInputValue(endDate);
+    return applyTradeFilters();
+}
+
+// Prefix matching is unchanged; date and symbol now compose as a UI intersection.
+export function filterTradesBySymbol(symbol) {
+    activeSymbol = String(symbol || '').trim();
+    return applyTradeFilters();
+}
+
+export function applyTradeFilters() {
     filteredTrades = allTrades.filter(trade => {
-        const tradeDate = new Date(trade.TradeDate);
-        return tradeDate >= start && tradeDate <= end;
+        const date = String(trade.TradeDate || '').slice(0, 10);
+        const inDate = (!activeStartDate || date >= activeStartDate) && (!activeEndDate || date <= activeEndDate);
+        const symbol = String(trade.Symbol || '');
+        const matchesSymbol = !activeSymbol || (activeSymbol.endsWith('*')
+            ? symbol.startsWith(activeSymbol.slice(0, -1)) : symbol === activeSymbol);
+        return inDate && matchesSymbol;
     });
-    
+    if (typeof document !== 'undefined') {
+        const scope = document.getElementById('filterScope');
+        if (scope) scope.textContent = `汇总与分析：${activeSymbol || '全部代码'} · ${activeStartDate ? `${activeStartDate} 至 ${activeEndDate}` : '全部日期'}`;
+    }
     return filteredTrades;
 }
 
-// 根据Symbol过滤交易
-export function filterTradesBySymbol(symbol) {
-    if (!symbol) return;
-    
-    // 检查是否是通配符模式
-    if (symbol.endsWith('*')) {
-        const prefix = symbol.slice(0, -1); // 移除 * 符号
-        filteredTrades = allTrades.filter(trade => 
-            trade.Symbol.startsWith(prefix)
-        );
-    } else {
-        // 精确匹配
-        filteredTrades = allTrades.filter(trade => 
-            trade.Symbol === symbol
-        );
-    }
-    
-    return filteredTrades;
+export function clearTradeFilters() {
+    activeStartDate = null;
+    activeEndDate = null;
+    activeSymbol = '';
+    localStorage.removeItem(DATE_RANGE_STORAGE_KEY);
+    return applyTradeFilters();
 }
 
 // 计算交易持续时间

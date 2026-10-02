@@ -13,7 +13,9 @@
 
 ## Purpose
 
-### TOTALLY RUNNING LOCALLY IN YOUR BROWSER WITHOUT ANY DATA UPLOADING
+### Local-first, with optional external services
+
+Trades and journals are stored in browser localStorage by default. Enabling R2 sends them to the configured sync endpoint; AI draft generation sends selected-period trades and review content to the configured AI service. Online IB imports pass the Flex request/token through the existing proxy. Chart/ZIP libraries are loaded from third-party CDNs. Use only services you trust. Theme selection does not change financial data or connection configuration.
 
 This PnL Calendar Tool is designed for active traders and investors to manage and analyze their trading performance visually. By integrating daily profit and loss (PnL) data into an intuitive calendar format, it provides a powerful way to monitor, evaluate, and improve trading strategies.
 
@@ -75,7 +77,7 @@ Try this: [Demo](https://pnl.broyustudio.com/)
 
 ### 1. Set Up
 
-- Open the main.html file in any modern browser.
+- Open the index.html file in any modern browser.
 - Ensure your trading data is accessible in CSV format or via Interactive Brokers Flex Queries.
 - Default proxy(for CORS) is my personal CloudFlare worker, please replace it with yours for security.
 

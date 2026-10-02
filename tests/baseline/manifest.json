@@ -1,0 +1,90 @@
+{
+  "sourceCommit": "6821bbc255fc1cdc1e59123a9b3f56a0ca9580f5",
+  "description": "Gzip-compressed byte-exact public source fixtures for offline synthetic regression comparison. Decompressed source preserves all original bytes, including whitespace. No account data, configuration or credentials.",
+  "files": {
+    "index.html": {
+      "sha256": "2fe1c6f712a39bd75d63d91eb45507ff29d60fde8ba78fa7fb25b22f95c7580a",
+      "bytes": 26401,
+      "archive": "index.html.gz",
+      "gzipBytes": 5950,
+      "gzipSha256": "dc63f093c2403d8f34938bbbae5caef79fb3a6cb27145563427df780907b9b97"
+    },
+    "styles.css": {
+      "sha256": "9fca635e9d44e3cd2f1b852308d20adc1f4ca8d8ba0514daf06a1b2c0589a306",
+      "bytes": 53819,
+      "archive": "styles.css.gz",
+      "gzipBytes": 6077,
+      "gzipSha256": "9b4689bd9c3d5ead1ac567e10dbce187c2c6b550c150334cad95fe2988cae1be"
+    },
+    "r2-config.css": {
+      "sha256": "5342570d4e4269322bb1148038a196be10e0a3f98074cb97adddf7aa3f4edcf8",
+      "bytes": 698,
+      "archive": "r2-config.css.gz",
+      "gzipBytes": 322,
+      "gzipSha256": "4da83d6a293361264de09a079b9fa85f86e5505a1be527a02f521f073ea22785"
+    },
+    "data.js": {
+      "sha256": "ea94b33893e1e6286d19e935dd3bc8a3de8e92eded80a142d6f7abea72bca9f1",
+      "bytes": 11136,
+      "archive": "data.js.gz",
+      "gzipBytes": 3171,
+      "gzipSha256": "166e54c86a6aed46b5c4340fefaa533ab2a68da7ceaa8f7fc39caf6d284ddee1"
+    },
+    "stats.js": {
+      "sha256": "06af32697b9d5a0c2e160c683cbb563eaadda6027f3a4d36825e6fbcd2073a6f",
+      "bytes": 35246,
+      "archive": "stats.js.gz",
+      "gzipBytes": 6529,
+      "gzipSha256": "b400f283d909ed7a30e1d7705fc3492d4c75f6aa5df90cc9d333c2f46351b12a"
+    },
+    "logs.js": {
+      "sha256": "ff32424f59c0587f341f43efe19d06b5e32755913d5c3d8c4ac02fcff68479a5",
+      "bytes": 6960,
+      "archive": "logs.js.gz",
+      "gzipBytes": 2535,
+      "gzipSha256": "82f535a13905c074af62531e9883f5900139de399d8fbf7d759431432c5e033c"
+    },
+    "log-ui.js": {
+      "sha256": "4e752163f745243e5b048fb91892a741af21a9fdab18fa5ca1e40e83b8e8c54b",
+      "bytes": 28741,
+      "archive": "log-ui.js.gz",
+      "gzipBytes": 7220,
+      "gzipSha256": "8ee2ff80800d46ad539fefdb269a0c1df060c1400d3404375bb9dd43ff83b3c6"
+    },
+    "ai-review.js": {
+      "sha256": "9e94d91ee1e8a97e488d6be1f65d3bb7923db3c1343b47f5f22eff6da7533396",
+      "bytes": 24698,
+      "archive": "ai-review.js.gz",
+      "gzipBytes": 6795,
+      "gzipSha256": "7d0b4b4f21f917664d1db1ef4af99a2d516508eb862ce4dd519e5c094b64ee38"
+    },
+    "calendar.js": {
+      "sha256": "2a1287f6ca3b2089ee815e72db3cb9bb16ab7333b65833404ad869bf3e15f2e8",
+      "bytes": 18539,
+      "archive": "calendar.js.gz",
+      "gzipBytes": 5067,
+      "gzipSha256": "dc09065db0f3b8bb6184d51587d1a133f9d14f3e52b91147b5ffe86f81e8bad4"
+    },
+    "r2-sync.js": {
+      "sha256": "f30e875eabbb5164f58c2547782b3a895103c6fc37626e5b3d6a18ef3c4fed50",
+      "bytes": 4693,
+      "archive": "r2-sync.js.gz",
+      "gzipBytes": 1498,
+      "gzipSha256": "6d505221ce74997e1f1a57144e076b979e82bc1036ffd951d2306e6eb3567042"
+    },
+    "main.js": {
+      "sha256": "323aa47bccc03f70615774ce26c1ccca9b05b0bbffbb025d5d0fda7d978081b1",
+      "bytes": 27001,
+      "archive": "main.js.gz",
+      "gzipBytes": 6635,
+      "gzipSha256": "c099154761a5101b112b09b1fa4cd53eb51ab888ac59793819d32c40675e6945"
+    },
+    "worker.js": {
+      "sha256": "62fab09401e8a96aafbbdbbccc8e45c4035e2bfc856e2fcdb84edf901eb59c44",
+      "bytes": 2776,
+      "archive": "worker.js.gz",
+      "gzipBytes": 1195,
+      "gzipSha256": "335c93896bf0f4f0596ec24e46cfe5ddbcea37dc01c9fcb78887cef064c12025"
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "pnlcalendar",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --experimental-vm-modules --no-warnings tests/run.mjs",
+    "test:baseline": "node --experimental-vm-modules --no-warnings tests/run.mjs --baseline",
+    "test:strict": "node --experimental-vm-modules --no-warnings tests/run.mjs --strict",
+    "test:timezones": "node --experimental-vm-modules --no-warnings tests/run.mjs --timezones"
+  },
+  "engines": { "node": ">=20" }
+}

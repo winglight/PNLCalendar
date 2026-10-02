@@ -11,7 +11,10 @@ import {
     processTradeData,
     mergeTrades,
     saveDateRangeSelection,
-    getSavedDateRangeSelection
+    getSavedDateRangeSelection,
+    applyTradeFilters,
+    clearTradeFilters,
+    toDateInputValue
 } from './data.js';
 import { 
     renderCalendar, 
@@ -29,6 +32,7 @@ import {
 import { loadLogs } from './logs.js';
 import { initLogUI } from './log-ui.js';
 import { initAIReviewUI } from './ai-review.js';
+import { initUIShell } from './ui-shell.js';
 
 // DOM Elements
 let showDateRangeBtn, clearDataBtn, handleImportBtn, showImportModalBtn, configR2Btn, csvFile;
@@ -43,6 +47,7 @@ async function init() {
     // 初始化日志UI绑定
     initLogUI();
     initAIReviewUI();
+    initUIShell();
 
     applySavedDateRange();
 
@@ -71,12 +76,28 @@ function setupEventListeners() {
     if (showDateRangeBtn) showDateRangeBtn.addEventListener('click', toggleDatePicker);
     if (handleImportBtn) handleImportBtn.addEventListener('submit', handleImport);
     if (showImportModalBtn) showImportModalBtn.addEventListener('click', showImportModal);
-    if (csvFile) csvFile.addEventListener('change', handleFileSelect);
+    if (csvFile) csvFile.addEventListener('change', async (event) => {
+        if (!event.target.files?.[0]) return;
+        try {
+            await handleFileSelect(event);
+            applyTradeFilters();
+            renderCalendar();
+            updateStatistics();
+            closeImportModal();
+        } catch (error) {
+            alert(`CSV 导入失败：${error.message}`);
+        } finally { event.target.value = ''; }
+    });
     if (clearDataBtn) clearDataBtn.addEventListener('click', () => {
         if (clearData()) {
             renderCalendar();
             updateStatistics();
         }
+    });
+
+    document.addEventListener('pnl:tradesloaded', () => {
+        renderCalendar();
+        updateStatistics();
     });
 
     // 为IB导入表单添加事件监听器
@@ -125,10 +146,11 @@ function setupEventListeners() {
             e.stopPropagation(); // 阻止事件冒泡，防止触发外部点击事件
             if (!startDateInput.value || !endDateInput.value) return;
 
-            const startDate = new Date(startDateInput.value);
-            const endDate = new Date(endDateInput.value);
+            const startDate = new Date(`${startDateInput.value}T00:00:00`);
+            const endDate = new Date(`${endDateInput.value}T00:00:00`);
 
             if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) return;
+            if (startDate > endDate) { alert('开始日期不能晚于结束日期'); return; }
 
             filterTradesByDateRange(startDate, endDate);
             saveDateRangeSelection(startDate, endDate);
@@ -146,6 +168,20 @@ function setupEventListeners() {
     symbolFilter.addEventListener('input', (e) => {
         const searchText = e.target.value.toLowerCase();
         showSymbolDropdown(searchText);
+    });
+
+    symbolFilter.addEventListener('keydown', event => {
+        if (event.key === 'Enter') { event.preventDefault(); filterBySymbol(symbolFilter.value.trim()); }
+        if (event.key === 'Escape') symbolDropdown.classList.remove('active');
+    });
+    symbolFilter.addEventListener('input', () => { if (!symbolFilter.value) filterBySymbol(''); });
+    document.getElementById('resetFiltersBtn').addEventListener('click', () => {
+        symbolFilter.value = '';
+        startDateInput.value = '';
+        endDateInput.value = '';
+        clearTradeFilters();
+        renderCalendar();
+        updateStatistics();
     });
 
     // Handle dropdown item selection
@@ -186,17 +222,18 @@ function applySavedDateRange() {
     const startDateInput = document.getElementById('startDate');
     const endDateInput = document.getElementById('endDate');
 
-    if (startDateInput) startDateInput.value = startDate.toISOString().split('T')[0];
-    if (endDateInput) endDateInput.value = endDate.toISOString().split('T')[0];
+    if (startDateInput) startDateInput.value = toDateInputValue(startDate);
+    if (endDateInput) endDateInput.value = toDateInputValue(endDate);
 
     filterTradesByDateRange(startDate, endDate);
 }
 
 // Handle R2 Config
 function handleConfigR2() {
-    r2Sync.createConfigDialog(() => {
-        loadTrades();
-        loadLogs();
+    r2Sync.createConfigDialog(async () => {
+        await loadTrades();
+        await loadLogs();
+        applyTradeFilters();
         renderCalendar();
         updateStatistics();
     });
@@ -210,6 +247,7 @@ function handleImport(event) {
     
     if (csvData) {
         processTradeData(csvData);
+                    applyTradeFilters();
         renderCalendar();
         updateStatistics();
         closeImportModal();
@@ -281,6 +319,7 @@ async function handleIBImport(event) {
 
                 if (csvData.startsWith('"ClientAccountID"')) {
                     processTradeData(csvData);
+                    applyTradeFilters();
                     renderCalendar();
                     updateStatistics();
                     closeImportModal();

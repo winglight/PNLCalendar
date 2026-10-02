@@ -514,6 +514,11 @@ function loadLogList() {
             listContainer.innerHTML = '';
         }
         
+        if (logListPage === 0 && allLogs.length === 0) {
+            const empty = document.createElement('p'); empty.className = 'empty-state';
+            empty.textContent = '还没有复盘日志。记录一次交易，也可以记录没有交易的一天。';
+            listContainer.appendChild(empty);
+        }
         logsToShow.forEach(log => {
             const logItem = createLogListItem(log);
             listContainer.appendChild(logItem);
@@ -598,6 +603,11 @@ function createLogListItem(log) {
         highlightCalendarDate(log.date);
     });
     
+    const editButton = document.createElement('button');
+    editButton.className = 'log-edit-btn'; editButton.textContent = '编辑复盘';
+    editButton.addEventListener('click', () => openLogModal(log.date, log.type));
+    item.appendChild(editButton);
+
     // 添加双击编辑功能
     header.addEventListener('dblclick', () => {
         openLogModal(log.date, log.type);

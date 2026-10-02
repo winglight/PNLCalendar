@@ -1,7 +1,7 @@
 // calendar.js - 处理日历和交易详情相关功能
 import { allTrades, filteredTrades, TOTAL_ACCOUNT_VALUE, formatPnL, calculateDuration } from './data.js';
 import { getDailyStats, getMonthlyStats, getWeeklyStats } from './stats.js';
-import { addLogButtonToCalendarDay, displayLogInTradeModal } from './log-ui.js';
+import { addLogButtonToCalendarDay, displayLogInTradeModal, openLogModal } from './log-ui.js';
 
 // 当前日期
 export let currentDate = new Date();
@@ -10,124 +10,115 @@ export let currentDate = new Date();
 let originalTradeModalContent = '';
 
 // 渲染日历
+let selectedDate = '';
+
+// Render all dates. Weekend hiding is CSS-only and never filters trades or logs.
 export function renderCalendar() {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
     const firstDay = new Date(Date.UTC(year, month, 1));
     const lastDay = new Date(Date.UTC(year, month + 1, 0));
-
-    document.getElementById('currentMonth').textContent = firstDay.toLocaleString('default', { month: 'long', year: 'numeric' });
-
+    document.getElementById('currentMonth').textContent = `${year}年 ${month + 1}月`;
     const monthlyStats = getMonthlyStats(year, month);
     document.getElementById('monthlyPnL').innerHTML = formatPnL(monthlyStats.pnL);
-    document.getElementById('tradingDays').textContent = `${monthlyStats.days} days`;
-
+    document.getElementById('tradingDays').textContent = `${monthlyStats.days} 个交易日`;
     const calendar = document.getElementById('calendar');
     calendar.innerHTML = '';
-
-    // 检测是否为移动设备
-    const isMobile = window.innerWidth <= 767;
-    
-    // 添加表头 - 移动设备时不显示周日和Weekly
-    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Weekly'];
+    const days = ['周日', '周一', '周二', '周三', '周四', '周五', '周六', '周汇总'];
     days.forEach((day, index) => {
-        // 在移动设备上跳过周六日和Weekly列
-        if (isMobile && (index === 0 || index === 6 || index === 7)) return;
-        
         const header = document.createElement('div');
-        header.className = 'calendar-header';
+        header.className = `calendar-header${index === 0 || index === 6 ? ' weekend' : ''}${index === 7 ? ' week-heading' : ''}`;
         header.textContent = day;
         calendar.appendChild(header);
     });
-
-    // 添加日期
-    let currentWeekPnL = 0;
-    let currentWeekDays = 0;
-    let weekStartDate = new Date(firstDay);
-
-    // 填充月初空白
-    let i = isMobile?1:0;
-    for (; i < firstDay.getDay(); i++) {
-        calendar.appendChild(document.createElement('div'));
-    }
-
-    for (let date = new Date(firstDay); date <= lastDay; date.setDate(date.getDate() + 1)) {
+    const gridStart = new Date(firstDay);
+    gridStart.setUTCDate(1 - firstDay.getUTCDay());
+    const gridEnd = new Date(lastDay);
+    gridEnd.setUTCDate(lastDay.getUTCDate() + 6 - lastDay.getUTCDay());
+    let weekPnL = 0;
+    let weekDays = 0;
+    const monthDates = [];
+    for (let date = new Date(gridStart); date <= gridEnd; date.setUTCDate(date.getUTCDate() + 1)) {
+        const weekday = date.getUTCDay();
+        const inMonth = date.getUTCMonth() === month;
         const dayDiv = document.createElement('div');
-        dayDiv.className = 'calendar-day';
-        dayDiv.dataset.date = date.toISOString().split('T')[0];
-        const day = date.getDate();
-
-        const stats = getDailyStats(date);
-        if (stats) {
-            dayDiv.className += stats.pnl >= 0 ? ' trading-day' : ' negative';
-            dayDiv.innerHTML = `
-                ${day}
-                <div class="trade-info">
-                    ${formatPnL(stats.pnl)}<br>
-                    ${stats.trades} symbols<br>
-                    ${stats.pnlPercentage.toFixed(1)}%<br>
-                    ${stats.winRate.toFixed(1)}% WR
-                </div>
-            `;
-            // 使用当次迭代的日期拷贝，避免闭包中引用被后续迭代修改
-            const dateCopy = new Date(date);
-            dayDiv.addEventListener('click', () => showTradeDetails(dateCopy));
-            // 在日期单元格右上角添加日志按钮
-            addLogButtonToCalendarDay(dayDiv, date);
-            
-            currentWeekPnL += stats.pnl;
-            currentWeekDays++;
+        dayDiv.className = `${inMonth ? 'calendar-day' : 'calendar-empty'}${weekday === 0 || weekday === 6 ? ' weekend' : ''}`;
+        if (inMonth) {
+            const dateStr = date.toISOString().slice(0, 10);
+            monthDates.push(dateStr);
+            dayDiv.dataset.date = dateStr;
+            const stats = getDailyStats(date);
+            dayDiv.innerHTML = `<span class="day-number">${date.getUTCDate()}</span>`;
+            if (stats) {
+                dayDiv.classList.add(stats.pnl >= 0 ? 'trading-day' : 'negative');
+                dayDiv.insertAdjacentHTML('beforeend', `<div class="trade-info">${formatPnL(stats.pnl)}<span class="trade-count-label">${stats.trades} 个代码</span><span class="day-secondary">${stats.pnlPercentage.toFixed(1)}% 基准收益 · ${stats.winRate.toFixed(0)}% 胜率</span></div>`);
+                weekPnL += stats.pnl;
+                weekDays++;
+            }
+            dayDiv.tabIndex = 0;
+            dayDiv.setAttribute('role', 'button');
+            dayDiv.setAttribute('aria-label', `${dateStr}，${stats ? `已实现盈亏 ${stats.pnl.toFixed(2)}` : '无平仓交易'}，查看当日快览`);
+            const select = () => selectCalendarDay(dateStr);
+            dayDiv.addEventListener('click', select);
+            dayDiv.addEventListener('keydown', event => {
+                if (event.target === dayDiv && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); select(); }
+            });
+            addLogButtonToCalendarDay(dayDiv, new Date(date));
         } else {
-            dayDiv.textContent = date.getDate();
-            // 无交易的日期也需要日志按钮
-            addLogButtonToCalendarDay(dayDiv, date);
+            dayDiv.setAttribute('aria-hidden', 'true');
         }
-
         calendar.appendChild(dayDiv);
-
-        // 处理周末或月末
-        if ((!isMobile) && (date.getDay() === 6 || date.getDate() === lastDay.getDate())) {
-            const weekSummary = document.createElement('div');
-            weekSummary.className = 'week-summary';
-            
-            if (currentWeekDays > 0) {
-                // 添加正负数的CSS类
-                const pnlClass = currentWeekPnL >= 0 ? 'positive' : 'negative';
-                weekSummary.innerHTML = `
-                    <div class="${pnlClass}">${formatPnL(currentWeekPnL)}</div>
-                    <div>${currentWeekDays} days</div>
-                `;
-            }
-            
-            // 如果是月末，填充到周六的空白单元格
-            if (date.getDate() === lastDay.getDate()) {
-                const lastDayOfWeek = date.getDay();
-                // 如果不是周六(6)，则需要填充
-                if (lastDayOfWeek < 6) {
-                    // 计算需要填充的天数（从当前日期到周六）
-                    const fillCount = 6 - lastDayOfWeek;
-                    // 填充空白单元格
-                    for (let i = 0; i < fillCount; i++) {
-                        const emptyDiv = document.createElement('div');
-                        calendar.appendChild(emptyDiv);
-                    }
-                }
-            }
-            calendar.appendChild(weekSummary);
-            
-            // 重置周数据
-            currentWeekPnL = 0;
-            currentWeekDays = 0;
-            weekStartDate = new Date(date);
-            weekStartDate.setDate(date.getDate() + 1);
+        if (weekday === 6) {
+            const summary = document.createElement('div');
+            summary.className = 'week-summary';
+            summary.innerHTML = `<span class="week-label">本周</span>${formatPnL(weekPnL)}<small>${weekDays} 个交易日</small>`;
+            calendar.appendChild(summary);
+            weekPnL = 0;
+            weekDays = 0;
         }
     }
-    
+    if (!monthDates.includes(selectedDate)) {
+        const traded = monthDates.filter(date => getDailyStats(new Date(`${date}T00:00:00Z`)));
+        const now = new Date();
+        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        selectedDate = monthDates.includes(today) ? today : traded.at(-1) || monthDates[0];
+    }
+    selectCalendarDay(selectedDate);
 }
 
-// 月份导航
+export function selectCalendarDay(dateStr) {
+    selectedDate = dateStr;
+    document.querySelectorAll('.calendar-day').forEach(day => {
+        const selected = day.dataset.date === dateStr;
+        day.classList.toggle('selected', selected);
+        day.setAttribute('aria-pressed', String(selected));
+    });
+    const preview = document.getElementById('dayPreview');
+    if (!preview) return;
+    const date = new Date(`${dateStr}T00:00:00Z`);
+    const stats = getDailyStats(date);
+    const trades = allTrades.filter(trade => trade.TradeDate === dateStr && trade['Open/CloseIndicator'] === 'C');
+    preview.innerHTML = `<div class="preview-date">${dateStr}</div><h2>当日快览</h2><div class="preview-pnl">${formatPnL(stats?.pnl || 0)}</div><div class="preview-summary"><span>${trades.length} 条平仓记录</span><span>${stats?.trades || 0} 个代码</span></div><div class="preview-trades"></div><button class="preview-details">查看全部交易</button><div class="preview-journal"><h3>给这一天留一点思考</h3><p>记录事实、收获和下一次可以做得更好的地方。</p><button class="primary preview-log">写每日复盘</button><button class="preview-weekly">写每周复盘</button></div>`;
+    const list = preview.querySelector('.preview-trades');
+    if (!stats) {
+        const empty = document.createElement('p');
+        empty.className = 'empty-state'; empty.textContent = '这一天没有已导入的平仓交易。也可以记录观察与复盘。'; list.append(empty);
+    } else {
+        stats.symbols.slice(0, 5).forEach(([symbol, trade]) => {
+            const row = document.createElement('div'); row.className = 'preview-trade';
+            const name = document.createElement('span'); name.textContent = symbol;
+            const value = document.createElement('span'); value.innerHTML = formatPnL(trade.pnl);
+            row.append(name, value); list.append(row);
+        });
+    }
+    preview.querySelector('.preview-details').addEventListener('click', () => showTradeDetails(date));
+    preview.querySelector('.preview-log').addEventListener('click', () => openLogModal(dateStr, 'daily'));
+    preview.querySelector('.preview-weekly').addEventListener('click', () => openLogModal(dateStr, 'weekly'));
+}
+
+// Normalize day before changing the month so Jan 31 → February, not March.
 export function navigateMonth(direction) {
-    currentDate.setMonth(currentDate.getMonth() + direction);
+    currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + direction, 1);
     renderCalendar();
 }
 
