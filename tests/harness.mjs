@@ -12,6 +12,7 @@ const baselineDir = path.join(ROOT, 'tests', 'baseline');
 const baselineManifest = JSON.parse(fs.readFileSync(path.join(baselineDir, 'manifest.json'), 'utf8'));
 if (baselineManifest.sourceCommit !== BASELINE) throw new Error('Baseline manifest commit mismatch');
 export function source(file, revision = 'current') {
+  file = file.split('?')[0];
   if (revision === 'current') return fs.readFileSync(path.join(ROOT, file), 'utf8');
   const entry = baselineManifest.files[file];
   if (!entry) throw new Error(`File ${file} was not present in pinned baseline ${BASELINE}`);
@@ -188,7 +189,7 @@ export async function harness({ revision = 'current', width = 1200, now = '2025-
     const module = new vm.SourceTextModule(code, { context, identifier: file });
     modules.set(file, module); return module;
   }
-  const linker = (specifier, referring) => getModule(path.posix.normalize(path.posix.join(path.posix.dirname(referring.identifier), specifier)));
+  const linker = (specifier, referring) => getModule(path.posix.normalize(path.posix.join(path.posix.dirname(referring.identifier), specifier.split('?')[0])));
   async function load(file) { const m = getModule(file); if (m.status === 'unlinked') await m.link(linker); if (m.status === 'linked') await m.evaluate(); return m.namespace; }
   return { revision, context, window, document, elements, el: id => document.getElementById(id), storage, storageWrites, localStorage, errors, alerts, confirmations, timers, fetchCalls, Date: FixedDate, load,
     setFetch: fn => { fetchImpl = fn; }, snapshot: () => Object.fromEntries(storage), source: file => source(file, revision) };

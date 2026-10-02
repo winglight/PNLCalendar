@@ -1,4 +1,4 @@
-import { MESSAGES } from './messages.js';
+import { MESSAGES } from './messages.js?v=20261002-i18n2';
 
 export const LOCALE_STORAGE_KEY = 'pnlCalendarLocale';
 export const SUPPORTED_LOCALES = Object.freeze(['zh-CN', 'en']);

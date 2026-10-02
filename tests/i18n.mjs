@@ -251,13 +251,23 @@ test('Bubbling locale-control clicks preserve active date and symbol pickers', a
   assert.equal(h.el('startDate').value, '2025-01-12'); assert.equal(h.el('endDate').value, '2025-01-29');
 });
 
+test('Deployment versions local scripts, styles and ESM imports consistently', async h => {
+  const revision = '?v=20261002-i18n2';
+  const localAssets = [...source('index.html').matchAll(/(?:src|href)="((?!https?:)[^"]+\.(?:js|css)[^"]*)"/g)].map(m => m[1]);
+  assert.ok(localAssets.length >= 7);
+  for (const path of localAssets) assert.ok(path.endsWith(revision), path);
+  for (const file of ['main.js','data.js','calendar.js','stats.js','logs.js','log-ui.js','ai-review.js','r2-sync.js','ui-shell.js','i18n.js']) {
+    for (const [, specifier] of source(file).matchAll(/from ['"](\.[^'"]+)['"]/g)) assert.ok(specifier.endsWith(revision), `${file}: ${specifier}`);
+  }
+});
+
 test('AI prompt/schema/calculation contracts and persisted option values are unchanged', async h => {
   const aiSource = source('ai-review.js'); const originalAI = source('ai-review.js', 'baseline');
   for (const name of ['DAILY_DEFAULT_TEMPLATE','WEEKLY_DEFAULT_TEMPLATE']) {
     const re = new RegExp(`const ${name} = \\` + '`' + `([\\s\\S]*?)` + '`;');
     assert.equal(aiSource.match(re)[1], originalAI.match(re)[1], name);
   }
-  assert.equal(source('logs.js'), source('logs.js', 'baseline'));
+  assert.equal(source('logs.js').replace(/\?v=20261002-i18n2/g, ''), source('logs.js', 'baseline'));
   const values = id => h.el(id).options.map(o => o.value);
   assert.deepEqual(values('violatedPlans'), ['超量交易','未设止损','追涨杀跌','持仓过夜','违反策略','情绪化操作']);
   assert.deepEqual(values('emotionalFactors'), ['贪婪','恐惧','犹豫','焦虑','后悔','兴奋']);

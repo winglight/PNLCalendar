@@ -1,6 +1,6 @@
-import { escapeHTML, t, setMessage, formatDate, getIntlLocale } from './i18n.js';
+import { escapeHTML, t, setMessage, formatDate, getIntlLocale } from './i18n.js?v=20261002-i18n2';
 // stats.js - 处理统计数据和图表相关功能
-import { allTrades, filteredTrades, TOTAL_ACCOUNT_VALUE, formatPnL } from './data.js';
+import { allTrades, filteredTrades, TOTAL_ACCOUNT_VALUE, formatPnL } from './data.js?v=20261002-i18n2';
 
 // 全局存储Chart实例
 export const chartInstances = {};

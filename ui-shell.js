@@ -1,7 +1,7 @@
-import { setMessage, setAttributeMessage } from './i18n.js';
-import { initThemes } from './themes.js';
-import { openLogSidebar, closeLogSidebar, openLogModal } from './log-ui.js';
-import { chartInstances, updateStatistics } from './stats.js';
+import { setMessage, setAttributeMessage } from './i18n.js?v=20261002-i18n2';
+import { initThemes } from './themes.js?v=20261002-i18n2';
+import { openLogSidebar, closeLogSidebar, openLogModal } from './log-ui.js?v=20261002-i18n2';
+import { chartInstances, updateStatistics } from './stats.js?v=20261002-i18n2';
 
 export function selectView(view) {
     if (!['calendar', 'analytics', 'journal'].includes(view)) view = 'calendar';

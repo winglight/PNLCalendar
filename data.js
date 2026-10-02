@@ -1,6 +1,6 @@
-import { localizedError, t } from './i18n.js';
+import { localizedError, t } from './i18n.js?v=20261002-i18n2';
 // data.js - 处理交易数据相关功能
-import { R2Sync } from './r2-sync.js';
+import { R2Sync } from './r2-sync.js?v=20261002-i18n2';
 
 // 初始化 R2Sync
 export const r2Sync = new R2Sync();

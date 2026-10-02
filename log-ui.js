@@ -1,4 +1,4 @@
-import { t, messageHTML, setMessage, setAttributeMessage, dateHTML, escapeHTML } from './i18n.js';
+import { t, messageHTML, setMessage, setAttributeMessage, dateHTML, escapeHTML } from './i18n.js?v=20261002-i18n2';
 // log-ui.js - 日志UI交互处理
 import { 
     createOrUpdateLog, 
@@ -7,9 +7,9 @@ import {
     deleteLog, 
     getLogPreviewText,
     LOG_TEMPLATE
-} from './logs.js';
-import { allTrades } from './data.js';
-import { getDailyStats } from './stats.js';
+} from './logs.js?v=20261002-i18n2';
+import { allTrades } from './data.js?v=20261002-i18n2';
+import { getDailyStats } from './stats.js?v=20261002-i18n2';
 
 // 日志UI状态
 let currentEditingLog = null;

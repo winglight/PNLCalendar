@@ -1,4 +1,4 @@
-import { escapeHTML, t, messageHTML, setMessage, initI18n } from './i18n.js';
+import { escapeHTML, t, messageHTML, setMessage, initI18n } from './i18n.js?v=20261002-i18n2';
 import { 
     allTrades,
     loadTrades, 
@@ -17,7 +17,7 @@ import {
     clearTradeFilters,
     toDateInputValue,
     refreshFilterScope
-} from './data.js';
+} from './data.js?v=20261002-i18n2';
 import { 
     renderCalendar, 
     navigateMonth, 
@@ -26,16 +26,16 @@ import {
     viewTradeDetails, 
     toggleDatePicker, 
     currentDate 
-} from './calendar.js';
+} from './calendar.js?v=20261002-i18n2';
 import { 
     updateStatistics,
     chartInstances,
     localizeCharts
-} from './stats.js';
-import { loadLogs } from './logs.js';
-import { initLogUI } from './log-ui.js';
-import { initAIReviewUI } from './ai-review.js';
-import { initUIShell } from './ui-shell.js';
+} from './stats.js?v=20261002-i18n2';
+import { loadLogs } from './logs.js?v=20261002-i18n2';
+import { initLogUI } from './log-ui.js?v=20261002-i18n2';
+import { initAIReviewUI } from './ai-review.js?v=20261002-i18n2';
+import { initUIShell } from './ui-shell.js?v=20261002-i18n2';
 
 // DOM Elements
 let showDateRangeBtn, clearDataBtn, handleImportBtn, showImportModalBtn, configR2Btn, csvFile;

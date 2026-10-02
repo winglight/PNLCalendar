@@ -1,5 +1,5 @@
 // logs.js - 日志管理功能
-import { r2Sync } from './data.js';
+import { r2Sync } from './data.js?v=20261002-i18n2';
 
 // 日志数据结构
 export let allLogs = [];

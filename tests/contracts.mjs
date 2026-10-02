@@ -238,7 +238,7 @@ for (const width of [375, 700, 701]) {
 }
 ui('mobile-css-contract', 'Styles hide only weekend-marked calendar cells at max-width 700px and retain Weekly', async h => {
   // Structural CSS contract only; browser visual checks remain separate.
-  const styles = [...h.source('index.html').matchAll(/<link\b[^>]*href="([^"]+\.css)"[^>]*>/g)].map(m => m[1]);
+  const styles = [...h.source('index.html').matchAll(/<link\b[^>]*href="([^"]+\.css(?:\?[^"]*)?)"[^>]*>/g)].map(m => m[1]);
   const css = styles.map(file => h.source(file)).join('\n'); const blocks = [];
   for (const match of css.matchAll(/@media\s*\(max-width:\s*700px\)\s*\{/g)) {
     let depth = 1, end = match.index + match[0].length;

@@ -118,7 +118,7 @@ only the DOM operations exercised by these contracts.
 ## Native localization regression suite
 
 `npm test` also runs `tests/i18n.mjs`. Run `npm run test:i18n:timezones` to exercise
-its 22 contracts in UTC, America/Los_Angeles and Asia/Shanghai. These test the
+its 23 contracts in UTC, America/Los_Angeles and Asia/Shanghai. These test the
 actual locale handlers and UI modules with synthetic records, including switches
 inside open unsaved forms, in-flight AI requests, byte-identical request payloads,
 chart-instance/data preservation, stable enum values, and repeat close/reopen.

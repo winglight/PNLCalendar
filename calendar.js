@@ -1,8 +1,8 @@
-import { localeControlsHTML, bindLocaleControls, t, messageHTML, setMessage, setAttributeMessage, translatePage, dateHTML, setDateMessage, escapeHTML } from './i18n.js';
+import { localeControlsHTML, bindLocaleControls, t, messageHTML, setMessage, setAttributeMessage, translatePage, dateHTML, setDateMessage, escapeHTML } from './i18n.js?v=20261002-i18n2';
 // calendar.js - 处理日历和交易详情相关功能
-import { allTrades, filteredTrades, TOTAL_ACCOUNT_VALUE, formatPnL, calculateDuration } from './data.js';
-import { getDailyStats, getMonthlyStats, getWeeklyStats } from './stats.js';
-import { addLogButtonToCalendarDay, displayLogInTradeModal, openLogModal } from './log-ui.js';
+import { allTrades, filteredTrades, TOTAL_ACCOUNT_VALUE, formatPnL, calculateDuration } from './data.js?v=20261002-i18n2';
+import { getDailyStats, getMonthlyStats, getWeeklyStats } from './stats.js?v=20261002-i18n2';
+import { addLogButtonToCalendarDay, displayLogInTradeModal, openLogModal } from './log-ui.js?v=20261002-i18n2';
 
 // 当前日期
 export let currentDate = new Date();

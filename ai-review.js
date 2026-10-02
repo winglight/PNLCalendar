@@ -1,6 +1,6 @@
-import { localizedError, errorCopy, setMessage } from './i18n.js';
-import { allTrades, calculateDuration } from './data.js';
-import { LOG_TEMPLATE, getLogByDate } from './logs.js';
+import { localizedError, errorCopy, setMessage } from './i18n.js?v=20261002-i18n2';
+import { allTrades, calculateDuration } from './data.js?v=20261002-i18n2';
+import { LOG_TEMPLATE, getLogByDate } from './logs.js?v=20261002-i18n2';
 
 const AI_CONFIG_KEY = 'aiReviewConfig';
 

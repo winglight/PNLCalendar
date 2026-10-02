@@ -1,4 +1,4 @@
-import { escapeHTML, localeControlsHTML, bindLocaleControls, messageHTML } from './i18n.js';
+import { escapeHTML, localeControlsHTML, bindLocaleControls, messageHTML } from './i18n.js?v=20261002-i18n2';
 // r2-sync.js
 
 export class R2Sync {
