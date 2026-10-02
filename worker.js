@@ -2,6 +2,25 @@ addEventListener('fetch', event => {
     event.respondWith(handleRequest(event.request));
   });
   
+  // 校验目标 URL，拒绝非 http(s) 协议以及内网/本地/云元数据地址，防止 SSRF
+  function isAllowedTargetUrl(targetUrl) {
+    try {
+      const parsed = new URL(targetUrl);
+      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+        return false;
+      }
+      const hostname = parsed.hostname.toLowerCase();
+      const blockedPattern = /^(localhost|127\.|0\.|10\.|169\.254\.|192\.168\.|::1|\[?::1\]?)/;
+      const privateRangePattern = /^172\.(1[6-9]|2\d|3[0-1])\./;
+      if (blockedPattern.test(hostname) || privateRangePattern.test(hostname)) {
+        return false;
+      }
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+  
   async function handleRequest(request) {
     // 处理 CORS 预检请求
     if (request.method === 'OPTIONS') {
@@ -27,6 +46,11 @@ addEventListener('fetch', event => {
   
       if (!targetUrl) {
         return new Response('Target URL is required', { status: 400 });
+      }
+  
+      // 校验目标 URL，防止 SSRF（禁止访问内网/本地/元数据地址）
+      if (!isAllowedTargetUrl(targetUrl)) {
+        return new Response('Target URL is not allowed', { status: 400 });
       }
   
       // 定义请求头
